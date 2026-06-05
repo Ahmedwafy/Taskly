@@ -1,0 +1,119 @@
+@import 'tailwindcss';
+
+:root {
+  font-family: var(--font-poppins), sans-serif;
+  background-color: var(--background);
+}
+
+/* automatically handles smooth scrolling natively whenever an element with an ID is triggered. -- If needed -- */
+/* html {
+  scroll-behavior: smooth;
+} */
+
+body {
+  font-family: var(--font-poppins), sans-serif;
+}
+
+/* Color Palette */
+@layer base {
+  :root {
+    /* Action Blue & Tonal Range */
+    --primary: #003d9b;
+    --primary-container: #0052cc;
+    --surface-highest: #d7e2ff;
+    --surface-low: #f1f3ff;
+    --background: #f9f9ff;
+
+    /* Slate Neutrals */
+    --color-neutral-100: #041b3c;
+    --color-neutral-200: #4f5f7b;
+    --color-neutral-300: #c3c6d6;
+
+    /* Semantic */
+    --success: #82f9bd4d;
+    --error: #ba1a1a;
+    --warning: #ffb300;
+    --disabled: #003e9b7e;
+    --inputBgError: #ffdad6;
+  }
+
+  /* .dark {} */
+}
+
+@layer base {
+  :root {
+    /* Typography - Display */
+    --display-lg-size: 56px;
+    --display-lg-weight: 700;
+    --display-lg-line-height: 56px;
+    --display-lg-letter-spacing: -2.8px;
+
+    /* Headline */
+    --headline-lg-size: 32px;
+    --headline-lg-weight: 600;
+    --headline-lg-line-height: 40px;
+
+    /* Title */
+    --title-md-size: 18px;
+    --title-md-weight: 500;
+    --title-md-line-height: 27px;
+
+    /* Body */
+    --body-md-size: 14px;
+    --body-md-weight: 400;
+    --body-md-line-height: 22.75px;
+
+    /* Label */
+    --label-sm-size: 11px;
+    --label-sm-weight: 700;
+    --label-sm-line-height: 16.5px;
+    --display-lg-letter-spacing: 1.1px;
+  }
+}
+
+@layer components {
+  .display-lg {
+    font-size: var(--display-lg-size);
+    font-weight: var(--display-lg-weight);
+    line-height: var(--display-lg-line-height);
+    letter-spacing: var(--display-lg-letter-spacing);
+  }
+
+  .headline-lg {
+    font-size: var(--headline-lg-size);
+    font-weight: var(--headline-lg-weight);
+    line-height: var(--headline-lg-line-height);
+  }
+
+  .title-md {
+    font-size: var(--title-md-size);
+    font-weight: var(--title-md-weight);
+    line-height: var(--title-md-line-height);
+  }
+
+  .body-md {
+    font-size: var(--body-md-size);
+    font-weight: var(--body-md-weight);
+    line-height: var(--body-md-line-height);
+  }
+
+  .label-sm {
+    font-size: var(--label-sm-size);
+    font-weight: var(--label-sm-weight);
+    line-height: var(--label-sm-line-height);
+    letter-spacing: var(--display-lg-letter-spacing);
+  }
+}
+
+/* Hide Edge password reveal icon */
+input[type='password']::-ms-reveal,
+input[type='password']::-ms-clear {
+  display: none;
+}
+
+/* Hide Chromium/Edge password reveal button */
+input[type='password']::-webkit-credentials-auto-fill-button,
+input[type='password']::-webkit-textfield-decoration-container {
+  visibility: hidden;
+  pointer-events: none;
+}
