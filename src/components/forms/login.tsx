@@ -13,6 +13,8 @@ import Link from 'next/link';
 import Input from '@/app/components/atoms/input';
 import { useRouter } from 'next/navigation';
 import Button from '@/app/components/atoms/Button';
+import Image from 'next/image';
+import * as icons from '../../../public/icons/icons';
 
 const LogInForm = () => {
   const router = useRouter();

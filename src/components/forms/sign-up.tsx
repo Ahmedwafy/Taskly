@@ -236,7 +236,7 @@ const SignUpForm = () => {
           error={touched.email || submitAttempted ? errors.email : undefined}
         />
         <Input
-          name="jobTitle"
+          name="department"
           label="JOB TITLE (OPTIONAL)"
           type="text"
           placeholder="e.g. Project Manager"
