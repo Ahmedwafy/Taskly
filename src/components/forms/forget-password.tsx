@@ -4,24 +4,25 @@ import Button from '@/app/components/atoms/Button';
 import Input from '@/app/components/atoms/input';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { ForgotPasswordFormTypes } from '@/types/shared';
 import { forgotPasswordRequest } from '@/services/auth';
 
 const ForgotPasswordForm = () => {
-  const [formData, setFormData] = useState<ForgotPasswordFormTypes>({
-    email: '',
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ForgotPasswordFormTypes>({
+    defaultValues: {
+      email: '',
+    },
   });
 
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof ForgotPasswordFormTypes, string>>
-  >({});
-
-  const [touched, setTouched] = useState<
-    Partial<Record<keyof ForgotPasswordFormTypes, boolean>>
-  >({});
-
   const [countdown, setCountdown] = useState(0);
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
   useEffect(() => {
     if (countdown === 0) return;
@@ -47,100 +48,25 @@ const ForgotPasswordForm = () => {
     return `${remainder}s`;
   };
 
-  const [isloading, setIsLoading] = useState<boolean>(false);
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-
-    const updatedFormData = {
-      ...formData,
-      [name]: value,
-    } as ForgotPasswordFormTypes;
-
-    setFormData(updatedFormData);
-
-    // Validate the entire form in real-time to update button state & error messages
-    const newErrors = handleValidation(updatedFormData);
-    setErrors(newErrors);
-  };
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const { name } = e.target;
-
-    setTouched((prev) => ({
-      ...prev,
-      [name]: true,
-    }));
-
-    const newErrors = handleValidation(formData);
-    setErrors(newErrors);
-  };
-
-  // TODO:
   const handleResend = async () => {
-    // TODO: call resend endpoint here
     setCountdown(300);
   };
 
-  const handleValidation = (
-    data: ForgotPasswordFormTypes = formData,
-  ): Partial<Record<keyof ForgotPasswordFormTypes, string>> => {
-    const newErrors: Partial<Record<keyof ForgotPasswordFormTypes, string>> =
-      {};
-
-    // Email Validation
-    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-    const email = data.email.trim();
-    if (!email) {
-      newErrors.email = 'Email is required.';
-    } else if (!emailRegex.test(email)) {
-      newErrors.email = 'Enter a valid email address.';
-    }
-
-    // results: {} of Errors if Exist
-    return newErrors;
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    // Validate on submit and show errors if any —> block submission
-    const newErrors = handleValidation();
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) {
-      setIsSubmitted(false);
-      return;
-    }
-
-    // Cleaned Data to Send
-    const cleanedDataToSend = {
-      email: formData.email.trim(),
-    };
-
-    console.log('cleaned Data To Send', cleanedDataToSend);
-
+  const onSubmit = async (data: ForgotPasswordFormTypes) => {
     try {
-      setIsLoading(true);
-      await forgotPasswordRequest(cleanedDataToSend);
+      await forgotPasswordRequest({ email: data.email.trim() });
       setCountdown(300);
       setIsSubmitted(true);
+      reset();
     } catch (error) {
       console.error('Error submitting data:', error);
       setIsSubmitted(false);
-    } finally {
-      // Reset Data .. Clear Inputs
-      setFormData({
-        email: '',
-      });
-      setErrors({});
-      setIsLoading(false);
-      // router.push('/');
     }
   };
+
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
       className="bg-(--background) w-md py-4 px-4 rounded-2xl mx-auto mt-14 shadow-md"
     >
       <div className="w-91.5 flex flex-col justify-center mx-auto py-8">
@@ -153,23 +79,26 @@ const ForgotPasswordForm = () => {
 
         <div className="flex flex-col gap-4 mt-6">
           <Input
+            {...register('email', {
+              required: 'Email is required.',
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: 'Enter a valid email address.',
+              },
+            })}
             name="email"
             label="EMAIL ADDRESS"
             type="email"
             placeholder="Enter your email"
-            value={formData.email}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            // error={errors.email}
-            error={touched && errors.email ? errors.email : undefined}
+            error={errors.email?.message}
           />
 
           <Button
             name="Send Reset Link"
             variant="primary"
             type="submit"
-            isSubmitting={isloading}
-            disabled={isloading}
+            isSubmitting={isSubmitting}
+            disabled={isSubmitting}
           />
         </div>
 
@@ -185,7 +114,7 @@ const ForgotPasswordForm = () => {
           {isSubmitted && (
             <p className="flex justify-center py-4 my-4 bg-(--success) text-[#005235] gap-2 rounded-md">
               <Image src={icons.Success} alt="Success" />
-              <p>Your request has been sent successfully</p>
+              <span>Your request has been sent successfully</span>
             </p>
           )}
         </div>
@@ -198,6 +127,7 @@ const ForgotPasswordForm = () => {
           onClick={handleResend}
           disabled={countdown > 0}
           className="disabled:opacity-50 w-full mb-2 mt-4"
+          type="button"
         >
           <strong className="flex gap-2 justify-center bg-(--surface-highest) rounded-sm py-4 text-[#737685]">
             <Image src={icons.Timer} alt="timer" />

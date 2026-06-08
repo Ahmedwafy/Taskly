@@ -9,9 +9,9 @@ import {
   SignUpFormData,
   ForgotPasswordFormTypes,
 } from '@/types/shared';
-import { supabaseKey } from '@/lib/supabase';
+import { supabaseKey, baseURL } from '@/lib/supabase';
 
-const baseURL = 'https://bessapiuchcxktgehdry.supabase.co';
+// const baseURL = 'https://bessapiuchcxktgehdry.supabase.co';
 
 // Sign Up
 export const signUp = async (formData: SignUpFormData) => {
@@ -56,14 +56,13 @@ export const signIn = async (cleanedDataToSend: SignInFormData) => {
   const payload: SignInPayload = {
     email: cleanedDataToSend.email.trim(),
     password: cleanedDataToSend.password.trim(),
+    rememberMe: cleanedDataToSend.rememberMe,
   };
 
-  const response = await fetch(`${baseURL}/auth/v1/token?grant_type=password`, {
+  const response = await fetch(`/api/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`,
     },
     body: JSON.stringify(payload),
   });

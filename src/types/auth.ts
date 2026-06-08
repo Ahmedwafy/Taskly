@@ -10,6 +10,7 @@ export interface SignUpPayload {
 export interface SignInPayload {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface ResetPasswordPayload {
