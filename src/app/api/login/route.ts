@@ -18,7 +18,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const response = await fetch(`${baseURL}${endPoints.auth.loginUser}`, {
+    const response = await fetch(`${baseURL}${endPoints.auth.login}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
