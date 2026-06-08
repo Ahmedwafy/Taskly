@@ -7,6 +7,7 @@ import { SignUpFormData } from '@/types/shared';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 const SignUpForm = () => {
   const router = useRouter();
@@ -62,15 +63,21 @@ const SignUpForm = () => {
   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(passwordValue);
 
   const onSubmit = async (data: SignUpFormData) => {
+    const dataToSend = {
+      name: data.name.trim(),
+      email: data.email.trim(),
+      department: data.department.trim(),
+      password: data.password,
+    };
+
     try {
-      await signUp({
-        name: data.name.trim(),
-        email: data.email.trim(),
-        department: data.department.trim(),
-        password: data.password,
-      });
+      await signUp(dataToSend);
+      toast.success('Account created successfully');
       router.push('/login');
     } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Something went wrong',
+      );
       console.error('Error submitting sign-up form:', error);
     }
   };
@@ -142,6 +149,10 @@ const SignUpForm = () => {
             error={errors.password?.message?.toString()}
             {...passwordRegister}
             onChange={(e) => {
+              // if (passwordRegister.onChange) {
+              //   passwordRegister.onChange(e);
+              // }
+              // or
               passwordRegister.onChange?.(e);
               setPasswordValue(e.target.value);
             }}

@@ -1,3 +1,5 @@
+// src/services/auth.ts
+
 // Sign-Up
 import {
   SignInPayload,
@@ -10,6 +12,7 @@ import {
   ForgotPasswordFormTypes,
 } from '@/types/shared';
 import { supabaseKey, baseURL } from '@/lib/supabase';
+import { endPoints } from '@/lib/endpoints';
 
 // const baseURL = 'https://bessapiuchcxktgehdry.supabase.co';
 
@@ -24,7 +27,7 @@ export const signUp = async (formData: SignUpFormData) => {
     },
   };
 
-  const response = await fetch(`${baseURL}/auth/v1/signup`, {
+  const response = await fetch(`${baseURL}${endPoints.auth.signUp}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -91,7 +94,7 @@ export const forgotPasswordRequest = async (
     email: cleanedDataToSend.email.trim(),
   };
 
-  const response = await fetch(`${baseURL}/auth/v1/recover`, {
+  const response = await fetch(`${baseURL}${endPoints.auth.forgotPasswod}`, {
     method: 'POST',
     headers: {
       apikey: supabaseKey,

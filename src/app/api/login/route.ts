@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
 
+// Login
 export async function POST(req: Request) {
   try {
     const body = await req.json();

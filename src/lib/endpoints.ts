@@ -18,8 +18,8 @@ export const endPoints: Endpoints = {
   auth: {
     login: '/auth/v1/token?grant_type=password',
     logout: '',
-    signUp: '',
-    forgotPasswod: '',
+    signUp: '/auth/v1/signup',
+    forgotPasswod: '/auth/v1/recover',
   },
 
   //   users: {

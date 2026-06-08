@@ -1,3 +1,5 @@
+// used in more than 1 place
+
 export interface SignUpFormData {
   name: string;
   email: string;
