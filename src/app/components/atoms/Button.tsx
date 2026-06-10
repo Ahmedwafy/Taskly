@@ -6,8 +6,9 @@ interface ButtonTypes {
   type?: 'submit';
   isSubmitting?: boolean;
   disabled?: boolean;
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: 'primary' | 'secondary' | 'ghost';
   className?: string;
+  onClick?: () => void;
 }
 const Button = ({
   name,
@@ -16,26 +17,29 @@ const Button = ({
   isSubmitting,
   disabled,
   variant = 'primary',
+  onClick,
 }: ButtonTypes) => {
   const variants = {
     primary:
       'text-white w-full bg-linear-to-r from-(--primary) to-(--primary-container) py-3 rounded-md hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 flex justify-center items-center gap-2 transition-colors duration-300',
     secondary: 'bg-gray-200 text-black',
-    danger: 'bg-red-500 text-white',
+    ghost:
+      'w-full py-3 rounded-md hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 flex justify-center items-center gap-2 transition-colors duration-300',
   };
 
   return (
     <button
       type={type}
       disabled={disabled}
-      className={`${variants[variant]} ${className}`}
+      onClick={onClick}
+      className={`${variants[variant]} ${className!}`}
     >
       {isSubmitting ? (
         <div className={`${disabled && `bg-(--disabled)`}`}>
           {disabled ? (
             <p>{isSubmitting ? `Submitting Your Request...` : <p>{name}</p>}</p>
           ) : (
-            ` Submitting Your Request...`
+            `Submitting Your Request...`
           )}
         </div>
       ) : (

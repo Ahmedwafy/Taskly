@@ -8,10 +8,11 @@ type Endpoints = {
     forgotPasswod: string;
   };
 
-  //   users: {
-  //     byId: (id: string) => string;
-  //     name: (name: string) => string;
-  //   };
+  userData: {
+    userInfo: string;
+    // byId: (id: string) => string;
+    // name: (name: string) => string;
+  };
 };
 
 export const endPoints: Endpoints = {
@@ -22,8 +23,9 @@ export const endPoints: Endpoints = {
     forgotPasswod: '/auth/v1/recover',
   },
 
-  //   users: {
-  //     byId: (id) => `/users/${id}`,
-  //     name: (name) => `/users/name/${name}`,
-  //   },
+  userData: {
+    userInfo: '/auth/v1/user',
+    // byId: (id) => `/users/${id}`,
+    // name: (name) => `/users/name/${name}`,
+  },
 } as const;

@@ -68,6 +68,11 @@ body {
     --label-sm-weight: 700;
     --label-sm-line-height: 16.5px;
     --display-lg-letter-spacing: 1.1px;
+
+    /* List Item */
+    --title-md-size: 14px;
+    --title-md-weight: 500;
+    --title-md-line-height: 20px;
   }
 }
 
@@ -102,6 +107,12 @@ body {
     font-weight: var(--label-sm-weight);
     line-height: var(--label-sm-line-height);
     letter-spacing: var(--display-lg-letter-spacing);
+  }
+
+  .list-unit {
+    --title-md-size: 14px;
+    --title-md-weight: 500;
+    --title-md-line-height: 20px;
   }
 }
 
