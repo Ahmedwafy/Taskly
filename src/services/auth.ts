@@ -138,6 +138,8 @@ export const resetPassword = async (
   return response.json();
 };
 
+// ===========================================================
+
 // Sign out (server-side clears cookies)
 export const signOut = async () => {
   const response = await fetch('/api/logout', {

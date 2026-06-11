@@ -3,10 +3,11 @@ import Image from 'next/image';
 import * as icons from '../../../../public/icons/icons';
 import { useState } from 'react';
 import { StaticImageData } from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useAppDispatch } from '@/redux/reduxHooks';
-import { clearUser } from '@/features/auth/authSlice';
-import { signOut } from '@/services/auth';
+// import { useRouter } from 'next/navigation';
+// import { useAppDispatch } from '@/redux/reduxHooks';
+// import { clearUser } from '@/features/auth/authSlice';
+// import { signOut } from '@/services/auth';
+// import { toast } from 'sonner';
 
 // type SidebarItemProps = {
 //   title: string;
@@ -18,8 +19,8 @@ interface SideBarProps {
   onItemClick?: () => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  handleLogout?: () => void;
   mobileIcon?: StaticImageData;
-  // icon?: StaticImageData;
 }
 
 const SideBar = ({
@@ -27,16 +28,17 @@ const SideBar = ({
   isCollapsed: controlledCollapsed,
   onToggleCollapse,
   mobileIcon,
+  handleLogout,
 }: SideBarProps) => {
+  // const [loading, setLoading] = useState(false);
   const [internalCollapsed, setInternalCollapsed] = useState<boolean>(false);
   const isCollapsed =
     typeof controlledCollapsed === 'boolean'
       ? controlledCollapsed
       : internalCollapsed;
 
-  const router = useRouter();
-  const dispatch = useAppDispatch();
-
+  // const router = useRouter();
+  // const dispatch = useAppDispatch();
   const navItems = [
     {
       label: 'Projects',
@@ -140,15 +142,20 @@ const SideBar = ({
         <button
           type="button"
           className="flex items-center gap-3 cursor-pointer"
-          onClick={async () => {
-            try {
-              await signOut();
-              dispatch(clearUser());
-              router.push('/login');
-            } catch (err) {
-              console.error('Logout failed', err);
-            }
-          }}
+          onClick={handleLogout}
+          // onClick={async () => {
+          //   try {
+          //     setLoading(true);
+          //     await signOut(); // signOut() -> Delete access_token From Cookies
+          //     dispatch(clearUser()); // -> Update User State in Store/Slice -- clear frontend state --
+          //     // router.push('/login');
+          //     router.replace('/login');
+          //     setLoading(false);
+          //   } catch (err) {
+          //     console.error('Logout failed', err);
+          //     toast.error('Logout failed');
+          //   }
+          // }}
         >
           <Image
             src={icons.Logout}

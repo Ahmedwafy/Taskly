@@ -3,6 +3,11 @@
 import { ReactNode, useState } from 'react';
 import SideBar from './Side-Bar';
 import Desktop_Header from './Desktop_Header';
+import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/redux/reduxHooks';
+import { clearUser } from '@/features/auth/authSlice';
+import { signOut } from '@/services/auth';
+import { toast } from 'sonner';
 
 interface DesktopInterfaceProps {
   userData: {
@@ -14,7 +19,23 @@ interface DesktopInterfaceProps {
 const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  const [loading, setLoading] = useState(false);
   const fullName = userData?.user_metadata?.name ?? '';
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const handleLogout = async () => {
+    try {
+      setLoading(true);
+      await signOut();
+      dispatch(clearUser());
+      router.replace('/login');
+      setLoading(false);
+    } catch (error) {
+      console.error('Logout failed', error);
+      toast.error('Logout failed');
+    }
+  };
 
   return (
     <div className="flex h-screen">
@@ -22,6 +43,7 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
         <SideBar
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed((v) => !v)}
+          handleLogout={handleLogout}
         />
       </div>
 
@@ -38,6 +60,7 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
             .toUpperCase()}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed((v) => !v)}
+          handleLogout={handleLogout}
         />
 
         <main
