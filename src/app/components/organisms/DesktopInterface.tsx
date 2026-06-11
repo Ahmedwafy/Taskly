@@ -42,7 +42,7 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
 
         <main
           className={`flex-1 overflow-auto transition-all duration-300`}
-          style={{ paddingLeft: isCollapsed ? '5rem' : '16rem' }}
+          // style={{ paddingLeft: isCollapsed ? '5rem' : '16rem' }}
         >
           {children}
         </main>

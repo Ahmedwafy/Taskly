@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from '@/services/auth';
+// import { signIn } from '@/services/auth';
 import { SignInFormData } from '@/types/shared';
 import Link from 'next/link';
 import Input from '@/app/components/atoms/input';
@@ -10,11 +10,14 @@ import Button from '@/app/components/atoms/Button';
 import { useForm } from 'react-hook-form';
 import { DevTool } from '@hookform/devtools';
 import { toast } from 'sonner';
+import { useAppDispatch } from '@/redux/reduxHooks';
+import { loginUser } from '@/features/auth/authSlice';
 
 const LogInForm = () => {
   const router = useRouter();
   const [authError, setAuthError] = useState<string>('');
   const [rememberMe, setRememberMe] = useState(false);
+  const dispatch = useAppDispatch();
 
   const {
     control,
@@ -25,46 +28,68 @@ const LogInForm = () => {
     defaultValues: { email: '', password: '' },
   });
 
+  // const onSubmit = async (data: SignInFormData) => {
+  //   setAuthError('');
+
+  //   const cleaned = {
+  //     email: data.email.trim(),
+  //     password: String(data.password).trim(),
+  //     rememberMe,
+  //   };
+
+  //   try {
+  //     const res = await signIn(cleaned);
+
+  //     if (!res) {
+  //       throw new Error('No response from server');
+  //     }
+  //     if (!res.user) {
+  //       throw new Error('Invalid response: user missing');
+  //     }
+
+  //     // toast.success('Login successful');
+  //     toast.promise(signIn(cleaned), {
+  //       loading: 'Logging in...',
+  //       success: 'Welcome back!',
+  //       error: 'Login failed',
+  //     });
+  //     console.log(res.user);
+  //     router.push('/projects');
+  //   } catch (error) {
+  //     console.error('Error submitting data:', error);
+  //     setAuthError(
+  //       error instanceof Error
+  //         ? error.message
+  //         : 'Something went wrong. Please try again.',
+  //     );
+  //     toast.error(
+  //       error instanceof Error ? error.message : 'Something went wrong',
+  //     );
+  //   }
+  // };
+
   const onSubmit = async (data: SignInFormData) => {
     setAuthError('');
 
-    const cleaned = {
+    const cleanedToSend = {
       email: data.email.trim(),
       password: String(data.password).trim(),
       rememberMe,
     };
 
     try {
-      const res = await signIn(cleaned);
+      await dispatch(loginUser(cleanedToSend)).unwrap();
 
-      if (!res) {
-        throw new Error('No response from server');
-      }
-      if (!res.user) {
-        throw new Error('Invalid response: user missing');
-      }
-
-      // toast.success('Login successful');
-      toast.promise(signIn(cleaned), {
-        loading: 'Logging in...',
-        success: 'Welcome back!',
-        error: 'Login failed',
-      });
-      console.log(res.user);
+      toast.success('Welcome back!');
       router.push('/projects');
     } catch (error) {
-      console.error('Error submitting data:', error);
-      setAuthError(
-        error instanceof Error
-          ? error.message
-          : 'Something went wrong. Please try again.',
-      );
-      toast.error(
-        error instanceof Error ? error.message : 'Something went wrong',
-      );
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong';
+
+      setAuthError(message);
+      toast.error(message);
     }
   };
-
   const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
   const passwordValidator = (password: string) => {

@@ -16,9 +16,17 @@ export default async function Interface_Layout({
     redirect('/login');
   }
 
-  const userData = await getUserData(accessToken);
+  let userData;
 
-  console.log(`++++++++++++++++++++++++++`, userData);
+  try {
+    userData = await getUserData(accessToken);
+  } catch {
+    redirect('/login');
+  }
+
+  if (!userData) {
+    redirect('/login');
+  }
 
   return (
     <>

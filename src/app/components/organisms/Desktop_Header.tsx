@@ -1,5 +1,5 @@
-import Image from 'next/image';
-import * as icons from '../../../../public/icons/icons';
+// import Image from 'next/image';
+// import * as icons from '../../../../public/icons/icons';
 
 interface Desktop_Header_Types {
   fullName: string;
@@ -18,17 +18,6 @@ const Desktop_Header = ({
 }: Desktop_Header_Types) => {
   return (
     <header className="h-16 border-b border-gray-300 px-4 flex items-center justify-end">
-      {/* <div className="flex items-center justufy-end w-full"> */}
-      {/* <div className="hidden lg:flex items-center gap-3">
-          <button
-            onClick={onToggleCollapse}
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className="p-2 rounded-md hover:bg-slate-100"
-          >
-            <Image src={icons.Collapse} alt="Collapse" width={18} height={18} />
-          </button>
-        </div> */}
-
       {/* Name + Avatar */}
       <div className="flex items-center justify-end gap-2">
         <div className="hidden sm:flex flex-col">

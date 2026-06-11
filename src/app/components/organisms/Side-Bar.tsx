@@ -3,6 +3,10 @@ import Image from 'next/image';
 import * as icons from '../../../../public/icons/icons';
 import { useState } from 'react';
 import { StaticImageData } from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/redux/reduxHooks';
+import { clearUser } from '@/features/auth/authSlice';
+import { signOut } from '@/services/auth';
 
 // type SidebarItemProps = {
 //   title: string;
@@ -29,6 +33,9 @@ const SideBar = ({
     typeof controlledCollapsed === 'boolean'
       ? controlledCollapsed
       : internalCollapsed;
+
+  const router = useRouter();
+  const dispatch = useAppDispatch();
 
   const navItems = [
     {
@@ -133,6 +140,15 @@ const SideBar = ({
         <button
           type="button"
           className="flex items-center gap-3 cursor-pointer"
+          onClick={async () => {
+            try {
+              await signOut();
+              dispatch(clearUser());
+              router.push('/login');
+            } catch (err) {
+              console.error('Logout failed', err);
+            }
+          }}
         >
           <Image
             src={icons.Logout}

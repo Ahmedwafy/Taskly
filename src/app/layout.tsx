@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
 import '../app/globals.css';
+import { ReduxProvider } from '../redux/providers'; // To Link Between Redux and Project
 
 const inter = Inter({
   subsets: ['latin'],
@@ -21,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`h-full antialiased`}>
       <body className={` ${inter.className} min-h-full flex flex-col`}>
-        {children}
+        <ReduxProvider>{children}</ReduxProvider>
         <Toaster richColors position="top-right" />
       </body>
     </html>

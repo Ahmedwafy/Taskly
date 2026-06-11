@@ -16,3 +16,12 @@ export interface SignInPayload {
 export interface ResetPasswordPayload {
   password: string;
 }
+
+export interface UserData {
+  id?: string;
+  name?: string;
+  email?: string;
+  department?: string;
+  role?: string;
+  [key: string]: unknown;
+}

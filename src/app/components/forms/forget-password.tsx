@@ -1,5 +1,5 @@
 'use client';
-import * as icons from '../../../public/icons/icons';
+import * as icons from '../../../../public/icons/icons';
 import Button from '@/app/components/atoms/Button';
 import Input from '@/app/components/atoms/input';
 import Link from 'next/link';

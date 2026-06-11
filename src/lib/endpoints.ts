@@ -18,7 +18,7 @@ type Endpoints = {
 export const endPoints: Endpoints = {
   auth: {
     login: '/auth/v1/token?grant_type=password',
-    logout: '',
+    logout: '/auth/v1/logout',
     signUp: '/auth/v1/signup',
     forgotPasswod: '/auth/v1/recover',
   },
