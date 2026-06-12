@@ -3,6 +3,7 @@ import Image from 'next/image';
 import * as icons from '../../../../public/icons/icons';
 import { useState } from 'react';
 import { StaticImageData } from 'next/image';
+import Link from 'next/link';
 // import { useRouter } from 'next/navigation';
 // import { useAppDispatch } from '@/redux/reduxHooks';
 // import { clearUser } from '@/features/auth/authSlice';
@@ -44,11 +45,32 @@ const SideBar = ({
       label: 'Projects',
       icon: mobileIcon ? mobileIcon : icons.Projects,
       alt: 'Projects',
+      href: '/projects',
     },
-    { label: 'Project Epic', icon: icons.Epics, alt: 'Project Epics' },
-    { label: 'Project Tasks', icon: icons.Tasks, alt: 'Project Tasks' },
-    { label: 'Project Members', icon: icons.Members, alt: 'Project Members' },
-    { label: 'Project Details', icon: icons.Details, alt: 'Project Details' },
+    {
+      label: 'Project Epic',
+      icon: icons.Epics,
+      alt: 'Project Epics',
+      href: '/projects',
+    },
+    {
+      label: 'Project Tasks',
+      icon: icons.Tasks,
+      alt: 'Project Tasks',
+      href: '/projects',
+    },
+    {
+      label: 'Project Members',
+      icon: icons.Members,
+      alt: 'Project Members',
+      href: '/projects',
+    },
+    {
+      label: 'Project Details',
+      icon: icons.Details,
+      alt: 'Project Details',
+      href: '/projects',
+    },
   ];
 
   const handleCollapse = () => {
@@ -83,7 +105,7 @@ const SideBar = ({
           </div>
           <span
             className={`text-[20px] font-bold transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? 'max-w-0 opacity-0' : 'max-w-30 opacity-100'
+              isCollapsed ? 'hidden' : 'max-w-30 opacity-100'
             }`}
           >
             TASKLY
@@ -101,20 +123,25 @@ const SideBar = ({
                   isCollapsed ? 'px-3 justify-center' : 'px-4 justify-start'
                 } min-w-[90%] mx-auto hover:bg-white hover:shadow-sm hover:text-neutral-100 cursor-pointer`}
               >
-                <Image
-                  src={item.icon}
-                  alt={item.alt}
-                  className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
-                />
-                <span
-                  className={`block overflow-hidden whitespace-nowrap text-sm transition-all duration-500 ease-in-out ${
-                    isCollapsed
-                      ? 'max-w-0 opacity-0 scale-95'
-                      : 'max-w-40 opacity-100 scale-100'
-                  }`}
-                >
-                  {item.label}
-                </span>
+                <div>
+                  <Image
+                    src={item.icon}
+                    alt={item.alt}
+                    className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
+                  />
+                </div>
+
+                <Link href={item.href}>
+                  <span
+                    className={`block overflow-hidden whitespace-nowrap text-sm transition-all duration-500 ease-in-out ${
+                      isCollapsed
+                        ? 'max-w-0 opacity-0 scale-95'
+                        : 'max-w-40 opacity-100 scale-100'
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                </Link>
               </button>
             );
           })}

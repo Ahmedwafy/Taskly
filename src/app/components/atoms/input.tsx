@@ -17,7 +17,7 @@ interface InputProps {
   rows?: number;
   optional?: string;
   maxLength?: number;
-  required?: boolean;
+  requiredd?: boolean;
   onChange?: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
@@ -25,6 +25,7 @@ interface InputProps {
     event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
   error?: string;
+  disabled?: boolean;
 }
 
 const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
@@ -45,7 +46,8 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
       rows,
       optional,
       maxLength,
-      required,
+      requiredd,
+      disabled,
     },
     ref,
   ) => {
@@ -71,7 +73,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
             </div>
           ) : (
             <div>
-              {required ? (
+              {requiredd ? (
                 <div>
                   {label} <span className="text-red-500">*</span>
                 </div>
@@ -94,6 +96,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
                 placeholder={placeholder}
                 value={displayedValue}
                 maxLength={maxLen}
+                disabled={disabled}
                 onChange={(e) => {
                   if (value === undefined || value === null)
                     setInternalValue(e.target.value);
@@ -102,7 +105,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
                 onBlur={onBlur}
                 aria-invalid={!!error}
                 aria-describedby={errorId}
-                className={`w-full p-3 border-gray-300 rounded-md ${error ? `bg-(--inputBgError)` : `bg-[#D7E2FF]`}`}
+                className={`w-full p-3 border-gray-300 rounded-md ${error ? `bg-(--inputBgError)` : `bg-[#D7E2FF]`} disabled:opacity-60 disabled:cursor-not-allowed`}
               />
               <div className="text-right text-sm text-gray-500 mt-1">
                 {displayedValue.length}/{maxLen}
@@ -118,6 +121,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
               }
               placeholder={placeholder}
               value={displayedValue}
+              disabled={disabled}
               onChange={(e) => {
                 if (value === undefined || value === null)
                   setInternalValue(e.target.value);
@@ -126,15 +130,16 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
               onBlur={onBlur}
               aria-invalid={!!error}
               aria-describedby={errorId}
-              className={`w-full p-3 pr-12 border-gray-300  rounded-md ${error ? `bg-(--inputBgError)` : `bg-[#D7E2FF]`}`}
+              className={`w-full p-3 pr-12 border-gray-300 rounded-md ${error ? `bg-(--inputBgError)` : `bg-[#D7E2FF]`} disabled:opacity-60 disabled:cursor-not-allowed`}
             />
           )}
 
           {isPasswordField && (
             <button
               type="button"
+              disabled={disabled}
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 hover:cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Image
                 src={icons.Eye}

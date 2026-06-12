@@ -1,4 +1,3 @@
-import { cookies } from 'next/headers';
 import { getUserData } from '@/services/getUserData';
 import { redirect } from 'next/navigation';
 import MobileInterface from '../components/organisms/MobileInterface';
@@ -9,17 +8,10 @@ export default async function Interface_Layout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get('access_token')?.value;
-
-  if (!accessToken) {
-    redirect('/login');
-  }
-
   let userData;
 
   try {
-    userData = await getUserData(accessToken);
+    userData = await getUserData();
   } catch {
     redirect('/login');
   }

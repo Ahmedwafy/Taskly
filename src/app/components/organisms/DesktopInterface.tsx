@@ -1,11 +1,11 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import SideBar from './Side-Bar';
 import Desktop_Header from './Desktop_Header';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/redux/reduxHooks';
-import { clearUser } from '@/features/auth/authSlice';
+import { clearUser, setUser } from '@/features/auth/authSlice';
 import { signOut } from '@/services/auth';
 import { toast } from 'sonner';
 
@@ -23,6 +23,10 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
   const fullName = userData?.user_metadata?.name ?? '';
   const router = useRouter();
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(setUser(userData));
+  }, [dispatch, userData]);
 
   const handleLogout = async () => {
     try {

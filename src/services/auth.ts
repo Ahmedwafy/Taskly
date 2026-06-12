@@ -14,8 +14,6 @@ import {
 import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
 
-// const baseURL = 'https://bessapiuchcxktgehdry.supabase.co';
-
 // Sign Up
 export const signUp = async (formData: SignUpFormData) => {
   const payload: SignUpPayload = {

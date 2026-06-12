@@ -1,7 +1,15 @@
 import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
+import { cookies } from 'next/headers';
 
-export const getUserData = async (accessToken: string) => {
+export const getUserData = async () => {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('access_token')?.value;
+
+  if (!accessToken) {
+    return null;
+  }
+
   const response = await fetch(`${baseURL}${endPoints.userData.userInfo}`, {
     method: 'GET',
     headers: {

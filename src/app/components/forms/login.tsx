@@ -28,46 +28,6 @@ const LogInForm = () => {
     defaultValues: { email: '', password: '' },
   });
 
-  // const onSubmit = async (data: SignInFormData) => {
-  //   setAuthError('');
-
-  //   const cleaned = {
-  //     email: data.email.trim(),
-  //     password: String(data.password).trim(),
-  //     rememberMe,
-  //   };
-
-  //   try {
-  //     const res = await signIn(cleaned);
-
-  //     if (!res) {
-  //       throw new Error('No response from server');
-  //     }
-  //     if (!res.user) {
-  //       throw new Error('Invalid response: user missing');
-  //     }
-
-  //     // toast.success('Login successful');
-  //     toast.promise(signIn(cleaned), {
-  //       loading: 'Logging in...',
-  //       success: 'Welcome back!',
-  //       error: 'Login failed',
-  //     });
-  //     console.log(res.user);
-  //     router.push('/projects');
-  //   } catch (error) {
-  //     console.error('Error submitting data:', error);
-  //     setAuthError(
-  //       error instanceof Error
-  //         ? error.message
-  //         : 'Something went wrong. Please try again.',
-  //     );
-  //     toast.error(
-  //       error instanceof Error ? error.message : 'Something went wrong',
-  //     );
-  //   }
-  // };
-
   const onSubmit = async (data: SignInFormData) => {
     setAuthError('');
 

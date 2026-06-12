@@ -10,6 +10,7 @@ type Endpoints = {
 
   userData: {
     userInfo: string;
+    createNewProject: string;
     // byId: (id: string) => string;
     // name: (name: string) => string;
   };
@@ -25,6 +26,7 @@ export const endPoints: Endpoints = {
 
   userData: {
     userInfo: '/auth/v1/user',
+    createNewProject: '/rest/v1/projects',
     // byId: (id) => `/users/${id}`,
     // name: (name) => `/users/name/${name}`,
   },

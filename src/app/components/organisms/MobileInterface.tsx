@@ -1,9 +1,14 @@
 'use client';
 
-import { ReactNode, useMemo, useState } from 'react';
+import { ReactNode, useMemo, useState, useEffect } from 'react';
 import Mobile_Header from './Mobile_Header';
 import SideBar from './Side-Bar';
 import * as icons from '../../../../public/icons/icons';
+import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/redux/reduxHooks';
+import { clearUser, setUser } from '@/features/auth/authSlice';
+import { signOut } from '@/services/auth';
+import { toast } from 'sonner';
 
 interface MobileInterfaceProps {
   userData: {
@@ -14,8 +19,29 @@ interface MobileInterfaceProps {
 
 const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const fullName = userData?.user_metadata?.name ?? '';
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(setUser(userData));
+  }, [dispatch, userData]);
+
+  const handleLogout = async () => {
+    try {
+      setLoading(true);
+      await signOut();
+      dispatch(clearUser());
+      router.replace('/login');
+      setLoading(false);
+    } catch (error) {
+      console.error('Logout failed', error);
+      toast.error('Logout failed');
+    }
+  };
+
   const avatarText = useMemo(() => {
     const words = fullName.trim().split(/\s+/);
     if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
@@ -49,6 +75,7 @@ const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
         <SideBar
           onItemClick={() => setIsOpen(false)}
           mobileIcon={icons.Collapsed_Projects}
+          handleLogout={handleLogout}
         />
       </div>
 
