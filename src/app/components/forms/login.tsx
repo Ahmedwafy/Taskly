@@ -4,7 +4,6 @@ import { useState } from 'react';
 // import { signIn } from '@/services/auth';
 import { SignInFormData } from '@/types/shared';
 import Link from 'next/link';
-import Input from '@/app/components/atoms/input';
 import { useRouter } from 'next/navigation';
 import Button from '@/app/components/atoms/Button';
 import { useForm } from 'react-hook-form';
@@ -12,6 +11,7 @@ import { DevTool } from '@hookform/devtools';
 import { toast } from 'sonner';
 import { useAppDispatch } from '@/redux/reduxHooks';
 import { loginUser } from '@/features/auth/authSlice';
+import Input from '../atoms/input';
 
 const LogInForm = () => {
   const router = useRouter();

@@ -1,4 +1,5 @@
 'use client';
+import { ReactNode } from 'react';
 
 interface ButtonTypes {
   name: string;
@@ -9,6 +10,7 @@ interface ButtonTypes {
   variant?: 'primary' | 'secondary' | 'ghost';
   className?: string;
   onClick?: () => void;
+  children?: ReactNode;
 }
 const Button = ({
   name,
@@ -18,6 +20,7 @@ const Button = ({
   disabled,
   variant = 'primary',
   onClick,
+  children,
 }: ButtonTypes) => {
   const variants = {
     primary:
@@ -43,7 +46,10 @@ const Button = ({
           )}
         </div>
       ) : (
-        <div>{name}</div>
+        <div className="flex gap-2">
+          {children ? children : null}
+          {name}
+        </div>
       )}
     </button>
   );

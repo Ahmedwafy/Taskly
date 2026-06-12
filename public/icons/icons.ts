@@ -12,6 +12,10 @@ import Members from './members.png';
 import Details from './details.png';
 import Collapsed_Projects from './collapsedProjects.png';
 import Burger_Icon from './burgerIcon.png';
+import Member from './Member.png';
+import Add_Project from './addproject.png';
+import ProTip from './ProTip.png';
+import pathArrow from './pathArrow.png';
 
 export {
   Arrow,
@@ -28,4 +32,8 @@ export {
   Details,
   Collapsed_Projects,
   Burger_Icon,
+  Member,
+  Add_Project,
+  ProTip,
+  pathArrow,
 };
