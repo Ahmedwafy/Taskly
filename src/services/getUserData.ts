@@ -1,13 +1,14 @@
 import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
 import { cookies } from 'next/headers';
+import { UserDataSchema } from '@/schemas/userData.schema';
 
 export const getUserData = async () => {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('access_token')?.value;
 
   if (!accessToken) {
-    return null;
+    return;
   }
 
   const response = await fetch(`${baseURL}${endPoints.userData.userInfo}`, {
@@ -23,6 +24,7 @@ export const getUserData = async () => {
 
   if (!response.ok) {
     console.log('Supabase user fetch error:', data);
+
     throw new Error(
       data?.msg ||
         data?.error_description ||
@@ -30,6 +32,20 @@ export const getUserData = async () => {
         'Failed to fetch user data',
     );
   }
+
+  //  Zod Validation Using Schema
+  const parsed = UserDataSchema.safeParse(data);
+
+  if (!parsed.success) {
+    console.error('Invalid user data:', parsed.error);
+    throw new Error('Invalid user data shape');
+  }
+
+  return parsed.data;
+  // {
+  //   name: string;
+  //   department: string;
+  // }
 
   return data;
 };

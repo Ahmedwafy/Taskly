@@ -11,16 +11,21 @@ import { toast } from 'sonner';
 
 interface DesktopInterfaceProps {
   userData: {
-    user_metadata?: { name?: string; department?: string };
+    name?: string;
+    department?: string;
   };
   children: ReactNode;
 }
 
 const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  console.log(`==================`, userData);
 
   const [loading, setLoading] = useState(false);
-  const fullName = userData?.user_metadata?.name ?? '';
+
+  const fullName = userData?.name ?? '';
+  const department = userData?.department ?? '';
+
   const router = useRouter();
   const dispatch = useAppDispatch();
   // Added a client-side state synchronization using useEffect to dispatch setUser(userData) on mount.
@@ -54,7 +59,7 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
       <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out">
         <Desktop_Header
           fullName={fullName}
-          department={userData?.user_metadata?.department}
+          department={department}
           avatarText={fullName
             .trim()
             .split(/\s+/)
@@ -69,7 +74,7 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
 
         <main
           className={`flex-1 overflow-auto transition-all duration-300`}
-        // style={{ paddingLeft: isCollapsed ? '5rem' : '16rem' }}
+          // style={{ paddingLeft: isCollapsed ? '5rem' : '16rem' }}
         >
           {children}
         </main>

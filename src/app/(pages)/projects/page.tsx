@@ -1,6 +1,4 @@
-
 // View User's Projects
-
 
 import Button from '@/app/components/atoms/Button';
 import AddProjectCard from '@/app/components/molecules/AddProjectCard';
@@ -11,45 +9,53 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import * as images from '../../../../public/images/images';
 
-type Project = {
-  id: string;
-  name: string;
-  description: string;
-  created_at: string;
-};
-
 interface PageProps {
   searchParams: Promise<{ page?: string }>;
 }
 
-export default async function projects({ searchParams }: PageProps) {
+export default async function Projects({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
+
   const currentPage = parseInt(resolvedParams.page || '1', 10) || 1;
   const itemsPerPage = 5;
 
-  const rawProjects = await getAllProjects();
-  let projects: Project[] = Array.isArray(rawProjects) ? rawProjects : [];
+  let projects;
 
+  try {
+    projects = await getAllProjects();
+  } catch (error) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'status' in error &&
+      error.status === 401
+    ) {
+      redirect('/login');
+    }
+
+    throw error;
+  }
+
+  //  Zod validation (Response safety layer)
+  // const parsed = ProjectsSchema.safeParse(rawProjects);
+
+  // if (!parsed.success) {
+  //   console.error('Invalid projects shape:', parsed.error);
+  //   throw new Error('Failed to validate projects data');
+  // }
+
+  // const projects = parsed.data;
+
+  // Pagination
   const totalProjects = projects.length;
   const totalPages = Math.ceil(totalProjects / itemsPerPage) || 1;
+
   const activePage = Math.max(1, Math.min(currentPage, totalPages));
 
   const startIndex = (activePage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, totalProjects);
+
   const slicedProjects = projects.slice(startIndex, endIndex);
-
-  try {
-    const rawProjects = await getAllProjects();
-    projects = Array.isArray(rawProjects) ? rawProjects : [];
-  } catch (error: any) {
-    // 401 Unauthorized
-    if (error.status === 401) {
-      redirect('/login');
-    }
-
-    // Other Errors
-    throw error;
-  }
 
   return (
     <main className="flex flex-col justify-between p-4 bg-(--background) min-h-screen">
@@ -57,10 +63,12 @@ export default async function projects({ searchParams }: PageProps) {
         <section className="flex justify-between w-full">
           <header className="w-full h-fit pt-6 pl-4 flex flex-col gap-2">
             <h1 className="headline-lg">projects</h1>
-            <span className="text-gray-500">Manage and curate your projects</span>
+            <span className="text-gray-500">
+              Manage and curate your projects
+            </span>
           </header>
 
-          <Link href="/projects/add" className='hidden lg:block'>
+          <Link href="/projects/add" className="hidden lg:block">
             <Button
               name="+ Create New Project"
               className="w-75! mt-10 h-15 mr-8"
@@ -68,7 +76,7 @@ export default async function projects({ searchParams }: PageProps) {
           </Link>
         </section>
 
-        {/* If Empty state */}
+        {/* Empty State */}
         {slicedProjects.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center gap-6">
             <Image
@@ -79,44 +87,47 @@ export default async function projects({ searchParams }: PageProps) {
               className="opacity-80"
               priority
             />
+
             <div className="flex flex-col gap-2">
-              <h2 className="headline-lg text-gray-700">You don&apos;t have any projects yet.</h2>
+              <h2 className="headline-lg text-gray-700">
+                You don&apos;t have any projects yet.
+              </h2>
               <p className="text-gray-400 text-sm max-w-xs mx-auto">
-                You don&apos;t have any projects yet. Start by creating your first one.
+                Start by creating your first one.
               </p>
             </div>
+
             <Link href="/projects/add">
               <Button name="+ Create a Project" className="w-52!" />
             </Link>
           </div>
         ) : (
-          // If Found Projects 
-          <section className='flex flex-wrap gap-x-0 gap-y-8 py-4 px-6 justify-between w-full mt-4 gap-8!'>
+          // Projects List
+          <section className="flex flex-wrap gap-y-8 py-4 px-6 justify-between w-full mt-4">
             {slicedProjects.map((project) => (
               <div key={project.id} className="w-full md:w-auto">
                 <ProjectCard
                   project={project}
-                  className='border border-gray-100 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-between w-full md:min-w-[450px] mx-auto bg-white hover:shadow-md transition-shadow duration-300'
+                  className="border border-gray-100 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-between w-full md:min-w-[450px] mx-auto bg-white hover:shadow-md transition-shadow duration-300"
                 />
               </div>
             ))}
+
             <div className="w-full md:w-auto">
-              <AddProjectCard
-                className='border-2 border-dashed border-gray-200 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-center w-full md:min-w-[450px] mx-auto bg-white hover:shadow-md transition-shadow duration-300'
-              />
+              <AddProjectCard className="border-2 border-dashed border-gray-200 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-center w-full md:min-w-[450px] mx-auto bg-white hover:shadow-md transition-shadow duration-300" />
             </div>
           </section>
         )}
       </div>
 
-      {/* Pagination Footer */}
-      {/* If Projects > 0 */}
+      {/* Pagination */}
       {totalProjects > 0 && (
         <footer className="mt-12 mb-6 px-8 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-          {/* Showing X of Y text */}
           <div className="text-[#4F5F7B] text-sm font-medium">
             Showing{' '}
-            <span className="font-semibold text-gray-800">{slicedProjects.length}</span>{' '}
+            <span className="font-semibold text-gray-800">
+              {slicedProjects.length}
+            </span>{' '}
             of{' '}
             <span className="font-semibold text-gray-800">{totalProjects}</span>{' '}
             active projects
@@ -124,35 +135,26 @@ export default async function projects({ searchParams }: PageProps) {
 
           {totalPages > 1 && (
             <div className="flex items-center gap-x-1.5">
-              {/* Previous Arrow */}
+              {/* Prev */}
               {activePage > 1 ? (
                 <Link
                   href={`/projects?page=${activePage - 1}`}
-                  className="p-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors flex items-center justify-center text-gray-700"
-                  aria-label="Previous page"
+                  className="p-2 border border-gray-300 rounded-md hover:bg-gray-100"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
+                  ←
                 </Link>
               ) : (
-                <div
-                  className="p-2 border border-gray-200 rounded-md bg-gray-50 text-gray-300 cursor-not-allowed flex items-center justify-center"
-                  aria-disabled="true"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
+                <div className="p-2 border border-gray-200 text-gray-300 cursor-not-allowed">
+                  ←
                 </div>
               )}
 
-              {/* Page Number Buttons */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
-                const isActive = p === activePage;
-                return isActive ? (
+              {/* Pages */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) =>
+                p === activePage ? (
                   <span
                     key={p}
-                    className="px-3.5 py-1.5 bg-(--primary) text-white text-sm font-semibold rounded-md flex items-center justify-center select-none"
+                    className="px-3 py-1 bg-(--primary) text-white rounded-md"
                   >
                     {p}
                   </span>
@@ -160,32 +162,24 @@ export default async function projects({ searchParams }: PageProps) {
                   <Link
                     key={p}
                     href={`/projects?page=${p}`}
-                    className="px-3.5 py-1.5 border border-gray-300 rounded-md text-gray-700 text-sm font-medium hover:bg-gray-100 transition-colors flex items-center justify-center"
+                    className="px-3 py-1 border rounded-md"
                   >
                     {p}
                   </Link>
-                );
-              })}
+                ),
+              )}
 
-              {/* Next Arrow */}
+              {/* Next */}
               {activePage < totalPages ? (
                 <Link
                   href={`/projects?page=${activePage + 1}`}
-                  className="p-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors flex items-center justify-center text-gray-700"
-                  aria-label="Next page"
+                  className="p-2 border border-gray-300 rounded-md hover:bg-gray-100"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
+                  →
                 </Link>
               ) : (
-                <div
-                  className="p-2 border border-gray-200 rounded-md bg-gray-50 text-gray-300 cursor-not-allowed flex items-center justify-center"
-                  aria-disabled="true"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
+                <div className="p-2 border border-gray-200 text-gray-300 cursor-not-allowed">
+                  →
                 </div>
               )}
             </div>

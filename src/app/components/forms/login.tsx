@@ -28,17 +28,38 @@ const LogInForm = () => {
     defaultValues: { email: '', password: '' },
   });
 
+  // const onSubmit = async (data: SignInFormData) => {
+  //   setAuthError('');
+
+  //   const cleanedToSend = {
+  //     email: data.email.trim(),
+  //     password: String(data.password).trim(),
+  //     rememberMe,
+  //   };
+
+  //   try {
+  //     await dispatch(loginUser(cleanedToSend)).unwrap();
+
+  //     toast.success('Welcome back!');
+  //     router.push('/projects');
+  //   } catch (error) {
+  //     const message =
+  //       error instanceof Error ? error.message : 'Something went wrong';
+
+  //     setAuthError(message);
+  //     toast.error(message);
+  //   }
+  // };
   const onSubmit = async (data: SignInFormData) => {
     setAuthError('');
 
-    const cleanedToSend = {
-      email: data.email.trim(),
-      password: String(data.password).trim(),
-      rememberMe,
-    };
-
     try {
-      await dispatch(loginUser(cleanedToSend)).unwrap();
+      await dispatch(
+        loginUser({
+          ...data,
+          rememberMe,
+        }),
+      ).unwrap();
 
       toast.success('Welcome back!');
       router.push('/projects');
@@ -50,6 +71,7 @@ const LogInForm = () => {
       toast.error(message);
     }
   };
+
   const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
   const passwordValidator = (password: string) => {

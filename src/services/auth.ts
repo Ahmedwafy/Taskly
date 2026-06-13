@@ -13,9 +13,17 @@ import {
 } from '@/types/shared';
 import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
+import { SignUpSchema, SignInSchema } from '../schemas/auth';
 
 // Sign Up
 export const signUp = async (formData: SignUpFormData) => {
+  // Zod Validation
+  const parsed = SignUpSchema.safeParse(formData);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message);
+  }
+
   const payload: SignUpPayload = {
     email: formData.email.trim(),
     password: formData.password,
@@ -54,11 +62,18 @@ export const signUp = async (formData: SignUpFormData) => {
 
 // Login
 export const signIn = async (cleanedDataToSend: SignInFormData) => {
-  const payload: SignInPayload = {
-    email: cleanedDataToSend.email.trim(),
-    password: cleanedDataToSend.password.trim(),
-    rememberMe: cleanedDataToSend.rememberMe,
-  };
+  const parsed = SignInSchema.safeParse(cleanedDataToSend);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message);
+  }
+  const payload = parsed.data;
+
+  // const payload: SignInPayload = {
+  //   email: cleanedDataToSend.email.trim(),
+  //   password: cleanedDataToSend.password.trim(),
+  //   rememberMe: cleanedDataToSend.rememberMe,
+  // };
 
   const response = await fetch(`/api/login`, {
     method: 'POST',

@@ -12,8 +12,10 @@ import { toast } from 'sonner';
 
 interface MobileInterfaceProps {
   userData: {
-    user_metadata?: { name?: string; department?: string };
+    name?: string;
+    department?: string;
   };
+
   children: ReactNode;
 }
 
@@ -21,7 +23,9 @@ const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const fullName = userData?.user_metadata?.name ?? '';
+  const fullName = userData?.name ?? '';
+  const department = userData?.name ?? '';
+
   const router = useRouter();
   const dispatch = useAppDispatch();
   // Added client-side state synchronization by dispatching setUser(userData) in a useEffect hook.
@@ -52,7 +56,7 @@ const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
     <div className="relative h-screen">
       <Mobile_Header
         fullName={fullName}
-        department={userData?.user_metadata?.department}
+        department={department}
         avatarText={avatarText}
         onToggleSidebar={() => setIsOpen((v) => !v)}
       />
@@ -67,8 +71,9 @@ const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
 
       {/* Sidebar container (kept in DOM to allow slide animation) */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 lg:hidden transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+        className={`fixed inset-y-0 left-0 z-40 w-64 lg:hidden transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
         aria-hidden={!isOpen}
       >
         <SideBar

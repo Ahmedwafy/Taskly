@@ -20,7 +20,7 @@ export const createNewProject = async (data: AddProjectDataTypes) => {
 
   // Safely extract text body first to prevent JSON parse errors on empty or non-JSON responses
   const responseText = await response.text();
-  let res: any = null;
+  let res = null;
   if (responseText) {
     try {
       res = JSON.parse(responseText);

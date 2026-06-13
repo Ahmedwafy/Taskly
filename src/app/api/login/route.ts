@@ -5,20 +5,37 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
+import { SignInSchema } from '../../../schemas/auth';
 
 // Login
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { email, password, rememberMe } = body ?? {};
+    // const body = await req.json();
+    // const { email, password, rememberMe } = body ?? {};
 
-    if (!email || !password) {
+    // if (!email || !password) {
+    //   return NextResponse.json(
+    //     { error: 'Email and password are required.' },
+    //     { status: 400 },
+    //   );
+    // }
+
+    const body = await req.json();
+
+    const parsed = SignInSchema.safeParse(body);
+
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Email and password are required.' },
-        { status: 400 },
+        {
+          error: parsed.error.issues[0]?.message,
+        },
+        {
+          status: 400,
+        },
       );
     }
 
+    const { email, password, rememberMe } = parsed.data;
     const response = await fetch(`${baseURL}${endPoints.auth.login}`, {
       method: 'POST',
       headers: {

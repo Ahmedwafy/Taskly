@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
+import { CreateProjectSchema } from '@/schemas/createProject.schema';
 
 // Create New Project
 export async function POST(req: Request) {
@@ -20,15 +21,26 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { name, description } = body ?? {};
 
-    if (!name || String(name).trim() === '') {
-      return NextResponse.json({ error: 'Name is required.' }, { status: 400 });
+    // Zod Validation
+    const parsed = CreateProjectSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: parsed.error.issues[0]?.message,
+        },
+        {
+          status: 400,
+        },
+      );
     }
 
+    const { name, description } = parsed.data;
+
     const projectPayload = {
-      name: String(name).trim(),
-      description: String(description ?? '').trim(),
+      name,
+      description: description ?? '',
     };
 
     const response = await fetch(
@@ -47,12 +59,16 @@ export async function POST(req: Request) {
 
     // Safely extract text body first to prevent JSON parse errors on empty or non-JSON responses
     const responseText = await response.text();
-    let data: any = null;
+    let data = null;
     if (responseText) {
       try {
         data = JSON.parse(responseText);
       } catch (err) {
-        console.error('Failed to parse Supabase response as JSON:', responseText, err);
+        console.error(
+          'Failed to parse Supabase response as JSON:',
+          responseText,
+          err,
+        );
       }
     }
 
@@ -72,7 +88,9 @@ export async function POST(req: Request) {
     }
 
     // Success: return the created project (extract first element if returned as array representation)
-    const createdProject = Array.isArray(data) ? data[0] : (data || { success: true });
+    const createdProject = Array.isArray(data)
+      ? data[0]
+      : data || { success: true };
     return NextResponse.json(createdProject, {
       status: response.status,
     });
