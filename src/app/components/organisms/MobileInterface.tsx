@@ -24,7 +24,7 @@ const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
   const fullName = userData?.user_metadata?.name ?? '';
   const router = useRouter();
   const dispatch = useAppDispatch();
-
+  // Added client-side state synchronization by dispatching setUser(userData) in a useEffect hook.
   useEffect(() => {
     dispatch(setUser(userData));
   }, [dispatch, userData]);
@@ -67,9 +67,8 @@ const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
 
       {/* Sidebar container (kept in DOM to allow slide animation) */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 lg:hidden transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 w-64 lg:hidden transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
         aria-hidden={!isOpen}
       >
         <SideBar

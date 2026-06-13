@@ -11,6 +11,7 @@ type Endpoints = {
   userData: {
     userInfo: string;
     createNewProject: string;
+    getAllProjects: string;
     // byId: (id: string) => string;
     // name: (name: string) => string;
   };
@@ -27,6 +28,7 @@ export const endPoints: Endpoints = {
   userData: {
     userInfo: '/auth/v1/user',
     createNewProject: '/rest/v1/projects',
+    getAllProjects: '/rest/v1/rpc/get_projects',
     // byId: (id) => `/users/${id}`,
     // name: (name) => `/users/name/${name}`,
   },

@@ -16,6 +16,7 @@ import Member from './Member.png';
 import Add_Project from './addproject.png';
 import ProTip from './ProTip.png';
 import pathArrow from './pathArrow.png';
+import Add_Project_Icon from './Add.png';
 
 export {
   Arrow,
@@ -36,4 +37,5 @@ export {
   Add_Project,
   ProTip,
   pathArrow,
+  Add_Project_Icon,
 };
