@@ -76,7 +76,7 @@ export default async function Projects({ searchParams }: PageProps) {
           </Link>
         </section>
 
-        {/* Empty State */}
+        {/* --- Empty State --- If No Projects */}
         {slicedProjects.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center gap-6">
             <Image
@@ -108,13 +108,13 @@ export default async function Projects({ searchParams }: PageProps) {
               <div key={project.id} className="w-full md:w-auto">
                 <ProjectCard
                   project={project}
-                  className="border border-gray-100 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-between w-full md:min-w-[450px] mx-auto bg-white hover:shadow-md transition-shadow duration-300"
+                  className="border border-gray-100 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-between w-full md:min-w-112.5 mx-auto bg-white hover:shadow-md transition-shadow duration-300"
                 />
               </div>
             ))}
 
             <div className="w-full md:w-auto">
-              <AddProjectCard className="border-2 border-dashed border-gray-200 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-center w-full md:min-w-[450px] mx-auto bg-white hover:shadow-md transition-shadow duration-300" />
+              <AddProjectCard className="border-2 border-dashed border-gray-200 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-center w-full md:min-w-112.5 mx-auto bg-white hover:shadow-md transition-shadow duration-300" />
             </div>
           </section>
         )}

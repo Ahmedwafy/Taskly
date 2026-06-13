@@ -2,7 +2,7 @@
 import { ReactNode } from 'react';
 
 interface ButtonTypes {
-  name: string;
+  name?: string;
   error?: string;
   type?: 'submit' | 'button';
   isSubmitting?: boolean;

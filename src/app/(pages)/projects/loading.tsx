@@ -2,7 +2,7 @@
 // Shown by Next.js automatically while page.tsx is fetching
 
 const ProjectCardSkeleton = () => (
-  <div className="border border-gray-100 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-between w-full md:min-w-[450px] mx-auto bg-white animate-pulse">
+  <div className="border border-gray-100 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-between w-full md:min-w-112.5 mx-auto bg-white animate-pulse">
     {/* Top: title + description */}
     <div className="flex flex-col gap-y-4 pt-4">
       {/* Title bar */}
@@ -46,7 +46,7 @@ export default function ProjectsLoading() {
         ))}
         {/* AddProject placeholder */}
         <div className="w-full md:w-auto">
-          <div className="border-2 border-dashed border-gray-200 py-4 px-8 rounded-lg h-80 flex flex-col items-center justify-center w-full md:min-w-[450px] mx-auto bg-white animate-pulse gap-4">
+          <div className="border-2 border-dashed border-gray-200 py-4 px-8 rounded-lg h-80 flex flex-col items-center justify-center w-full md:min-w-112.5 mx-auto bg-white animate-pulse gap-4">
             <div className="w-14 h-14 rounded-xl bg-gray-200" />
             <div className="h-5 w-32 rounded-md bg-gray-200" />
           </div>
@@ -58,7 +58,10 @@ export default function ProjectsLoading() {
         <div className="h-4 w-48 rounded-md bg-gray-200 animate-pulse" />
         <div className="flex gap-1.5">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-9 w-9 rounded-md bg-gray-200 animate-pulse" />
+            <div
+              key={i}
+              className="h-9 w-9 rounded-md bg-gray-200 animate-pulse"
+            />
           ))}
         </div>
       </footer>
