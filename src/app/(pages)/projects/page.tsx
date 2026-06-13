@@ -1,8 +1,14 @@
+
+// View User's Projects
+
+
 import Button from '@/app/components/atoms/Button';
 import AddProjectCard from '@/app/components/molecules/AddProjectCard';
 import ProjectCard from '@/app/components/molecules/ProjectCard';
 import { getAllProjects } from '@/services/getAllProjects';
+import Image from 'next/image';
 import Link from 'next/link';
+import * as images from '../../../../public/images/images';
 
 type Project = {
   id: string;
@@ -15,7 +21,6 @@ interface PageProps {
   searchParams: Promise<{ page?: string }>;
 }
 
-// View User's Projects
 export default async function projects({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
   const currentPage = parseInt(resolvedParams.page || '1', 10) || 1;
@@ -49,26 +54,40 @@ export default async function projects({ searchParams }: PageProps) {
           </Link>
         </section>
 
+        {/* Empty state */}
         {slicedProjects.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <p className="text-gray-500 text-lg mb-4">No projects found.</p>
+          <div className="flex flex-col items-center justify-center py-16 text-center gap-6">
+            <Image
+              src={images.Empty_State}
+              alt="No projects found"
+              width={280}
+              height={280}
+              className="opacity-80"
+              priority
+            />
+            <div className="flex flex-col gap-2">
+              <h2 className="headline-lg text-gray-700">You don&apos;t have any projects yet.</h2>
+              <p className="text-gray-400 text-sm max-w-xs mx-auto">
+                You don&apos;t have any projects yet. Start by creating your first one.
+              </p>
+            </div>
             <Link href="/projects/add">
-              <Button name="Create a Project" />
+              <Button name="+ Create a Project" className="w-52!" />
             </Link>
           </div>
         ) : (
-          <section className='flex flex-wrap gap-x-0 gap-y-8 py-4 px-6 justify-center md:justify-start w-full mt-4 gap-8!'>
+          <section className='flex flex-wrap gap-x-0 gap-y-8 py-4 px-6 justify-between w-full mt-4 gap-8!'>
             {slicedProjects.map((project) => (
-              <div key={project.id}>
+              <div key={project.id} className="w-full md:w-auto">
                 <ProjectCard
                   project={project}
-                  className='border border-gray-100 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-center md:justify-between w-full md:min-w-[450px] mx-auto bg-white hover:shadow-md transition-shadow duration-300'
+                  className='border border-gray-100 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-between w-full md:min-w-[450px] mx-auto bg-white hover:shadow-md transition-shadow duration-300'
                 />
               </div>
             ))}
-            <div>
+            <div className="w-full md:w-auto">
               <AddProjectCard
-                className='border border-gray-100 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-center md:justify-between w-full md:min-w-[450px] mx-auto bg-white hover:shadow-md transition-shadow duration-300'
+                className='border-2 border-dashed border-gray-200 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-center w-full md:min-w-[450px] mx-auto bg-white hover:shadow-md transition-shadow duration-300'
               />
             </div>
           </section>
