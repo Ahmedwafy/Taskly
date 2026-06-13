@@ -8,6 +8,7 @@ import ProjectCard from '@/app/components/molecules/ProjectCard';
 import { getAllProjects } from '@/services/getAllProjects';
 import Image from 'next/image';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import * as images from '../../../../public/images/images';
 
 type Project = {
@@ -27,7 +28,7 @@ export default async function projects({ searchParams }: PageProps) {
   const itemsPerPage = 5;
 
   const rawProjects = await getAllProjects();
-  const projects: Project[] = Array.isArray(rawProjects) ? rawProjects : [];
+  let projects: Project[] = Array.isArray(rawProjects) ? rawProjects : [];
 
   const totalProjects = projects.length;
   const totalPages = Math.ceil(totalProjects / itemsPerPage) || 1;
@@ -36,6 +37,19 @@ export default async function projects({ searchParams }: PageProps) {
   const startIndex = (activePage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, totalProjects);
   const slicedProjects = projects.slice(startIndex, endIndex);
+
+  try {
+    const rawProjects = await getAllProjects();
+    projects = Array.isArray(rawProjects) ? rawProjects : [];
+  } catch (error: any) {
+    // 401 Unauthorized
+    if (error.status === 401) {
+      redirect('/login');
+    }
+
+    // Other Errors
+    throw error;
+  }
 
   return (
     <main className="flex flex-col justify-between p-4 bg-(--background) min-h-screen">
@@ -54,7 +68,7 @@ export default async function projects({ searchParams }: PageProps) {
           </Link>
         </section>
 
-        {/* Empty state */}
+        {/* If Empty state */}
         {slicedProjects.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center gap-6">
             <Image
@@ -76,6 +90,7 @@ export default async function projects({ searchParams }: PageProps) {
             </Link>
           </div>
         ) : (
+          // If Found Projects 
           <section className='flex flex-wrap gap-x-0 gap-y-8 py-4 px-6 justify-between w-full mt-4 gap-8!'>
             {slicedProjects.map((project) => (
               <div key={project.id} className="w-full md:w-auto">
@@ -95,6 +110,7 @@ export default async function projects({ searchParams }: PageProps) {
       </div>
 
       {/* Pagination Footer */}
+      {/* If Projects > 0 */}
       {totalProjects > 0 && (
         <footer className="mt-12 mb-6 px-8 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
           {/* Showing X of Y text */}
