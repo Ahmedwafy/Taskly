@@ -47,7 +47,7 @@ const Add_New_Project = () => {
   };
 
   return (
-    <main className="bg-(--background) h-screen">
+    <main className="bg-background h-screen">
       <section className="">
         {/* --- Page Header --- */}
         <header className="hidden lg:flex justify-between w-full">
@@ -82,7 +82,7 @@ const Add_New_Project = () => {
           <div className="max-w-3xl mx-auto p-8 h-fit shadowrounded-t-xl shadow-sm">
             {/* --- Card Header ---  */}
             <div className="flex gap-4 items-center border-b pb-10 border-gray-400">
-              <div className="hidden lg:block bg-(--surface-highest) p-3 rounded-md">
+              <div className="hidden lg:block bg-surface-highest p-3 rounded-md">
                 <Image
                   src={icons.Add_Project}
                   alt="Member"
@@ -155,7 +155,7 @@ const Add_New_Project = () => {
           </div>
 
           {/* --- Pro Tip --- */}
-          <div className="bg-(--surface-low) py-6 px-6 text-[#4F5F7B] flex max-w-3xl mx-auto rounded-b-xl shadow-sm">
+          <div className="bg-surface-low py-6 px-6 text-[#4F5F7B] flex max-w-3xl mx-auto rounded-b-xl shadow-sm">
             <div className="my-auto mr-2">
               <Image src={icons.ProTip} alt="Pro Tip" width={14} height={14} />
             </div>

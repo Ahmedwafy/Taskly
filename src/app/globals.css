@@ -39,6 +39,26 @@ body {
 
   /* .dark {} */
 }
+@theme {
+  /* Action Blue & Tonal Range */
+  --color-primary: var(--primary);
+  --color-primary-container: var(--primary-container);
+  --color-surface-highest: var(--surface-highest);
+  --color-surface-low: var(--surface-low);
+  --color-background: var(--background);
+
+  /* Slate Neutrals */
+  --color-neutral-100: var(--color-neutral-100);
+  --color-neutral-100: var(--color-neutral-100);
+  --color-neutral-100: var(--color-neutral-100);
+
+  /* Semantic */
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --color-warning: var(--warning);
+  --color-disabled: var(--disabled);
+  --color-inputBgError: var(--inputBgError);
+}
 
 @layer base {
   :root {
@@ -70,9 +90,9 @@ body {
     --display-lg-letter-spacing: 1.1px;
 
     /* List Item */
-    --title-md-size: 14px;
-    --title-md-weight: 500;
-    --title-md-line-height: 20px;
+    --list-item-size: 14px;
+    --list-item-weight: 500;
+    --list-item-line-height: 20px;
   }
 }
 
@@ -109,10 +129,10 @@ body {
     letter-spacing: var(--display-lg-letter-spacing);
   }
 
-  .list-unit {
-    --title-md-size: 14px;
-    --title-md-weight: 500;
-    --title-md-line-height: 20px;
+  .list-item {
+    font-size: var(--list-item-size);
+    font-weight: var(--list-item-weight);
+    line-height: var(--list-item-line-height);
   }
 }
 

@@ -7,7 +7,7 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center w-full bg-(--surface-low) gap-10">
+    <main className="min-h-screen flex flex-col items-center justify-center w-full bg-surface-low gap-10">
       <div className="w-full flex py-6 gap-2">
         <div className="relative left-4 mr-4 my-auto">
           <Image src={icons.Logo} alt="Logo" width={18} height={20} />

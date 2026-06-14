@@ -83,7 +83,7 @@ const SignUpForm = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4 justify-center items-center mx-auto max-w-xl px-4 py-8 mt-10 rounded-lg h-full shadow-md bg-(--background)">
+    <div className="flex flex-col gap-4 justify-center items-center mx-auto max-w-xl px-4 py-8 mt-10 rounded-lg h-full shadow-md bg-background">
       <div className="flex flex-col md:justify-center gap-2 md:text-center w-full relative left-10 sm:left-0">
         <h2 className="headline-lg">Create your workspace</h2>
         <p className="body-md">

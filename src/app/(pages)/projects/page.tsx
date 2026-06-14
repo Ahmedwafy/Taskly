@@ -58,7 +58,7 @@ export default async function Projects({ searchParams }: PageProps) {
   const slicedProjects = projects.slice(startIndex, endIndex);
 
   return (
-    <main className="flex flex-col justify-between p-4 bg-(--background) min-h-screen">
+    <main className="flex flex-col justify-between p-4 bg-background min-h-screen">
       <div className="flex-1">
         <section className="flex justify-between w-full">
           <header className="w-full h-fit pt-6 pl-4 flex flex-col gap-2">
@@ -154,7 +154,7 @@ export default async function Projects({ searchParams }: PageProps) {
                 p === activePage ? (
                   <span
                     key={p}
-                    className="px-3 py-1 bg-(--primary) text-white rounded-md"
+                    className="px-3 py-1 bg-primary text-white rounded-md"
                   >
                     {p}
                   </span>

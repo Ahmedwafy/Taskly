@@ -97,7 +97,7 @@ const LogInForm = () => {
   // };
 
   return (
-    <div className="flex flex-col gap-6 max-w-md mx-auto my-auto px-8 py-10 rounded-lg shadow-lg bg-(--background) mt-16">
+    <div className="flex flex-col gap-6 max-w-md mx-auto my-auto px-8 py-10 rounded-lg shadow-lg bg-background mt-16">
       <div className="flex flex-col text-center gap-2 items-center justify-center">
         <h2 className="headline-lg">Welcome Back</h2>
         <p className="body-md">

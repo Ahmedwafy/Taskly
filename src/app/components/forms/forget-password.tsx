@@ -67,7 +67,7 @@ const ForgotPasswordForm = () => {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="bg-(--background) w-md py-4 px-4 rounded-2xl mx-auto mt-14 shadow-md"
+      className="bg-background w-md py-4 px-4 rounded-2xl mx-auto mt-14 shadow-md"
     >
       <div className="w-91.5 flex flex-col justify-center mx-auto py-8">
         <div className="flex flex-col gap-2">
@@ -112,7 +112,7 @@ const ForgotPasswordForm = () => {
 
         <div>
           {isSubmitted && (
-            <p className="flex justify-center py-4 my-4 bg-(--success) text-[#005235] gap-2 rounded-md">
+            <p className="flex justify-center py-4 my-4 bg-success text-[#005235] gap-2 rounded-md">
               <Image src={icons.Success} alt="Success" />
               <span>Your request has been sent successfully</span>
             </p>
@@ -129,7 +129,7 @@ const ForgotPasswordForm = () => {
           className="disabled:opacity-50 w-full mb-2 mt-4"
           type="button"
         >
-          <strong className="flex gap-2 justify-center bg-(--surface-highest) rounded-sm py-4 text-[#737685]">
+          <strong className="flex gap-2 justify-center bg-surface-highest rounded-sm py-4 text-[#737685]">
             <Image src={icons.Timer} alt="timer" />
             {countdown > 0
               ? `Resend in ${formatCountdown(countdown)}`

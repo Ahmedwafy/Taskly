@@ -25,7 +25,7 @@ const ProjectCardSkeleton = () => (
 
 export default function ProjectsLoading() {
   return (
-    <main className="flex flex-col p-4 bg-(--background) min-h-screen">
+    <main className="flex flex-col p-4 bg-background min-h-screen">
       {/* Page header skeleton */}
       <section className="flex justify-between w-full">
         <header className="w-full h-fit pt-6 pl-4 flex flex-col gap-2">
