@@ -31,7 +31,7 @@ const Mobile_Header = ({
             <span className="text-sm font-semibold">{fullName}</span>
             <span className="text-xs text-slate-500">{department}</span>
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--primary-container) text-sm font-semibold text-white">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-container text-sm font-semibold text-white">
             {avatarText}
           </div>
         </div>

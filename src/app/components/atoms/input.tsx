@@ -105,7 +105,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
                 onBlur={onBlur}
                 aria-invalid={!!error}
                 aria-describedby={errorId}
-                className={`w-full p-3 border-gray-300 rounded-md ${error ? `bg-(--inputBgError)` : `bg-[#D7E2FF]`} disabled:opacity-60 disabled:cursor-not-allowed`}
+                className={`w-full p-3 border-gray-300 rounded-md ${error ? `bg-inputBgError` : `bg-[#D7E2FF]`} disabled:opacity-60 disabled:cursor-not-allowed`}
               />
               <div className="text-right text-sm text-gray-500 mt-1">
                 {displayedValue.length}/{maxLen}
@@ -130,7 +130,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
               onBlur={onBlur}
               aria-invalid={!!error}
               aria-describedby={errorId}
-              className={`w-full p-3 pr-12 border-gray-300 rounded-md ${error ? `bg-(--inputBgError)` : `bg-[#D7E2FF]`} disabled:opacity-60 disabled:cursor-not-allowed`}
+              className={`w-full p-3 pr-12 border-gray-300 rounded-md ${error ? `bg-inputBgError` : `bg-[#D7E2FF]`} disabled:opacity-60 disabled:cursor-not-allowed`}
             />
           )}
 

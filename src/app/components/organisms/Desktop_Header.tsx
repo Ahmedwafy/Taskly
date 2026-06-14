@@ -53,7 +53,7 @@ const Desktop_Header = ({
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--primary-container) text-sm font-semibold text-white"
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-container text-sm font-semibold text-white"
             aria-expanded={menuOpen}
             aria-label="Open user menu"
           >

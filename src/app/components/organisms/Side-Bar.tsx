@@ -83,7 +83,7 @@ const SideBar = ({
 
   return (
     <aside
-      className={`flex flex-col justify-between bg-(--surface-low) overflow-hidden transition-all duration-500 ease-in-out h-full ${
+      className={`flex flex-col justify-between bg-surface-low overflow-hidden transition-all duration-500 ease-in-out h-full ${
         isCollapsed ? 'w-20' : 'w-64'
       }`}
     >
