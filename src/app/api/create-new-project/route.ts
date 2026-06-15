@@ -1,16 +1,16 @@
 //src/app/api/create-new-project/route.ts
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+// import { cookies } from 'next/headers';
 import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
 import { CreateProjectSchema } from '@/schemas/createProject.schema';
+import { getAuthCookies } from '@/lib/auth';
 
 // Create New Project
 export async function POST(req: Request) {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get('access_token')?.value;
+  const { accessToken } = await getAuthCookies();
 
-  // Validate access token exists
+  // If There is no Access-Token in the Cookies
   if (!accessToken) {
     console.error('No access token found in cookies');
     return NextResponse.json(
@@ -104,3 +104,19 @@ export async function POST(req: Request) {
     );
   }
 }
+
+// Client
+//  ↓
+// /api/create-new-project
+//  ↓
+// Supabase
+//  ↓
+// 401 (expired token)
+//  ↓
+// Client receives 401
+//  ↓
+// /api/refresh-token
+//  ↓
+// new tokens
+//  ↓
+// retry create-new-project

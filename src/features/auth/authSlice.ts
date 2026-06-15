@@ -31,13 +31,6 @@ export const loginUser = createAsyncThunk(
     }
   },
 );
-// export const loginUser = createAsyncThunk(
-//   'auth/loginUser',
-//   async (payload: SignInPayload, thunkAPI) => {
-//     const data = await signIn(payload);
-//     return data.user as UserData;
-//   },
-// );
 
 const authSlice = createSlice({
   name: 'auth',

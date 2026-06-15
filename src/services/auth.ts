@@ -1,11 +1,7 @@
 // src/services/auth.ts
 
 // Sign-Up
-import {
-  SignInPayload,
-  SignUpPayload,
-  ResetPasswordPayload,
-} from '@/types/auth';
+import { SignUpPayload, ResetPasswordPayload } from '@/types/auth';
 import {
   SignInFormData,
   SignUpFormData,
@@ -14,6 +10,8 @@ import {
 import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
 import { SignUpSchema, SignInSchema } from '../schemas/auth';
+
+// ===========================================================
 
 // Sign Up
 export const signUp = async (formData: SignUpFormData) => {
@@ -57,23 +55,18 @@ export const signUp = async (formData: SignUpFormData) => {
 
   return data;
 };
-
 // ===========================================================
 
 // Login
 export const signIn = async (cleanedDataToSend: SignInFormData) => {
+  //  Zod Validation
   const parsed = SignInSchema.safeParse(cleanedDataToSend);
 
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message);
   }
-  const payload = parsed.data;
 
-  // const payload: SignInPayload = {
-  //   email: cleanedDataToSend.email.trim(),
-  //   password: cleanedDataToSend.password.trim(),
-  //   rememberMe: cleanedDataToSend.rememberMe,
-  // };
+  const payload = parsed.data;
 
   const response = await fetch(`/api/login`, {
     method: 'POST',
@@ -99,7 +92,7 @@ export const signIn = async (cleanedDataToSend: SignInFormData) => {
 };
 // ===========================================================
 
-// forgot Password Request
+// forgot Password
 export const forgotPasswordRequest = async (
   cleanedDataToSend: ForgotPasswordFormTypes,
 ) => {
@@ -122,7 +115,6 @@ export const forgotPasswordRequest = async (
 
   return response.json();
 };
-
 // ===========================================================
 
 // Reset Password
@@ -150,10 +142,9 @@ export const resetPassword = async (
 
   return response.json();
 };
-
 // ===========================================================
 
-// Sign out (server-side clears cookies)
+// Log out
 export const signOut = async () => {
   const response = await fetch('/api/logout', {
     method: 'POST',

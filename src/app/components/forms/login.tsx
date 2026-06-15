@@ -28,28 +28,6 @@ const LogInForm = () => {
     defaultValues: { email: '', password: '' },
   });
 
-  // const onSubmit = async (data: SignInFormData) => {
-  //   setAuthError('');
-
-  //   const cleanedToSend = {
-  //     email: data.email.trim(),
-  //     password: String(data.password).trim(),
-  //     rememberMe,
-  //   };
-
-  //   try {
-  //     await dispatch(loginUser(cleanedToSend)).unwrap();
-
-  //     toast.success('Welcome back!');
-  //     router.push('/projects');
-  //   } catch (error) {
-  //     const message =
-  //       error instanceof Error ? error.message : 'Something went wrong';
-
-  //     setAuthError(message);
-  //     toast.error(message);
-  //   }
-  // };
   const onSubmit = async (data: SignInFormData) => {
     setAuthError('');
 

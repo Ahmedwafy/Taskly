@@ -1,20 +1,3 @@
-// import { NextResponse } from 'next/server';
-// import { cookies } from 'next/headers';
-
-// export async function POST() {
-//   try {
-//     const cookieStore = await cookies();
-
-//     // Delete access and refresh tokens by expiring them
-//     cookieStore.delete('access_token', { path: '/' });
-//     cookieStore.delete('refresh_token', { path: '/' });
-
-//     return NextResponse.json({ ok: true });
-//   } catch (error) {
-//     console.error('Logout route error:', error);
-//     return NextResponse.json({ ok: false }, { status: 500 });
-//   }
-// }
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { baseURL, supabaseKey } from '@/lib/supabase';
@@ -36,7 +19,7 @@ export async function POST() {
       });
     }
 
-    // then clear cookies
+    // clear cookies
     cookieStore.delete({ name: 'access_token', path: '/' });
     cookieStore.delete({ name: 'refresh_token', path: '/' });
 

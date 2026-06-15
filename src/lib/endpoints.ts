@@ -6,6 +6,7 @@ type Endpoints = {
     logout: string;
     signUp: string;
     forgotPasswod: string;
+    generateNewToken: string;
   };
 
   userData: {
@@ -23,6 +24,7 @@ export const endPoints: Endpoints = {
     logout: '/auth/v1/logout',
     signUp: '/auth/v1/signup',
     forgotPasswod: '/auth/v1/recover',
+    generateNewToken: '/auth/v1/token?grant_type=refresh_token',
   },
 
   userData: {
