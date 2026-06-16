@@ -4,42 +4,33 @@ import * as icons from '../../../../public/icons/icons';
 import { useState } from 'react';
 import { StaticImageData } from 'next/image';
 import Link from 'next/link';
-// import { useRouter } from 'next/navigation';
-// import { useAppDispatch } from '@/redux/reduxHooks';
-// import { clearUser } from '@/features/auth/authSlice';
-// import { signOut } from '@/services/auth';
-// import { toast } from 'sonner';
-
-// type SidebarItemProps = {
-//   title: string;
-//   icon: StaticImageData;
-//   mobileIcon: StaticImageData;
-// };
+import { usePathname } from 'next/navigation';
 
 interface SideBarProps {
-  onItemClick?: () => void;
   isCollapsed?: boolean;
-  onToggleCollapse?: () => void;
-  handleLogout?: () => void;
   mobileIcon?: StaticImageData;
+  onItemClick?: () => void;
+  handleLogout?: () => void;
+  onToggleCollapse?: () => void;
 }
 
 const SideBar = ({
-  onItemClick,
   isCollapsed: controlledCollapsed,
-  onToggleCollapse,
   mobileIcon,
+  onItemClick,
   handleLogout,
+  onToggleCollapse,
 }: SideBarProps) => {
-  // const [loading, setLoading] = useState(false);
   const [internalCollapsed, setInternalCollapsed] = useState<boolean>(false);
   const isCollapsed =
     typeof controlledCollapsed === 'boolean'
       ? controlledCollapsed
       : internalCollapsed;
 
-  // const router = useRouter();
-  // const dispatch = useAppDispatch();
+  const pathname = usePathname(); // Ex: '/projects/123/epics'
+  const isProjectDetailsPage = /^\/projects\/[^/]+/.test(pathname);
+  const projectId = pathname.split('/')[2]; // Ex: ['', 'projects', '123', 'epics']
+
   const navItems = [
     {
       label: 'Projects',
@@ -47,30 +38,35 @@ const SideBar = ({
       alt: 'Projects',
       href: '/projects',
     },
-    {
-      label: 'Project Epic',
-      icon: icons.Epics,
-      alt: 'Project Epics',
-      href: '/projects',
-    },
-    {
-      label: 'Project Tasks',
-      icon: icons.Tasks,
-      alt: 'Project Tasks',
-      href: '/projects',
-    },
-    {
-      label: 'Project Members',
-      icon: icons.Members,
-      alt: 'Project Members',
-      href: '/projects',
-    },
-    {
-      label: 'Project Details',
-      icon: icons.Details,
-      alt: 'Project Details',
-      href: '/projects',
-    },
+
+    ...(isProjectDetailsPage
+      ? [
+          {
+            label: 'Project Epics',
+            icon: icons.Epics,
+            alt: 'Project Epics',
+            href: `/projects/${projectId}/epics`,
+          },
+          {
+            label: 'Project Tasks',
+            icon: icons.Tasks,
+            alt: 'Project Tasks',
+            href: `/projects/${projectId}/tasks`,
+          },
+          {
+            label: 'Project Members',
+            icon: icons.Members,
+            alt: 'Project Members',
+            href: `/projects/${projectId}/members`,
+          },
+          {
+            label: 'Project Details',
+            icon: icons.Details,
+            alt: 'Project Details',
+            href: `/projects/${projectId}/edit`,
+          },
+        ]
+      : []),
   ];
 
   const handleCollapse = () => {
@@ -88,54 +84,51 @@ const SideBar = ({
       }`}
     >
       <div>
-        {/* Mobile close button */}
+        {/* -- Mobile close button -- */}
         <div className="lg:hidden flex items-center justify-end px-3"></div>
-        {/* Logo */}
+        {/* -- Logo -- */}
         <div
-          className={`w-full flex items-center py-6 mb-10 transition-all duration-500 ease-in-out ${
-            isCollapsed ? 'justify-center gap-0' : 'justify-start gap-2'
-          }`}
+          className={`w-full flex items-center py-6 mb-10 transition-all duration-500 ease-in-out min-h-20
+            ${isCollapsed ? 'justify-center gap-0' : 'justify-start gap-2'}`}
         >
           <div
-            className={`transition-all duration-500 ease-in-out ${
-              isCollapsed ? 'mx-auto' : 'relative left-4 mr-4 my-auto'
+            className={`transition-all duration-500 ease-in-out  ${
+              isCollapsed
+                ? 'mx-auto pl-0'
+                : 'relative left-4 mr-4 my-auto pl-6 '
             }`}
           >
             <Image src={icons.Logo} alt="Logo" width={18} height={20} />
           </div>
           <span
             className={`text-[20px] font-bold transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? 'hidden' : 'max-w-30 opacity-100'
+              isCollapsed
+                ? 'hidden! transition-all duration-500 ease-in-out'
+                : 'max-w-30 opacity-100'
             }`}
           >
             TASKLY
           </span>
         </div>
 
-        {/* List */}
-        <div className="flex flex-col gap-2 px-2">
+        {/* -- Navigation -- */}
+        <div className="flex flex-col gap-4 pl-6 py-6">
           {navItems.map((item) => {
             return (
               <button
                 key={item.label}
                 onClick={() => onItemClick?.()}
-                className={`group list-unit flex items-center gap-3 overflow-hidden rounded-sm py-4 transition-all duration-500 ease-in-out ${
-                  isCollapsed ? 'px-3 justify-center' : 'px-4 justify-start'
-                } min-w-[90%] mx-auto hover:bg-white hover:shadow-sm hover:text-neutral-100 cursor-pointer`}
+                className={`group list-unit flex items-center gap-3 overflow-hidden rounded-sm py-4 transition-all duration-500 ease-in-out min-w-[90%] mx-auto
+                   hover:bg-white hover:shadow-sm hover:text-neutral-100 cursor-pointer hover:pl-4 
+                   ${isCollapsed ? '' : ''} `}
               >
-                <div>
-                  <Image
-                    src={item.icon}
-                    alt={item.alt}
-                    className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
-                  />
-                </div>
+                <Image src={item.icon} alt={item.alt} />
 
                 <Link href={item.href}>
                   <span
                     className={`block overflow-hidden whitespace-nowrap text-sm transition-all duration-500 ease-in-out ${
                       isCollapsed
-                        ? 'max-w-0 opacity-0 scale-95'
+                        ? 'max-w-0 opacity-0 scale-100 transition-all! duration-0! ease-in-out!'
                         : 'max-w-40 opacity-100 scale-100'
                     }`}
                   >
@@ -148,7 +141,7 @@ const SideBar = ({
         </div>
       </div>
 
-      {/* Collapse & Logout */}
+      {/* -- Collapse & Logout -- */}
       <div className="flex flex-col gap-4 pl-8 py-6">
         <button
           type="button"
@@ -170,19 +163,6 @@ const SideBar = ({
           type="button"
           className="flex items-center gap-3 cursor-pointer"
           onClick={handleLogout}
-          // onClick={async () => {
-          //   try {
-          //     setLoading(true);
-          //     await signOut(); // signOut() -> Delete access_token From Cookies
-          //     dispatch(clearUser()); // -> Update User State in Store/Slice -- clear frontend state --
-          //     // router.push('/login');
-          //     router.replace('/login');
-          //     setLoading(false);
-          //   } catch (err) {
-          //     console.error('Logout failed', err);
-          //     toast.error('Logout failed');
-          //   }
-          // }}
         >
           <Image
             src={icons.Logout}
