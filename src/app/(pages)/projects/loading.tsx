@@ -1,7 +1,7 @@
 // src/app/(pages)/projects/loading.tsx
 // Shown by Next.js automatically while page.tsx is fetching
 
-const ProjectCardSkeleton = () => (
+export const ProjectCardSkeleton = () => (
   <div className="border border-gray-100 py-4 px-8 rounded-lg shadow-sm shadow-black/5 h-80 flex flex-col justify-between w-full md:min-w-112.5 mx-auto bg-white animate-pulse">
     {/* Top: title + description */}
     <div className="flex flex-col gap-y-4 pt-4">

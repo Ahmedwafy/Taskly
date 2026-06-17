@@ -1,4 +1,4 @@
-// src/app/(pages)/projects/ProjectsClient.tsx
+// src/app/(pages)/projects/ProjectsMobile.tsx
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
@@ -6,6 +6,7 @@ import ProjectCard from '@/app/components/molecules/ProjectCard';
 import AddProjectCard from '@/app/components/molecules/AddProjectCard';
 import Link from 'next/link';
 import { Project } from '@/types/project';
+import { ProjectCardSkeleton } from '@/app/(pages)/projects/loading';
 
 interface Props {
   initialProjects: Project[];
@@ -31,24 +32,37 @@ export default function ProjectsMobile({
   limit,
 }: Props) {
   const [projects, setProjects] = useState(initialProjects);
-  //   const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [offset, setOffset] = useState(limit);
+
   const [hasMore, setHasMore] = useState(
     initialProjects.length < initialTotalCount,
   );
+
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
+  // load more projects on scroll
   const loadMore = useCallback(async () => {
-    const currentOffset = offset;
+    try {
+      setLoading(true);
+      setError('');
 
-    const data = await fetchProjects(limit, currentOffset);
+      const currentOffset = offset;
 
-    setProjects((prev) => [...prev, ...data.projects]);
+      const data = await fetchProjects(limit, currentOffset);
 
-    setOffset((prev) => prev + limit);
+      setProjects((prev) => [...prev, ...data.projects]);
 
-    if (currentOffset + limit >= initialTotalCount) {
-      setHasMore(false);
+      setOffset((prev) => prev + limit);
+
+      if (currentOffset + limit >= initialTotalCount) {
+        setHasMore(false);
+      }
+    } catch {
+      setError('Failed to load projects');
+    } finally {
+      setLoading(false);
     }
   }, [offset, limit, initialTotalCount]);
 
@@ -59,7 +73,7 @@ export default function ProjectsMobile({
     const observer = new IntersectionObserver((entries) => {
       const target = entries[0];
 
-      if (target.isIntersecting) {
+      if (target.isIntersecting && !loading) {
         loadMore();
       }
     });
@@ -69,7 +83,7 @@ export default function ProjectsMobile({
     }
 
     return () => observer.disconnect();
-  }, [hasMore, loadMore]);
+  }, [hasMore, loadMore, loading]);
 
   return (
     <section className="flex flex-col gap-y-8 py-4 px-6 justify-between w-full mt-15">
@@ -85,6 +99,11 @@ export default function ProjectsMobile({
 
       <AddProjectCard />
       {/* {hasMore ? null : <AddProjectCard />} */}
+
+      {error && <p className="w-full text-center text-red-500 py-4">{error}</p>}
+
+      {/* {loading && <p className="w-full text-center py-4">Loading...</p>} */}
+      {loading && <ProjectCardSkeleton />}
 
       {hasMore && <div ref={loaderRef} className="h-10 w-full" />}
     </section>

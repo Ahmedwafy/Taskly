@@ -16,7 +16,7 @@ interface SideBarProps {
 
 const SideBar = ({
   isCollapsed: controlledCollapsed,
-  mobileIcon,
+  // mobileIcon,
   onItemClick,
   handleLogout,
   onToggleCollapse,

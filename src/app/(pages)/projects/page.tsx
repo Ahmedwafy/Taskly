@@ -3,8 +3,6 @@
 // Authentication
 // Redirect
 import Button from '@/app/components/atoms/Button';
-// import AddProjectCard from '@/app/components/molecules/AddProjectCard';
-// import ProjectCard from '@/app/components/molecules/ProjectCard';
 import { getAllProjects } from '@/services/getAllProjects';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -103,6 +101,7 @@ export default async function Projects({
           <EmptyState />
         ) : (
           <>
+            {/* Desktop View */}
             <ProjectsGrid projects={projects} />
 
             {/* pagination */}
