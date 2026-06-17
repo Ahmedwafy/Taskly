@@ -19,15 +19,13 @@ interface DesktopInterfaceProps {
 
 const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  console.log(`==================`, userData);
 
-  const [loading, setLoading] = useState(false);
-
+  const [, setLoading] = useState(false);
   const fullName = userData?.name ?? '';
   const department = userData?.department ?? '';
-
   const router = useRouter();
   const dispatch = useAppDispatch();
+
   // Added a client-side state synchronization using useEffect to dispatch setUser(userData) on mount.
   useEffect(() => {
     dispatch(setUser(userData));

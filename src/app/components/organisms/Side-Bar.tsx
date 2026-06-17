@@ -34,7 +34,8 @@ const SideBar = ({
   const navItems = [
     {
       label: 'Projects',
-      icon: mobileIcon ? mobileIcon : icons.Projects,
+      // icon: mobileIcon ? mobileIcon : icons.Projects,
+      icon: icons.Collapsed_Projects,
       alt: 'Projects',
       href: '/projects',
     },

@@ -2,7 +2,7 @@ import Image from 'next/image';
 import * as icons from '../../../../public/icons/icons';
 import Link from 'next/link';
 
-const AddProjectCard = ({ className }: { className: string }) => {
+const AddProjectCard = ({ className }: { className?: string }) => {
   return (
     <Link href="/projects/add">
       <div className={className}>

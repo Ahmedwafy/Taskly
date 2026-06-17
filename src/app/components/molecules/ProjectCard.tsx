@@ -1,9 +1,7 @@
+import { Project } from '@/types/project';
+
 interface ProjectCardProps {
-  project?: {
-    name?: string;
-    description?: string;
-    created_at?: string;
-  };
+  project?: Project;
   // onOpenModal?: (projectId: string) => void;
   // onAssignTask?: (projectId: string) => void;
   // onArchive?: (projectId: string) => void;

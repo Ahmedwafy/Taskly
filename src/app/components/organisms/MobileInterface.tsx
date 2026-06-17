@@ -54,12 +54,14 @@ const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
 
   return (
     <div className="relative h-screen">
-      <Mobile_Header
-        fullName={fullName}
-        department={department}
-        avatarText={avatarText}
-        onToggleSidebar={() => setIsOpen((v) => !v)}
-      />
+      <div className="fixed top-0 left-0 w-full z-29">
+        <Mobile_Header
+          fullName={fullName}
+          department={department}
+          avatarText={avatarText}
+          onToggleSidebar={() => setIsOpen((v) => !v)}
+        />
+      </div>
 
       {/* Overlay */}
       {isOpen && (
