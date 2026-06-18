@@ -8,9 +8,9 @@ import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { createNewProject } from '@/services/create-new-project';
-import { DevTool } from '@hookform/devtools';
-import Input from '@/app/components/atoms/input';
 import { useRouter } from 'next/navigation';
+import ProjectForm from '@/app/components/forms/Project-Form';
+import CardHeader from '@/app/components/molecules/CardHeader';
 
 interface AddProjectDataTypes {
   name: string;
@@ -47,8 +47,8 @@ const Add_New_Project = () => {
   };
 
   return (
-    <main className="bg-background h-screen">
-      <section className="">
+    <main className="h-screen">
+      <section>
         {/* --- Page Header --- */}
         <header className="hidden lg:flex justify-between w-full">
           <div className="w-full h-fit pt-2 pl-4 flex flex-col gap-2">
@@ -79,79 +79,29 @@ const Add_New_Project = () => {
         {/* --- Card  --- */}
         <div className="mx-auto rounded-md h-auto mt-10">
           {/* --- Card Header + Form + Buttons */}
-          <div className="max-w-3xl mx-auto p-8 h-fit shadowrounded-t-xl shadow-sm">
+          <div className="max-w-3xl mx-auto p-8 h-fit shadowrounded-t-xl shadow-sm bg-white">
             {/* --- Card Header ---  */}
-            <div className="flex gap-4 items-center border-b pb-10 border-gray-400">
-              <div className="hidden lg:block bg-surface-highest p-3 rounded-md">
-                <Image
-                  src={icons.Add_Project}
-                  alt="Member"
-                  width={22}
-                  height={11}
-                />
-              </div>
-              <div>
-                <h1 className="headline-lg">Initialize New Project</h1>
-                <span className="text-gray-500">
-                  Define the scope and foundational details of your project.
-                </span>
-              </div>
-            </div>
+            <CardHeader
+              title="Initialize New Project"
+              description="Define the scope and foundational details of your project."
+            />
 
-            {/* --- Form --- */}
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="flex flex-col h-full"
-              noValidate
-            >
-              <Input
-                {...register('name', {
-                  required: 'name is required.',
-                  minLength: {
-                    value: 3,
-                    message: 'Project name must be at least 3 characters.',
-                  },
-                })}
-                label="PROJECT TITLE"
-                className="mt-10"
-                type="text"
-                disabled={isSubmitting}
-                error={errors.name?.message}
-              />
-              <Input
-                {...register('description', {
-                  maxLength: {
-                    value: 500,
-                    message: 'Description must be at most 500 characters.',
-                  },
-                })}
-                label="DESCRIPTION"
-                multiline
-                rows={6}
-                optional="Optional"
-                placeholder="Provide a high-level overview of the project's architectural objectives and key milestones..."
-                className="mt-12"
-                disabled={isSubmitting}
-              />
-
-              {/* --- Action Buttons --- */}
-              <div className="flex flex-col-reverse gap-4 lg:flex-row justify-between mt-8 ">
-                <Link
-                  href="/projects"
-                  className={`w-full lg:w-1/4! ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}
-                >
-                  <Button name="Back" variant="ghost" disabled={isSubmitting} />
-                </Link>
-                <Button
-                  name="Create Project"
-                  className="w-full lg:w-1/4!"
-                  type="submit"
-                  isSubmitting={isSubmitting}
-                  disabled={isSubmitting}
-                />
-              </div>
-              <DevTool control={control} />
-            </form>
+            {/* --- Add Project Form --- */}
+            <ProjectForm
+              handleSubmit={handleSubmit}
+              onSubmit={onSubmit}
+              register={register}
+              isSubmitting={isSubmitting}
+              errors={errors}
+              control={control}
+              //
+              placeholder_Title="Title ..."
+              placeholder_Description="Provide a high-level overview of the project's architectural objectives and key milestones..."
+              required_Message="name is required."
+              minLength_Message="Project name must be at least 3 characters."
+              maxLength_Message="Description must be at most 500 characters."
+              button_Name="Create Project"
+            />
           </div>
 
           {/* --- Pro Tip --- */}

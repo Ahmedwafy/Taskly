@@ -32,6 +32,11 @@ export default async function Projects({
   let totalCount = 0;
   let totalPages = 0;
 
+  // const pagination = {
+  //   limit,
+  //   offset,
+  // };
+
   try {
     const result = await getAllProjects({
       limit,
@@ -78,7 +83,7 @@ export default async function Projects({
   });
 
   return (
-    <main className="flex flex-col justify-between p-4 bg-background min-h-screen">
+    <main className="flex flex-col justify-between p-4 bg-background! min-h-screen">
       <div className="flex-1 md:block hidden">
         {/* Header */}
         <section className="flex justify-between w-full">

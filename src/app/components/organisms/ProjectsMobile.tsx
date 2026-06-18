@@ -14,6 +14,7 @@ interface Props {
   limit: number;
 }
 
+// TODO ::: If will use this logic many times → Create Custom Hook
 const fetchProjects = async (limit: number, offset: number) => {
   const res = await fetch(
     `/api/get-all-projects?limit=${limit}&offset=${offset}`,

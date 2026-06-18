@@ -1,6 +1,5 @@
 //src/app/api/create-new-project/route.ts
 import { NextResponse } from 'next/server';
-// import { cookies } from 'next/headers';
 import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
 import { CreateProjectSchema } from '@/schemas/createProject.schema';

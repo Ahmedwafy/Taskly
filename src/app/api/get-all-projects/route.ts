@@ -1,3 +1,7 @@
+// Special Case :
+// Created this route to use inside : ProjectsMobile.tsx as it is a 'use client' component so can not use : const result = await getAllProjects(...)
+// But it's parent component is a server component : src/app/(pages)/projects/page.tsx → and can use const result = await getAllProjects(...)
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllProjects } from '@/services/getAllProjects';
 import { getAuthCookies } from '@/lib/auth';

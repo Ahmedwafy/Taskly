@@ -1,3 +1,4 @@
+// src/app/(pages)/layout.tsx
 import { getUserData } from '@/services/getUserData';
 import { redirect } from 'next/navigation';
 import MobileInterface from '../components/organisms/MobileInterface';

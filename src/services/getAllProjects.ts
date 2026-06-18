@@ -4,8 +4,12 @@
 
 import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
-// import { cookies } from 'next/headers';
 import { ProjectsSchema } from '@/schemas/project.schema';
+
+// interface Pagination {
+//   limit: number;
+//   offset: number;
+// }
 
 interface GetProjectsParams {
   accessToken: string;
@@ -19,9 +23,6 @@ export const getAllProjects = async ({
   offset,
   accessToken,
 }: GetProjectsParams) => {
-  // const cookieStore = await cookies();
-  // const accessToken = cookieStore.get('access_token')?.value;
-
   if (!accessToken) {
     throw new Error('Unauthorized');
   }
@@ -52,8 +53,8 @@ export const getAllProjects = async ({
   // pagination
   const contentRange = response.headers.get('content-range');
   const totalCount = Number(contentRange?.split('/')[1] || 0); // 57
-  console.log(`contentRange`, contentRange);
-  console.log(`totalCount`, totalCount);
+  // console.log(`contentRange`, contentRange);
+  // console.log(`totalCount`, totalCount);
 
   //   Zod Validation Using Schema
   const parsed = ProjectsSchema.safeParse(data);

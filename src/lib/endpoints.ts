@@ -16,6 +16,8 @@ type Endpoints = {
     // byId: (id: string) => string;
     // name: (name: string) => string;
   };
+
+  updateProjectById: (projectId: string) => string;
 };
 
 export const endPoints: Endpoints = {
@@ -34,4 +36,6 @@ export const endPoints: Endpoints = {
     // byId: (id) => `/users/${id}`,
     // name: (name) => `/users/name/${name}`,
   },
+
+  updateProjectById: (projectId) => `/rest/v1/projects?id=eq.${projectId}`,
 } as const;
