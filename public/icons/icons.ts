@@ -17,6 +17,8 @@ import Add_Project from './addproject.png';
 import ProTip from './ProTip.png';
 import pathArrow from './pathArrow.png';
 import Add_Project_Icon from './Add.png';
+import Plus from './Plus.png';
+import Dots from './dots.png';
 
 export {
   Arrow,
@@ -38,4 +40,6 @@ export {
   ProTip,
   pathArrow,
   Add_Project_Icon,
+  Plus,
+  Dots,
 };

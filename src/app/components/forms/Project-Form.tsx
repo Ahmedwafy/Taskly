@@ -87,7 +87,7 @@ const ProjectForm = ({
           href="/projects"
           className={`w-full lg:w-1/4! ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}
         >
-          <Button name="Back" variant="ghost" disabled={isSubmitting} />
+          <Button name="Cancel" variant="ghost" disabled={isSubmitting} />
         </Link>
         <Button
           name={button_Name}

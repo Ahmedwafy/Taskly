@@ -1,7 +1,20 @@
-import React from 'react';
+// src/app/(pages)/projects/[projectId]/members/page.tsx
+import ProjectMambersPage from '@/app/components/pages/ProjectMambersPage';
+import { getProjectByIdServer } from '@/services/getProjectByIdServer';
 
-const page = () => {
-  return <div>members</div>;
-};
-
-export default page;
+interface ProjectMembersPageProps {
+  params: Promise<{
+    projectId: string;
+  }>;
+}
+export default async function ProjectMembers({
+  params,
+}: ProjectMembersPageProps) {
+  const { projectId } = await params;
+  const project = await getProjectByIdServer(projectId);
+  return (
+    <div>
+      <ProjectMambersPage projectName={project.name} />
+    </div>
+  );
+}

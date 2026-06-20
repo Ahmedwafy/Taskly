@@ -1,21 +1,37 @@
 // src/app/(pages)/projects/[projectId]/edit/page.tsx
 // Edit Project Page
-import { getAllProjects } from '@/services/getAllProjects';
+
 import { redirect } from 'next/navigation';
 import { getAuthCookies } from '@/lib/auth';
 import EditProjectPage from '@/app/components/pages/EditProjectPage';
+import PageHeader from '@/app/components/molecules/PageHeader';
+import * as icons from '@/../public/icons/icons';
+import { getAllProjectsServer } from '@/services/getAllProjectsServer';
+import { getProjectByIdServer } from '@/services/getProjectByIdServer';
 
-export default async function Edit_Project() {
+interface EditProjectPageProps {
+  params: Promise<{
+    projectId: string;
+  }>;
+}
+
+export default async function EditProject({ params }: EditProjectPageProps) {
+  const { projectId } = await params;
+  const project = await getProjectByIdServer(projectId);
+  console.log(`projectId`, projectId);
   const { accessToken } = await getAuthCookies();
   if (!accessToken) {
     redirect('/login');
   }
-
   let projects;
 
   try {
-    const result = await getAllProjects({ accessToken, limit: 10, offset: 0 });
-    // console.log('RESULT', result);
+    const result = await getAllProjectsServer({
+      // accessToken,
+      limit: 1000,
+      offset: 0,
+    });
+
     projects = result.projects;
   } catch (error) {
     if (
@@ -30,5 +46,16 @@ export default async function Edit_Project() {
     throw error;
   }
 
-  return <EditProjectPage projects={projects} />;
+  return (
+    <>
+      <PageHeader
+        title="Edit Projects"
+        icon={icons.Plus}
+        buttonName="Create New Project"
+        href="/projects/add"
+        projectName={project.name}
+      />
+      <EditProjectPage projects={projects} />
+    </>
+  );
 }

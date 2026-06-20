@@ -40,10 +40,6 @@ const EditProjectPage = ({ projects }: EditProjectPageProps) => {
     defaultValues: { name: '', description: '' },
   });
 
-  //   if (!currentProject) {
-  //     return;
-  //   }
-
   const onSubmit = async (data: EditProjectDataTypes) => {
     const dataToSend = {
       name: data.name.trim(),

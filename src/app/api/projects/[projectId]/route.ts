@@ -1,3 +1,5 @@
+// src/app/api/projects/[projectId]/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthCookies } from '@/lib/auth';
 import { supabaseKey, baseURL } from '@/lib/supabase';

@@ -13,11 +13,12 @@ type Endpoints = {
     userInfo: string;
     createNewProject: string;
     getAllProjects: string;
-    // byId: (id: string) => string;
+    // getProjectByID: (id: string) => string;
     // name: (name: string) => string;
   };
 
   updateProjectById: (projectId: string) => string;
+  projectMembers: (projectId: string) => string;
 };
 
 export const endPoints: Endpoints = {
@@ -33,9 +34,11 @@ export const endPoints: Endpoints = {
     userInfo: '/auth/v1/user',
     createNewProject: '/rest/v1/projects',
     getAllProjects: '/rest/v1/rpc/get_projects',
-    // byId: (id) => `/users/${id}`,
+    // getProjectByID: (id) => `/${id}`,
     // name: (name) => `/users/name/${name}`,
   },
 
   updateProjectById: (projectId) => `/rest/v1/projects?id=eq.${projectId}`,
+  projectMembers: (projectId) =>
+    `/rest/v1/get_project_members?project_id=eq.${projectId}`,
 } as const;

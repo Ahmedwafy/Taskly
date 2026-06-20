@@ -1,12 +1,11 @@
-// Special Case :
-// Created this route to use inside : ProjectsMobile.tsx as it is a 'use client' component so can not use : const result = await getAllProjects(...)
-// But it's parent component is a server component : src/app/(pages)/projects/page.tsx → and can use const result = await getAllProjects(...)
+// src/app/api/get-all-projects/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllProjects } from '@/services/getAllProjects';
 import { getAuthCookies } from '@/lib/auth';
+import { baseURL, supabaseKey } from '@/lib/supabase';
+import { endPoints } from '@/lib/endpoints';
 
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const { accessToken } = await getAuthCookies();
 
@@ -14,22 +13,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const searchParams = request.nextUrl.searchParams;
+    const searchParams = req.nextUrl.searchParams;
 
     const limit = Number(searchParams.get('limit')) || 10;
     const offset = Number(searchParams.get('offset')) || 0;
 
-    const result = await getAllProjects({
-      accessToken,
-      limit,
-      offset,
-    });
-
-    return NextResponse.json(result);
-  } catch (error) {
-    return NextResponse.json(
-      { message: 'Failed to fetch projects' },
-      { status: 500 },
+    const res = await fetch(
+      `${baseURL}${endPoints.userData.getAllProjects}?limit=${limit}&offset=${offset}`,
+      {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
     );
+
+    const data = await res.json();
+
+    return NextResponse.json(data, {
+      status: res.status,
+    });
+  } catch (err) {
+    return NextResponse.json({ message: 'Server error' }, { status: 500 });
   }
 }

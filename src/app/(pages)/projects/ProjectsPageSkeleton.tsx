@@ -23,7 +23,7 @@ export const ProjectCardSkeleton = () => (
   </div>
 );
 
-export default function ProjectsLoading() {
+export default function ProjectsPageSkeleton() {
   return (
     <main className="flex flex-col p-4 bg-background min-h-screen">
       {/* Page header skeleton */}

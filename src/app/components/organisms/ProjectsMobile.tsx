@@ -6,7 +6,8 @@ import ProjectCard from '@/app/components/molecules/ProjectCard';
 import AddProjectCard from '@/app/components/molecules/AddProjectCard';
 import Link from 'next/link';
 import { Project } from '@/types/project';
-import { ProjectCardSkeleton } from '@/app/(pages)/projects/loading';
+import ProjectsPageSkeleton from '@/app/(pages)/projects/ProjectsPageSkeleton';
+import { getAllProjects } from '@/services/getAllProjects';
 
 interface Props {
   initialProjects: Project[];
@@ -15,17 +16,17 @@ interface Props {
 }
 
 // TODO ::: If will use this logic many times → Create Custom Hook
-const fetchProjects = async (limit: number, offset: number) => {
-  const res = await fetch(
-    `/api/get-all-projects?limit=${limit}&offset=${offset}`,
-  );
+// const fetchProjects = async (limit: number, offset: number) => {
+//   const res = await fetch(
+//     `/api/get-all-projects?limit=${limit}&offset=${offset}`,
+//   );
 
-  if (!res.ok) {
-    throw new Error('Failed to fetch projects');
-  }
+//   if (!res.ok) {
+//     throw new Error('Failed to fetch projects');
+//   }
 
-  return res.json();
-};
+//   return res.json();
+// };
 
 export default function ProjectsMobile({
   initialProjects,
@@ -43,7 +44,27 @@ export default function ProjectsMobile({
 
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
+  // useEffect(() => {
+  //   const fetchProjects = async () => {
+  //     try {
+  //       const data = await getAllProjects({
+  //         limit: 10,
+  //         offset: 0,
+  //       });
+
+  //       setProjects(data.projects);
+  //     } catch (err) {
+  //       console.error(err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchProjects();
+  // }, []);
+
   // load more projects on scroll
+
   const loadMore = useCallback(async () => {
     try {
       setLoading(true);
@@ -51,7 +72,10 @@ export default function ProjectsMobile({
 
       const currentOffset = offset;
 
-      const data = await fetchProjects(limit, currentOffset);
+      const data = await getAllProjects({
+        limit,
+        offset: currentOffset,
+      });
 
       setProjects((prev) => [...prev, ...data.projects]);
 
@@ -104,7 +128,7 @@ export default function ProjectsMobile({
       {error && <p className="w-full text-center text-red-500 py-4">{error}</p>}
 
       {/* {loading && <p className="w-full text-center py-4">Loading...</p>} */}
-      {loading && <ProjectCardSkeleton />}
+      {loading && <ProjectsPageSkeleton />}
 
       {hasMore && <div ref={loaderRef} className="h-10 w-full" />}
     </section>

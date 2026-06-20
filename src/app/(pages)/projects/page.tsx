@@ -2,20 +2,24 @@
 // View User's Projects
 // Authentication
 // Redirect
-import Button from '@/app/components/atoms/Button';
-import { getAllProjects } from '@/services/getAllProjects';
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getAuthCookies } from '@/lib/auth';
 import ProjectsMobile from '../../components/organisms/ProjectsMobile';
 import EmptyState from '@/app/components/pages/EmptyState';
 import ProjectsGrid from '@/app/components/pages/ProjectsGrid';
 import DesktopPagination from '@/app/components/molecules/DesktopPagination';
+import PageHeader from '@/app/components/molecules/PageHeader';
+import * as icons from '@/../public/icons/icons';
+import { Suspense } from 'react';
+import ProjectsPageSkeleton from './ProjectsPageSkeleton';
+// import { getAllProjects } from '@/services/getAllProjects';
+import { getAllProjectsServer } from '@/services/getAllProjectsServer';
 
 export default async function Projects({
   searchParams,
 }: {
   searchParams: Promise<{ page?: string }>;
+  // searchParams: { page?: string };
 }) {
   const { accessToken } = await getAuthCookies();
 
@@ -24,6 +28,8 @@ export default async function Projects({
   }
 
   const { page } = await searchParams;
+  // const page = searchParams.page;
+
   const currentPage = Number(page) || 1;
   const limit = 10;
   const offset = (currentPage - 1) * limit;
@@ -38,10 +44,10 @@ export default async function Projects({
   // };
 
   try {
-    const result = await getAllProjects({
+    const result = await getAllProjectsServer({
       limit,
       offset,
-      accessToken,
+      // accessToken,
     });
     projects = result.projects;
     totalCount = result.totalCount; // 16
@@ -65,49 +71,42 @@ export default async function Projects({
   console.log(`Projects:::::`, projects);
 
   // in first page /projects
-  console.log({
-    currentPage, // 1
-    limit, // 10
-    offset, // 0
-    totalCount, // 16
-    totalPages, // 2
-  });
+  // console.log({
+  //   currentPage, // 1
+  //   limit, // 10
+  //   offset, // 0
+  //   totalCount, // 16
+  //   totalPages, // 2
+  // });
 
   // in second page  /projects?page=2
-  console.log({
-    currentPage, // 2
-    limit, // 10
-    offset, // 10
-    totalCount, // 16
-    totalPages, // 2
-  });
+  // console.log({
+  //   currentPage, // 2
+  //   limit, // 10
+  //   offset, // 10
+  //   totalCount, // 16
+  //   totalPages, // 2
+  // });
 
   return (
     <main className="flex flex-col justify-between p-4 bg-background! min-h-screen">
       <div className="flex-1 md:block hidden">
         {/* Header */}
-        <section className="flex justify-between w-full">
-          <header className="w-full h-fit pt-6 pl-4 flex flex-col gap-2">
-            <h1 className="headline-lg">projects</h1>
-            <span className="text-gray-500">
-              Manage and curate your projects
-            </span>
-          </header>
-
-          <Link href="/projects/add" className="hidden lg:block">
-            <Button
-              name="+ Create New Project"
-              className="w-75! mt-10 h-15 mr-8"
-            />
-          </Link>
-        </section>
+        <PageHeader
+          title="Projects"
+          icon={icons.Plus}
+          buttonName="Create New Project"
+          href="/projects/add"
+        />
 
         {projects.length === 0 ? (
           <EmptyState />
         ) : (
           <>
             {/* Desktop View */}
-            <ProjectsGrid projects={projects} />
+            <Suspense fallback={<ProjectsPageSkeleton />}>
+              <ProjectsGrid projects={projects} />
+            </Suspense>
 
             {/* pagination */}
             <DesktopPagination
