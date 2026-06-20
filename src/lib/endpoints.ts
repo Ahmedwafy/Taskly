@@ -19,6 +19,7 @@ type Endpoints = {
 
   updateProjectById: (projectId: string) => string;
   projectMembers: (projectId: string) => string;
+  createNewEpic: string;
 };
 
 export const endPoints: Endpoints = {
@@ -38,6 +39,7 @@ export const endPoints: Endpoints = {
     // name: (name) => `/users/name/${name}`,
   },
 
+  createNewEpic: '/rest/v1/epics',
   updateProjectById: (projectId) => `/rest/v1/projects?id=eq.${projectId}`,
   projectMembers: (projectId) =>
     `/rest/v1/get_project_members?project_id=eq.${projectId}`,

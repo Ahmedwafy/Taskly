@@ -8,28 +8,44 @@ export interface CreateEpicProps {
   deadline?: string;
 }
 
+// src/services/createEpics.ts
+
 export const createEpic = async (data: CreateEpicProps) => {
-  const response = await fetch('/api/epics', {
+  const payload = {
+    title: data.title.trim(),
+    project_id: data.project_id.trim(),
+    description: data.description?.trim() || null,
+    assignee_id: data.assignee_id?.trim() || null,
+
+    // If deadline is empty or just spaces, set it to null so the DB accepts it
+    deadline: data.deadline?.trim() ? data.deadline.trim() : null,
+  };
+
+  const response = await fetch('/api/create-epic', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to create epic');
+  const responseText = await response.text();
+  let res = null;
+  if (responseText) {
+    try {
+      res = JSON.parse(responseText);
+    } catch (err) {
+      console.error('Failed to parse API response as JSON:', responseText, err);
+    }
   }
 
-  return result;
+  if (!response.ok) {
+    console.error('Project creation error:', {
+      status: response.status,
+      error: res,
+    });
+    throw new Error(res?.message || 'Failed to create project');
+  }
+
+  return res;
 };
-// Body :
-// {
-//   "title": "Epic 8888",
-//   "description": "All design & implementation tasks",
-//   "assignee_id": "31c7891a-15d4-46aa-94f8-db0fb5642e15",
-//   "project_id": "298be621-59c7-4a62-ad2c-e640ff72135f",
-//   "deadline": "2025-12-30"
-// }
