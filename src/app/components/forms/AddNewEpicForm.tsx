@@ -131,11 +131,36 @@ const AddNewEpicForm = ({
           </select>
         </div>
         <Input
+          {...register('deadline', {
+            required: 'Deadline is required',
+            validate: (value) => {
+              // 1. Guard check: If there's no value, let the 'required' rule handle it
+              if (!value) return true;
+
+              // 2. Safely parse the value now that TypeScript knows it's a string
+              const selectedDate = new Date(value);
+              selectedDate.setHours(0, 0, 0, 0);
+
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+
+              return (
+                selectedDate >= today ||
+                'Deadline must be today or in the future'
+              );
+            },
+          })}
+          className="w-[49%]"
+          label="DEADLINE"
+          type="date"
+          min={new Date().toISOString().split('T')[0]}
+        />
+        {/* <Input
           {...register('deadline', {})}
           className="w-[49%]"
           label="DEADLINE"
           type="date"
-        />
+        /> */}
       </div>
       {/* --- Action Buttons --- */}
       <div className="flex flex-col-reverse gap-4 lg:flex-row justify-between lg:justify-end mt-8 ">

@@ -2,7 +2,7 @@
 import React from 'react';
 
 const page = () => {
-  return <div> {/* <Breadcrumb /> */}</div>;
+  return <div> {/* <Breadcrumb /> */}Tasks</div>;
 };
 
 export default page;

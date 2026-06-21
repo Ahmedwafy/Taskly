@@ -26,6 +26,7 @@ interface InputProps {
   ) => void;
   error?: string;
   disabled?: boolean;
+  min?: string | number;
 }
 
 const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
@@ -48,6 +49,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
       maxLength,
       requiredd,
       disabled,
+      min,
     },
     ref,
   ) => {

@@ -12,7 +12,6 @@ import PageHeader from '@/app/components/molecules/PageHeader';
 import * as icons from '@/../public/icons/icons';
 import { Suspense } from 'react';
 import ProjectsPageSkeleton from './ProjectsPageSkeleton';
-// import { getAllProjects } from '@/services/getAllProjects';
 import { getAllProjectsServer } from '@/services/getAllProjectsServer';
 
 export default async function Projects({

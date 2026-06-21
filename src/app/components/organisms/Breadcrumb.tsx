@@ -3,62 +3,64 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const labels = {
+const labels: Record<string, string> = {
   projects: 'Projects',
   members: 'Members',
   tasks: 'Tasks',
   epics: 'Epics',
   edit: 'Edit',
+  new: 'New',
 };
 
-interface BreadCrumbTypes {
+interface BreadcrumbProps {
   projectName?: string;
 }
-
-const Breadcrumb = ({ projectName }: BreadCrumbTypes) => {
-  const pathname = usePathname();
-  const segments = pathname.split('/').filter(Boolean); // ['projects', '12345', 'epics']
-  const projectId = segments[1]; // '12345'
-
-  const getSegmentLabel = (segment: string) => {
-    if (segment === projectId) return projectName;
-    return labels[segment as keyof typeof labels] ?? segment;
-  };
-
-  const getHref = (segment: string) => {
-    if (segment === 'projects') {
-      return '/projects';
-    }
-
-    if (segment === projectId) {
-      return `/projects/${projectId}/epics`;
-    }
-
-    return `/projects/${projectId}/${segment}`;
-  };
+// [projectID] = '123' or 'bd3c69cc-cad9-442e-8169-e2a689fb1a9c' or etc...
+const Breadcrumb = ({ projectName }: BreadcrumbProps) => {
+  const pathname = usePathname(); // Ex → "/projects/[projectID]/members"
+  const segments = pathname.split('/').filter(Boolean); // ["projects", [projectID] , "members"]
 
   return (
-    <nav className="flex items-center gap-2">
+    <nav className="flex items-center gap-2" aria-label="Breadcrumb">
       {segments.map((segment, index) => {
-        const href = getHref(segment);
+        // 1. Build the natural cumulative href
+        // e.g., /projects/123/members
+        let href = `/${segments.slice(0, index + 1).join('/')}`;
+
+        // 2. Identify if this specific segment is the Project ID
+        const isProjectId = index === 1 && segment !== 'projects';
+
+        // 3. FORCE the Project ID link to append '/epics'
+        if (isProjectId) {
+          href = `${href}/epics`;
+        }
+
+        const label = isProjectId ? projectName : (labels[segment] ?? segment);
         const isLast = index === segments.length - 1;
 
         return (
           <div key={href} className="flex items-center gap-2">
             {isLast ? (
-              <span className="font-medium text-gray-900">
-                {getSegmentLabel(segment)}
+              <span
+                className="text-sm font-semibold text-primary-container uppercase tracking-wider"
+                aria-current="page"
+              >
+                {label}
               </span>
             ) : (
               <Link
                 href={href}
-                className="text-gray-500 hover:text-gray-900 transition-colors"
+                className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
               >
-                {getSegmentLabel(segment)}
+                {label}
               </Link>
             )}
 
-            {!isLast && <span className="text-gray-400">/</span>}
+            {!isLast && (
+              <span className="text-gray-400" aria-hidden="true">
+                →
+              </span>
+            )}
           </div>
         );
       })}
@@ -67,12 +69,3 @@ const Breadcrumb = ({ projectName }: BreadCrumbTypes) => {
 };
 
 export default Breadcrumb;
-
-// /projects/12345/epics
-// →
-// const segments = pathname.split('/')
-// →
-// ['', 'projects', '12345', 'epics']
-// →
-// .filter(Boolean); → Now segments is : ['projects', '12345', 'epics']
-//

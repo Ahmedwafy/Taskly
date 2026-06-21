@@ -61,9 +61,9 @@ const SideBar = ({
             href: `/projects/${projectId}/members`,
           },
           {
-            label: 'Project Details',
+            label: 'Project Edit',
             icon: icons.Details,
-            alt: 'Project Details',
+            alt: 'Project Edit',
             href: `/projects/${projectId}/edit`,
           },
         ]

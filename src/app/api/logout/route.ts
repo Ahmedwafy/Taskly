@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { baseURL, supabaseKey } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
+import { clearAuthCookies } from '@/lib/auth';
 
 export async function POST() {
   try {
@@ -20,8 +21,7 @@ export async function POST() {
     }
 
     // clear cookies
-    cookieStore.delete({ name: 'access_token', path: '/' });
-    cookieStore.delete({ name: 'refresh_token', path: '/' });
+    await clearAuthCookies();
 
     return NextResponse.json({ ok: true });
   } catch (error) {

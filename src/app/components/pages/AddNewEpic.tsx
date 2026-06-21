@@ -66,7 +66,7 @@ const AddNewEpic = () => {
     try {
       await createEpic(dataToSend);
 
-      toast.success('Project created successfully');
+      toast.success('Epic created successfully');
       router.push('/projects');
     } catch (error) {
       toast.error(
