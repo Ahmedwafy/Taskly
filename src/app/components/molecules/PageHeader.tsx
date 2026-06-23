@@ -24,7 +24,7 @@ const PageHeader = ({
 }: PageHeaderTypes) => {
   const isProjectEpics = title === 'Project Epics';
   return (
-    <header className={`hidden lg:flex justify-between w-full ${className}`}>
+    <header className={`hidden md:flex justify-between w-full ${className}`}>
       {/* Header */}
       <div className="w-full h-fit pt-2 pl-4 flex flex-col gap-2">
         <div className="flex gap-4">

@@ -10,12 +10,12 @@ interface ProjectEpicsProps {
 
 const ProjectEpicsGrid = ({ projectEpics }: ProjectEpicsProps) => {
   return (
-    <div className="w-full sm:p-6 min-h-screen bg-background ">
-      <div className="flex flex-wrap gap-y-6 sm:gap-x-4 w-full mx-auto sm:justify-evenly justify-between mt-10">
+    <div className="sm:p-6 min-h-screen bg-background ">
+      <div className="flex flex-wrap gap-y-6 sm:gap-x-2 mx-auto sm:justify-evenly justify-between mt-10">
         {projectEpics.map((epic) => (
           <div
             key={epic.id}
-            className="bg-white rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between overflow-hidden relative w-full sm:w-187"
+            className="bg-white rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between overflow-hidden relative w-full sm:max-w-170"
           >
             {/* Left Accent Border */}
             <div className="hidden sm:absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-800" />

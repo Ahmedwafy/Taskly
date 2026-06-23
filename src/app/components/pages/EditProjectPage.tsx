@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import * as icons from '@/../public/icons/icons';
 import { updateProject } from '@/services/update-project';
+import PageHeader from '../molecules/PageHeader';
 
 interface EditProjectDataTypes {
   name: string;
@@ -18,15 +19,15 @@ interface EditProjectDataTypes {
 }
 interface EditProjectPageProps {
   projects: ProjectProps[];
+  projectName: string;
 }
 
-const EditProjectPage = ({ projects }: EditProjectPageProps) => {
+const EditProjectPage = ({ projects, projectName }: EditProjectPageProps) => {
   const router = useRouter();
   const params = useParams();
   const projectId = Array.isArray(params.projectId)
     ? params.projectId[0]
     : params.projectId;
-  //   console.log(projectId); // Works Well
 
   const currentProject = projects.find((p) => p.id === projectId);
 
@@ -82,7 +83,14 @@ const EditProjectPage = ({ projects }: EditProjectPageProps) => {
   }, [currentProject, reset]);
 
   return (
-    <div className="bg-background">
+    <div className="">
+      <PageHeader
+        title="Edit Projects"
+        icon={icons.Plus}
+        buttonName="Create New Project"
+        href="/projects/add"
+        projectName={projectName}
+      />
       {/* --- Card  --- */}
       <div className="mx-auto rounded-md h-auto mt-10">
         {/* --- Card Header + Form + Pro Tip */}

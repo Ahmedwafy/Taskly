@@ -13,7 +13,7 @@ export default async function ProjectMembers({
   const { projectId } = await params;
   const project = await getProjectByIdServer(projectId);
   return (
-    <div>
+    <div className="mt-10 sm:mt-0 p-5 sm:p-10 h-full">
       <ProjectMambersPage projectName={project.name} />
     </div>
   );

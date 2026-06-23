@@ -95,32 +95,3 @@ const ProjectEpics = ({ projectData, projectEpics }: ProjectEpicsProps) => {
 };
 
 export default ProjectEpics;
-
-// import PageHeader from '../molecules/PageHeader';
-// import { ProjectEpic, ProjectProps } from '@/types/shared';
-// import * as icons from '@/../public/icons/icons';
-// import ProjectEpicsGrid from '../organisms/ProjectEpicsGrid';
-
-// interface ProjectEpicsProps {
-//   projectData: ProjectProps;
-//   projectEpics: ProjectEpic[];
-// }
-
-// const ProjectEpics = ({ projectData, projectEpics }: ProjectEpicsProps) => {
-//   const { id } = projectData;
-//   return (
-//     <main className="">
-//       <PageHeader
-//         href={`/projects/${id}/epics/new`} // → Create New Epic Page
-//         title="Project Epics"
-//         buttonName="New Epic"
-//         projectName={projectData.name}
-//         icon={icons.Plus}
-//         className=""
-//       />
-//       <ProjectEpicsGrid projectEpics={projectEpics} />
-//     </main>
-//   );
-// };
-
-// export default ProjectEpics;

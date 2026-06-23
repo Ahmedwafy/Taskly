@@ -10,6 +10,7 @@ import PageHeader from '../molecules/PageHeader';
 import MambersLoadingSkeleton from '@/app/(pages)/projects/[projectId]/members/MambersLoadingSkeleton';
 import { fetchProjectMembers } from '@/features/members/membersSlice';
 import { useAppSelector, useAppDispatch } from '@/redux/reduxHooks';
+import Button from '../atoms/Button';
 // import { useAppDispatch } from '@/redux/reduxHooks';
 
 // type Member = {
@@ -55,7 +56,7 @@ const ProjectMembersPage = ({ projectName }: ProjectMembersPageProps) => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <>
+    <section className="relative">
       <PageHeader
         title="Project Members"
         icon={icons.Member}
@@ -64,8 +65,12 @@ const ProjectMembersPage = ({ projectName }: ProjectMembersPageProps) => {
         projectName={projectName}
       />
 
-      <div className="w-4xl mx-auto shadow-md rounded-2xl mt-20">
-        <div className="flex justify-between px-8 py-6 bg-surface-low rounded-t-2xl">
+      <header className="block md:hidden headline-lg text-center mt-10">
+        Project Members
+      </header>
+
+      <div className="max-w-4xl mx-auto shadow-md rounded-2xl mt-20">
+        <div className="hidden sm:flex justify-between px-8 py-6 bg-surface-low rounded-t-2xl">
           <div className="w-1/2 label-sm">MEMBER</div>
           <div className="flex justify-between w-1/2 label-sm">
             <span>ROLE</span>
@@ -82,7 +87,7 @@ const ProjectMembersPage = ({ projectName }: ProjectMembersPageProps) => {
                 <li key={member.member_id}>
                   <div className="flex px-8 py-6">
                     <div className="flex w-1/2 gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-container text-sm font-semibold text-white">
+                      <div className="flex h-10 min-w-10 items-center justify-center rounded-sm sm:rounded-xl bg-primary-container text-sm font-semibold text-white">
                         {member.metadata.name
                           .trim()
                           .split(/\s+/)
@@ -100,8 +105,8 @@ const ProjectMembersPage = ({ projectName }: ProjectMembersPageProps) => {
                         </span>
                       </div>
                     </div>
-                    <div className="flex justify-between w-1/2">
-                      <span className="text-sm font-bold bg-primary-container py-1 px-3 rounded-full text-white my-auto">
+                    <div className="flex flex-col gap-2 md:gap-0 sm:flex-row items-end sm:items-center justify-between w-full sm:w-1/2 bg-amber-20">
+                      <span className="text-sm font-bold bg-primary-container py-1 rounded-sm px-3 sm:rounded-full text-white my-auto">
                         {member.role}
                       </span>
                       <div>
@@ -115,7 +120,13 @@ const ProjectMembersPage = ({ projectName }: ProjectMembersPageProps) => {
           )}{' '}
         </div>
       </div>
-    </>
+
+      <div className="my-auto w-full flex justify-end">
+        <Button variant="primary" className="sm:hidden max-w-12.5 mt-5 h-12">
+          <Image src={icons.Member} alt="Member" />
+        </Button>
+      </div>
+    </section>
   );
 };
 

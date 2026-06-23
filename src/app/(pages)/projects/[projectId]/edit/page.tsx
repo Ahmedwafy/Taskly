@@ -47,15 +47,8 @@ export default async function EditProject({ params }: EditProjectPageProps) {
   }
 
   return (
-    <>
-      <PageHeader
-        title="Edit Projects"
-        icon={icons.Plus}
-        buttonName="Create New Project"
-        href="/projects/add"
-        projectName={project.name}
-      />
-      <EditProjectPage projects={projects} />
-    </>
+    <div className="mt-10 sm:mt-0 p-5 sm:p-10 h-full">
+      <EditProjectPage projects={projects} projectName={project.name} />
+    </div>
   );
 }
