@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import Input from '@/app/components/atoms/input';
+import Input from '@/app/components/atoms/Input';
 import Button from '@/app/components/atoms/Button';
 import { signUp } from '@/services/auth';
 import { SignUpFormData } from '@/types/shared';

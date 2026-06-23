@@ -7,6 +7,7 @@ export const ProjectSchema = z.object({
   name: z.string(),
   description: z.string(),
   created_at: z.string(),
+  created_by: z.string(),
 });
 
 export const ProjectsSchema = z.array(ProjectSchema);

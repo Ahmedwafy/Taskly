@@ -1,3 +1,5 @@
+// src → app → components → pages → EmptyState.tsx
+
 import Image from 'next/image';
 import React from 'react';
 import Button from '../atoms/Button';

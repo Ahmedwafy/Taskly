@@ -14,17 +14,21 @@ const labels: Record<string, string> = {
 
 interface BreadcrumbProps {
   projectName?: string;
+  className?: string;
 }
 // [projectID] = '123' or 'bd3c69cc-cad9-442e-8169-e2a689fb1a9c' or etc...
-const Breadcrumb = ({ projectName }: BreadcrumbProps) => {
-  const pathname = usePathname(); // Ex → "/projects/[projectID]/members"
-  const segments = pathname.split('/').filter(Boolean); // ["projects", [projectID] , "members"]
+const Breadcrumb = ({ projectName, className }: BreadcrumbProps) => {
+  const pathname = usePathname(); // Ex → "/projects/123/members"
+  const segments = pathname.split('/').filter(Boolean); // ["projects", 123 , "members"]
 
   return (
-    <nav className="flex items-center gap-2" aria-label="Breadcrumb">
+    <nav
+      className={`flex items-center gap-2 ${className}`}
+      aria-label="Breadcrumb"
+    >
       {segments.map((segment, index) => {
         // 1. Build the natural cumulative href
-        // e.g., /projects/123/members
+        // e.g. → /projects/123/members
         let href = `/${segments.slice(0, index + 1).join('/')}`;
 
         // 2. Identify if this specific segment is the Project ID

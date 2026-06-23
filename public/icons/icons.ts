@@ -19,6 +19,11 @@ import pathArrow from './pathArrow.png';
 import Add_Project_Icon from './Add.png';
 import Plus from './Plus.png';
 import Dots from './dots.png';
+import Epic from './epic.png';
+import Date from './calendar.png';
+import Stars from './Stars.png';
+import Tree from './Tree.png';
+import Chart from './Chart.png';
 
 export {
   Arrow,
@@ -42,4 +47,9 @@ export {
   Add_Project_Icon,
   Plus,
   Dots,
+  Epic,
+  Date,
+  Chart,
+  Tree,
+  Stars,
 };

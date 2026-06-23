@@ -1,7 +1,7 @@
 'use client';
 import * as icons from '../../../../public/icons/icons';
 import Button from '@/app/components/atoms/Button';
-import Input from '@/app/components/atoms/input';
+import Input from '@/app/components/atoms/Input';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';

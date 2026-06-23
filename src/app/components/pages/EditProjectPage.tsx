@@ -5,7 +5,7 @@ import Image from 'next/image';
 import CardHeader from '../molecules/CardHeader';
 import ProjectForm from '../forms/Project-Form';
 import { toast } from 'sonner';
-import { Project } from '@/types/project';
+import { ProjectProps } from '@/types/shared';
 import { useForm } from 'react-hook-form';
 import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -17,7 +17,7 @@ interface EditProjectDataTypes {
   description?: string;
 }
 interface EditProjectPageProps {
-  projects: Project[];
+  projects: ProjectProps[];
 }
 
 const EditProjectPage = ({ projects }: EditProjectPageProps) => {

@@ -17,6 +17,10 @@ type Endpoints = {
     // name: (name: string) => string;
   };
 
+  project: {
+    getProjectEpics: string;
+  };
+
   updateProjectById: (projectId: string) => string;
   projectMembers: (projectId: string) => string;
   createNewEpic: string;
@@ -37,6 +41,10 @@ export const endPoints: Endpoints = {
     getAllProjects: '/rest/v1/rpc/get_projects',
     // getProjectByID: (id) => `/${id}`,
     // name: (name) => `/users/name/${name}`,
+  },
+
+  project: {
+    getProjectEpics: `/rest/v1/project_epics?project_id=eq.`,
   },
 
   createNewEpic: '/rest/v1/epics',

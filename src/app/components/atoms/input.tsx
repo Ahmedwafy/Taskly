@@ -27,6 +27,7 @@ interface InputProps {
   error?: string;
   disabled?: boolean;
   min?: string | number;
+  epicStyle?: string;
 }
 
 const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
@@ -50,6 +51,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
       requiredd,
       disabled,
       min,
+      epicStyle,
     },
     ref,
   ) => {
@@ -132,7 +134,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
               onBlur={onBlur}
               aria-invalid={!!error}
               aria-describedby={errorId}
-              className={`w-full p-3 pr-12 border-gray-300 rounded-md ${error ? `bg-inputBgError` : `bg-[#D7E2FF]`} disabled:opacity-60 disabled:cursor-not-allowed`}
+              className={`w-full p-3 pr-12 border-gray-300 rounded-md ${error ? `bg-inputBgError` : `bg-[#D7E2FF]`} disabled:opacity-60 disabled:cursor-not-allowed ${epicStyle}`}
             />
           )}
 

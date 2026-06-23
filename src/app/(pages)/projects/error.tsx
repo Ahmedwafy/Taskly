@@ -17,20 +17,26 @@ export default function Error({
   console.error(error);
   return (
     <div className="min-h-screen flex flex-col items-center justify-center text-center gap-6">
-      <Image src={images.Error} alt="Error occurred" width={160} height={140} />
-
+      <div>
+        <Image
+          src={images.Error}
+          alt="Error occurred"
+          // width={160}
+          // height={140}
+        />
+      </div>
       <h2 className="text-2xl font-semibold text-gray-800">
         Something went wrong
       </h2>
 
       <p className="text-gray-500 max-w-sm">
-        We couldn’t load your projects. Please try again.
+        We couldnU+2019t load your projects. Please try again.
       </p>
 
       <div className="flex gap-3">
         <button
           onClick={() => reset()}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:cursor-pointer"
         >
           Try again
         </button>
@@ -39,7 +45,7 @@ export default function Error({
           Go Home
         </Link>
         {/* reset >  will re-execute page.tsx in smae scope */}
-        <Button onClick={() => reset()}>Retry</Button>
+        {/* <Button onClick={() => reset()}>Retry</Button> */}
       </div>
     </div>
   );

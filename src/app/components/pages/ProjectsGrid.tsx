@@ -2,16 +2,17 @@ import Link from 'next/link';
 import React from 'react';
 import AddProjectCard from '../molecules/AddProjectCard';
 import ProjectCard from '../molecules/ProjectCard';
-import { Project } from '@/types/project';
+
+import { ProjectProps } from '@/types/shared';
 
 type Props = {
-  projects: Project[];
+  projects: ProjectProps[];
 };
 
 const ProjectsGrid: React.FC<Props> = ({ projects }) => {
   return (
     <section className="flex flex-wrap gap-y-8 py-4 px-6 justify-between w-full mt-4">
-      {projects.map((project: Project) => (
+      {projects.map((project: ProjectProps) => (
         <Link href={`/projects/${project.id}/epics`} key={project.id}>
           <div className="w-full md:w-auto">
             <ProjectCard

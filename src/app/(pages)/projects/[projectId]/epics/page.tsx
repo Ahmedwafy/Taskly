@@ -1,8 +1,8 @@
 // src/app/(pages)/projects/[projectId]/epics/page.tsx
 
-// import AddNewEpic from '@/app/components/pages/AddNewEpic';
-import Breadcrumb from '@/app/components/organisms/Breadcrumb';
+import ProjectEpics from '@/app/components/pages/ProjectEpics';
 import { getProjectByIdServer } from '@/services/getProjectByIdServer';
+import { getProjectEpicsServer } from '@/services/getProjectEpicsServer';
 
 interface ProjectEpicsPageProps {
   params: Promise<{
@@ -15,14 +15,13 @@ export default async function ProjectEpicsPage({
 }: ProjectEpicsPageProps) {
   const { projectId } = await params;
   const project = await getProjectByIdServer(projectId);
-  console.log(`projectId`, projectId);
-  console.log(project.name);
+  const projectEpics = await getProjectEpicsServer({ projectId }); // TODO ::: Pagination
+  console.log(`projectEpics:`, projectEpics);
 
   return (
-    <div className="px-40 py-10 max-w-400 mx-auto">
-      <Breadcrumb projectName={project.name} />
-      {/* <AddNewEpic />  */}
-      Project Epics
+    <div className="mt-10 sm:mt-0 p-5 sm:p-10 h-full">
+      <ProjectEpics projectData={project} projectEpics={projectEpics} />
     </div>
   );
 }
+//

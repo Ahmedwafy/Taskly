@@ -1,8 +1,8 @@
-import { Project } from '@/types/project';
+import { ProjectProps } from '@/types/shared';
 import Link from 'next/link';
 
 interface ProjectCardProps {
-  project?: Project;
+  project?: ProjectProps;
   className?: string;
 }
 
