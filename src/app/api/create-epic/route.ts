@@ -83,17 +83,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result || { success: true }, {
       status: response.status || 201,
     });
-  } catch (error: any) {
-    // This highlights exactly what broke in your terminal logs!
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown exception';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
+    // This highlights exactly what broke in terminal logs
     console.error('CRITICAL: Create Epic Route Crashed:', {
-      message: error?.message,
-      stack: error?.stack,
+      message: errorMessage,
+      stack: errorStack,
     });
 
     return NextResponse.json(
       {
         message: 'Internal Server Error',
-        details: error?.message || 'Unknown exception',
+        details: errorMessage,
       },
       {
         status: 500,

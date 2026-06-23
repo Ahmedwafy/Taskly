@@ -1,4 +1,4 @@
-// src/app/(pages)/projects/add
+// src → app → (pages) → projects → add
 
 import AddNewProjectPage from '@/app/components/pages/AddNewProjectPage';
 

@@ -1,8 +1,3 @@
-// The Only Source Of Truth
-// src/lib/api/epics.ts
-
-//   fetchProjectEpics()
-
 import { baseURL, supabaseKey } from '@/lib/supabase';
 import { endPoints } from '../endpoints';
 import { ProjectEpic } from '@/types/shared';
@@ -12,10 +7,17 @@ interface FetchProjectEpicsParams {
   accessToken: string;
 }
 
+// Define the expected structure for backend error responses
+interface BackendErrorResponse {
+  message?: string;
+  error?: string;
+}
+
 export const fetchProjectEpics = async ({
   projectId,
   accessToken,
-}: FetchProjectEpicsParams) => {
+}: FetchProjectEpicsParams): Promise<ProjectEpic[]> => {
+  // Explicitly type the return promise
   const res = await fetch(
     `${baseURL}${endPoints.project.getProjectEpics}${projectId}`,
     {
@@ -30,8 +32,13 @@ export const fetchProjectEpics = async ({
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error((data as any)?.message || 'Failed to fetch epics');
+    // Cast to our Error interface instead of 'any'
+    const errorData = data as BackendErrorResponse;
+    throw new Error(
+      errorData.message || errorData.error || 'Failed to fetch epics',
+    );
   }
 
-  return data; // Return just the array
+  // Cast the final data to guarantee it matches your shared types
+  return data as ProjectEpic[];
 };

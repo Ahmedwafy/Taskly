@@ -1,3 +1,5 @@
+// src → app → components → organisms → Breadcrumb.tsx
+
 'use client';
 
 import Link from 'next/link';
@@ -10,6 +12,7 @@ const labels: Record<string, string> = {
   epics: 'Epics',
   edit: 'Edit',
   new: 'New',
+  add: 'Add New Project',
 };
 
 interface BreadcrumbProps {
@@ -32,7 +35,8 @@ const Breadcrumb = ({ projectName, className }: BreadcrumbProps) => {
         let href = `/${segments.slice(0, index + 1).join('/')}`;
 
         // 2. Identify if this specific segment is the Project ID
-        const isProjectId = index === 1 && segment !== 'projects';
+        const isProjectId =
+          index === 1 && segment !== 'projects' && segment !== 'add';
 
         // 3. FORCE the Project ID link to append '/epics'
         if (isProjectId) {
