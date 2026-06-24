@@ -1,5 +1,3 @@
-import React from 'react';
-import Input from '../atoms/Input';
 import Link from 'next/link';
 import Button from '../atoms/Button';
 import {
@@ -9,6 +7,7 @@ import {
   Control,
 } from 'react-hook-form';
 import { DevTool } from '@hookform/devtools';
+import Input from '../atoms/Input';
 
 interface ProjectDataTypes {
   name: string;
