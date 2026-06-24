@@ -1,13 +1,13 @@
 'use client';
 import * as icons from '../../../../public/icons/icons';
 import Button from '@/app/components/atoms/Button';
-import Input from '@/app/components/atoms/Input';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ForgotPasswordFormTypes } from '@/types/shared';
 import { forgotPasswordRequest } from '@/services/auth';
+import Input from '../atoms/Input';
 
 const ForgotPasswordForm = () => {
   const {

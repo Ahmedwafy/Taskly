@@ -1,3 +1,5 @@
+// src → components → atoms → Input.tsx
+
 'use client';
 
 import { forwardRef, useState } from 'react';

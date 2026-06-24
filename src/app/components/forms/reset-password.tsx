@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import Input from '@/app/components/atoms/Input';
-import Button from '@/app/components/atoms/Button';
 import { resetPassword } from '@/services/auth';
+import Button from '@/app/components/atoms/Button';
 import Link from 'next/link';
+import Input from '../atoms/Input';
 
 interface ResetPasswordFormData {
   password: string;
