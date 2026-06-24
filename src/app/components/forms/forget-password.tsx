@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ForgotPasswordFormTypes } from '@/types/shared';
 import { forgotPasswordRequest } from '@/services/auth';
-import Input from '../atoms/Input';
+import Input from '@/app/components/atoms/Input';
 
 const ForgotPasswordForm = () => {
   const {

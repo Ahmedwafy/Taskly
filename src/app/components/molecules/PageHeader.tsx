@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Button from '../atoms/Button';
 import { StaticImageData } from 'next/image';
 import Breadcrumb from '../organisms/Breadcrumb';
-import Input from '../atoms/Input';
+import Input from '@/app/components/atoms/Input';
 
 interface PageHeaderTypes {
   href: string;

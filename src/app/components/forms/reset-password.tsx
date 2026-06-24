@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { resetPassword } from '@/services/auth';
 import Button from '@/app/components/atoms/Button';
 import Link from 'next/link';
-import Input from '../atoms/Input';
+import Input from '@/app/components/atoms/Input';
 
 interface ResetPasswordFormData {
   password: string;

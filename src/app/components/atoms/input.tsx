@@ -32,7 +32,10 @@ interface InputProps {
   epicStyle?: string;
 }
 
-const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
+const InputField = forwardRef<
+  HTMLInputElement | HTMLTextAreaElement,
+  InputProps
+>(
   (
     {
       id,
@@ -171,6 +174,6 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
   },
 );
 
-Input.displayName = 'Input';
+InputField.displayName = 'InputField';
 
-export default Input;
+export default InputField;

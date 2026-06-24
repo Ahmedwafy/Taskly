@@ -11,7 +11,7 @@ import { DevTool } from '@hookform/devtools';
 import { toast } from 'sonner';
 import { useAppDispatch } from '@/redux/reduxHooks';
 import { loginUser } from '@/features/auth/authSlice';
-import Input from '../atoms/Input';
+import Input from '@/app/components/atoms/Input';
 
 const LogInForm = () => {
   const router = useRouter();
