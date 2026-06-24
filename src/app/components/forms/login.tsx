@@ -11,7 +11,8 @@ import { DevTool } from '@hookform/devtools';
 import { toast } from 'sonner';
 import { useAppDispatch } from '@/redux/reduxHooks';
 import { loginUser } from '@/features/auth/authSlice';
-import Input from '@/app/components/atoms/Input';
+import InputField from '../atoms/input';
+// import Input from '@/app/components/atoms/input';
 
 const LogInForm = () => {
   const router = useRouter();
@@ -86,7 +87,7 @@ const LogInForm = () => {
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         {/* If will not use <Controller /> ... The input from inside MUST use forwardRef */}
         {/* This name 'email' comes from >>> interface SignInFormData {...} */}
-        <Input
+        <InputField
           {...register('email', {
             required: 'Email is required',
             pattern: {
@@ -121,7 +122,7 @@ const LogInForm = () => {
           )}
         /> */}
 
-        <Input
+        <InputField
           {...register('password', {
             validate: passwordValidator,
           })}

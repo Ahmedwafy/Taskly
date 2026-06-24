@@ -7,7 +7,8 @@ import {
   Control,
 } from 'react-hook-form';
 import { DevTool } from '@hookform/devtools';
-import Input from '@/app/components/atoms/Input';
+import InputField from '../atoms/input';
+// import Input from '@/app/components/atoms/input';
 
 interface AddNewEpicTypes {
   title: string;
@@ -73,7 +74,7 @@ const AddNewEpicForm = ({
           TITLE <span className="text-[#BA1A1A] ">*</span>
         </span>
         <div className="w-2/3">
-          <Input
+          <InputField
             {...register('title', {
               required: required_Message,
               minLength: {
@@ -94,7 +95,7 @@ const AddNewEpicForm = ({
           <span className="text-gray-400">Optional</span>
         </p>
         <div className="w-2/3">
-          <Input
+          <InputField
             {...register('description', {
               maxLength: {
                 value: 500,
@@ -130,7 +131,7 @@ const AddNewEpicForm = ({
             ))}
           </select>
         </div>
-        <Input
+        <InputField
           {...register('deadline', {
             required: 'Deadline is required',
             validate: (value) => {

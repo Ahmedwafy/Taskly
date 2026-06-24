@@ -6,7 +6,8 @@ import Link from 'next/link';
 import Button from '../atoms/Button';
 import { StaticImageData } from 'next/image';
 import Breadcrumb from '../organisms/Breadcrumb';
-import Input from '@/app/components/atoms/Input';
+import InputField from '../atoms/input';
+// import Input from '@/app/components/atoms/input';
 
 interface PageHeaderTypes {
   href: string;
@@ -40,7 +41,7 @@ const PageHeader = ({
       {isProjectEpics ? (
         <div className="flex gap-4 w-full justify-between items-end">
           <div className="w-full relative">
-            <Input
+            <InputField
               epicStyle="h-15 absolute bottom-0!"
               placeholder="Search Epics..."
             />

@@ -7,7 +7,8 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ForgotPasswordFormTypes } from '@/types/shared';
 import { forgotPasswordRequest } from '@/services/auth';
-import Input from '@/app/components/atoms/Input';
+import InputField from '../atoms/input';
+// import Input from '@/app/components/atoms/input';
 
 const ForgotPasswordForm = () => {
   const {
@@ -78,7 +79,7 @@ const ForgotPasswordForm = () => {
         </div>
 
         <div className="flex flex-col gap-4 mt-6">
-          <Input
+          <InputField
             {...register('email', {
               required: 'Email is required.',
               pattern: {

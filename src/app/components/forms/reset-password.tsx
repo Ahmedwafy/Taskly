@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { resetPassword } from '@/services/auth';
 import Button from '@/app/components/atoms/Button';
 import Link from 'next/link';
-import Input from '@/app/components/atoms/Input';
+import InputField from '../atoms/input';
+// import Input from '@/app/components/atoms/input';
 
 interface ResetPasswordFormData {
   password: string;
@@ -162,7 +163,7 @@ const ResetPasswordForm = () => {
         </p>
 
         <form onSubmit={onFormSubmit} className="space-y-6">
-          <Input
+          <InputField
             label="New Password"
             type="password"
             placeholder="Enter your new password"
@@ -174,7 +175,7 @@ const ResetPasswordForm = () => {
             }}
           />
 
-          <Input
+          <InputField
             label="Confirm Password"
             type="password"
             placeholder="Confirm your new password"

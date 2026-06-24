@@ -7,7 +7,8 @@ import {
   Control,
 } from 'react-hook-form';
 import { DevTool } from '@hookform/devtools';
-import Input from '@/app/components/atoms/Input';
+import InputField from '../atoms/input';
+// import Input from '@/app/components/atoms/input';
 
 interface ProjectDataTypes {
   name: string;
@@ -49,7 +50,7 @@ const ProjectForm = ({
       className="flex flex-col h-full"
       noValidate
     >
-      <Input
+      <InputField
         {...register('name', {
           required: required_Message,
           minLength: {
@@ -64,7 +65,7 @@ const ProjectForm = ({
         error={errors.name?.message}
         placeholder={placeholder_Title}
       />
-      <Input
+      <InputField
         {...register('description', {
           maxLength: {
             value: 500,

@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import Input from '@/app/components/atoms/Input';
+import Input from '@/app/components/atoms/input';
 
 const SignUpForm = () => {
   const router = useRouter();
