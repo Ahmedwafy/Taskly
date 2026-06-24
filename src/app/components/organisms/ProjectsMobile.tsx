@@ -5,12 +5,12 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import ProjectCard from '@/app/components/molecules/ProjectCard';
 import AddProjectCard from '@/app/components/molecules/AddProjectCard';
 import Link from 'next/link';
-import { Project } from '@/types/project';
 import ProjectsPageSkeleton from '@/app/(pages)/projects/ProjectsPageSkeleton';
 import { getAllProjects } from '@/services/getAllProjects';
+import { ProjectProps } from '@/types/shared';
 
 interface Props {
-  initialProjects: Project[];
+  initialProjects: ProjectProps[];
   initialTotalCount: number;
   limit: number;
 }

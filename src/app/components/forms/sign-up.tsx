@@ -1,6 +1,5 @@
 ﻿'use client';
 
-import Input from '@/app/components/atoms/Input';
 import Button from '@/app/components/atoms/Button';
 import { signUp } from '@/services/auth';
 import { SignUpFormData } from '@/types/shared';
@@ -8,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import Input from '../atoms/Input';
 
 const SignUpForm = () => {
   const router = useRouter();
