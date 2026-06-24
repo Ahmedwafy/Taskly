@@ -108,10 +108,16 @@ export default async function Projects({
             </Suspense>
 
             {/* pagination */}
+
             <DesktopPagination
               currentPage={currentPage}
               totalPages={totalPages}
+              baseUrl="/projects"
             />
+            {/* <DesktopPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+            /> */}
           </>
         )}
       </div>

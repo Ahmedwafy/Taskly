@@ -1,3 +1,6 @@
+// src → app → components → molecules → PageHeader.tsxs
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import Button from '../atoms/Button';

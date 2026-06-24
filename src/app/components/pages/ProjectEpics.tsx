@@ -1,23 +1,47 @@
 // src/app/components/pages/ProjectEpics.tsx
-// src/app/components/pages/ProjectEpics.tsx
+
+'use client';
 import PageHeader from '../molecules/PageHeader';
 import { ProjectEpic, ProjectProps } from '@/types/shared';
 import * as icons from '@/../public/icons/icons';
-import * as images from '../../../../public/images/images'; // Make sure your epic image is loaded here
+import * as images from '../../../../public/images/images';
 import ProjectEpicsGrid from '../organisms/ProjectEpicsGrid';
 // import EmptyState from './EmptyState';
 import Image from 'next/image';
 import EpicsEmptyState from './EpicsEmptyState';
+import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import DesktopPagination from '../molecules/DesktopPagination';
 
 interface ProjectEpicsProps {
   projectData: ProjectProps;
   projectEpics: ProjectEpic[];
+  totalCount: number;
+  currentPage: number;
+  limit: number;
 }
 
-const ProjectEpics = ({ projectData, projectEpics }: ProjectEpicsProps) => {
+const ProjectEpics = ({
+  projectData,
+  projectEpics,
+  totalCount,
+  currentPage,
+  limit,
+}: ProjectEpicsProps) => {
   const { id, name } = projectData;
   const hasNoEpics = projectEpics.length === 0;
+  const router = useRouter();
+  const pathname = usePathname();
 
+  // Pagination ---
+  const totalPages = Math.ceil(totalCount / limit);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    // Update the URL
+    router.push(`${pathname}?page=${newPage}&limit=${limit}`);
+  };
+  // Pagination ---
   const epicValueProps = [
     {
       icon: (
@@ -89,6 +113,21 @@ const ProjectEpics = ({ projectData, projectEpics }: ProjectEpicsProps) => {
         />
       ) : (
         <ProjectEpicsGrid projectEpics={projectEpics} />
+      )}
+
+      {/* Pagination → If More Than 1 Page of Epics */}
+      {/* Pagination → Clean and Reusable */}
+      <DesktopPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
+
+      {/* (Optional) Keep info label beneath it */}
+      {totalPages > 1 && (
+        <div className="text-center text-sm text-gray-500 -mt-4 mb-4">
+          Page {currentPage} Of {totalPages} (Total epics: {totalCount})
+        </div>
       )}
     </main>
   );
