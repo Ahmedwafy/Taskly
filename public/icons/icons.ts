@@ -24,7 +24,9 @@ import Date from './calendar.png';
 import Stars from './Stars.png';
 import Tree from './Tree.png';
 import Chart from './Chart.png';
-
+import popupLogo from './popupLogo.png';
+import emptyState from './emptyState.png';
+import Close from './close.png';
 export {
   Arrow,
   Timer,
@@ -52,4 +54,7 @@ export {
   Chart,
   Tree,
   Stars,
+  popupLogo,
+  emptyState,
+  Close,
 };

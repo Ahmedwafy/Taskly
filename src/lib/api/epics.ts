@@ -14,39 +14,6 @@ interface BackendErrorResponse {
   error?: string;
 }
 
-// export const fetchProjectEpics = async ({
-//   projectId,
-//   accessToken,
-// }: FetchProjectEpicsParams): Promise<ProjectEpic[]> => {
-//   // Explicitly type the return promise
-//   const res = await fetch(
-//     `${baseURL}${endPoints.project.getProjectEpics}${projectId}`, // + &limit={LIMIT}&offset={OFFSET}
-//     {
-//       headers: {
-//         'Content-Type': 'application/json',
-//         apikey: supabaseKey,
-//         Authorization: `Bearer ${accessToken}`,
-//         Prefer: 'count=exact',
-//       },
-//     },
-//   );
-
-//   const data = await res.json();
-
-//   if (!res.ok) {
-//     // Cast to our Error interface instead of 'any'
-//     const errorData = data as BackendErrorResponse;
-//     throw new Error(
-//       errorData.message || errorData.error || 'Failed to fetch epics',
-//     );
-//   }
-
-//   // Cast the final data to guarantee it matches your shared types
-//   return data as ProjectEpic[];
-// };
-
-// src/lib/api/epics.ts
-
 interface FetchProjectEpicsParams {
   projectId: string;
   accessToken: string;
@@ -70,7 +37,9 @@ export const fetchProjectEpics = async ({
   const offset = (page - 1) * limit;
 
   const res = await fetch(
-    `${baseURL}${endPoints.project.getProjectEpics}${projectId}&limit=${limit}&offset=${offset}`,
+    // final string that Supabase expects
+    // `${baseURL}${endPoints.project.getProjectEpics}${projectId}&limit=${limit}&offset=${offset}`,
+    `${baseURL}${endPoints.project.getProjectEpics(projectId, limit, offset)}`,
     {
       headers: {
         'Content-Type': 'application/json',

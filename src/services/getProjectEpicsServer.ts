@@ -1,4 +1,4 @@
-// services/getProjectEpicsServer.ts
+// services → getProjectEpicsServer.ts
 
 import { getAuthCookies } from '@/lib/auth';
 import { fetchProjectEpics } from '@/lib/api/epics';

@@ -6,7 +6,7 @@ import { getProjectEpicsServer } from '@/services/getProjectEpicsServer';
 
 interface ProjectEpicsPageProps {
   params: Promise<{ projectId: string }>;
-  searchParams: Promise<{ page?: string; limit?: string }>; // استقبال الـ query params
+  searchParams: Promise<{ page?: string; limit?: string }>;
 }
 
 export default async function ProjectEpicsPage({
@@ -21,7 +21,6 @@ export default async function ProjectEpicsPage({
 
   const project = await getProjectByIdServer(projectId);
 
-  // Get data according to current page
   const { epics: projectEpics, totalCount } = await getProjectEpicsServer({
     projectId,
     page: currentPage,

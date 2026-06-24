@@ -34,7 +34,7 @@ export interface UserDetails {
 }
 
 export interface ProjectEpic {
-  id: string;
+  id: string; // epic id
   epic_id: string;
   title: string;
   description: string | null;

@@ -1,7 +1,8 @@
-// src → app → api → get-project-epics → route.ts
+// src → app → api → get-epics-details → route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthCookies } from '@/lib/auth';
-import { fetchProjectEpics } from '@/lib/api/epics';
+import { fetchEpicDetails } from '@/lib/api/epicsDetails';
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,18 +13,21 @@ export async function GET(req: NextRequest) {
     }
 
     const searchParams = req.nextUrl.searchParams;
+    // Align with the query keys used in getEpicDetails.ts
+    // pulls the values out of the incoming mail
     const projectId = searchParams.get('projectId');
+    const epicId = searchParams.get('epicId');
 
-    if (!projectId) {
+    if (!projectId || !epicId) {
       return NextResponse.json(
-        { message: 'Project ID is required' },
+        { message: 'Both Project ID and Epic ID are required' },
         { status: 400 },
       );
     }
 
-    const data = await fetchProjectEpics({
+    const data = await fetchEpicDetails({
       projectId,
-      accessToken,
+      epicId,
     });
 
     return NextResponse.json(data);

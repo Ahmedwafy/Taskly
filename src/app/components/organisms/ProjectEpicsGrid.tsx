@@ -1,21 +1,26 @@
-// src → app → components → organisms → ProjectEpicsGrid.tsx
-
 import { ProjectEpic } from '@/types/shared';
 import * as icons from '@/../public/icons/icons';
 import Image from 'next/image';
 
 interface ProjectEpicsProps {
   projectEpics: ProjectEpic[];
+  projectId: string;
+  onEpicClick: (epicId: string) => void; // Added the trigger prop from parent
 }
 
-const ProjectEpicsGrid = ({ projectEpics }: ProjectEpicsProps) => {
+const ProjectEpicsGrid = ({
+  projectEpics,
+  projectId,
+  onEpicClick,
+}: ProjectEpicsProps) => {
   return (
     <div className="sm:p-6 min-h-screen bg-background">
       <div className="flex flex-wrap gap-y-6 sm:gap-x-2 mx-auto sm:justify-evenly justify-between mt-10">
         {projectEpics.map((epic) => (
           <div
             key={epic.id}
-            className="bg-white rounded-xl shadow-sm border border-slate-100 sm:border-l-[6px] sm:border-l-emerald-800 flex flex-col justify-between relative w-full sm:max-w-170"
+            onClick={() => onEpicClick(epic.id)} // Triggers the detailed pop-up on click
+            className="bg-white rounded-xl shadow-sm border border-slate-100 sm:border-l-[6px] sm:border-l-emerald-800 flex flex-col justify-between relative w-full sm:max-w-170 cursor-pointer hover:shadow-md hover:border-slate-200 transition duration-200"
           >
             {/* Card Content Container */}
             <div className="p-6 sm:pl-6">
@@ -24,11 +29,19 @@ const ProjectEpicsGrid = ({ projectEpics }: ProjectEpicsProps) => {
                 <span className="bg-[#DAE2FF] text-[#003D9B] sm:bg-emerald-100 sm:text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded">
                   {epic.epic_id || 'EPIC-102'}
                 </span>
-                <Image
-                  src={icons.Dots}
-                  alt="dots"
-                  className="rotate-90 sm:rotate-0"
-                />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevents modal from popping up when clicking the menu button
+                    // Handle dropdown action here if needed
+                  }}
+                  className="p-1 hover:bg-slate-50 rounded-lg transition"
+                >
+                  <Image
+                    src={icons.Dots}
+                    alt="dots"
+                    className="rotate-90 sm:rotate-0"
+                  />
+                </button>
               </div>
 
               {/* Title */}
@@ -54,7 +67,7 @@ const ProjectEpicsGrid = ({ projectEpics }: ProjectEpicsProps) => {
                       Assignee
                     </p>
                     <p className="text-sm font-semibold text-slate-800">
-                      {epic.assignee?.name || ' Mahmoud Taha'}
+                      {epic.assignee?.name || 'Mahmoud Taha'}
                     </p>
                   </div>
                 </div>
@@ -80,7 +93,6 @@ const ProjectEpicsGrid = ({ projectEpics }: ProjectEpicsProps) => {
             <hr className="border-slate-100 hidden sm:block" />
 
             {/* Footer Row */}
-            {/* Note: Added rounded-b-xl here to keep the bottom corners clean now that parent overflow-hidden is removed */}
             <div className="hidden px-6 py-4 bg-white pl-8 sm:flex justify-between items-center text-xs text-slate-500 font-medium rounded-b-xl">
               <div className="flex items-center gap-1.5">
                 <Image src={icons.Epic} alt="member" />

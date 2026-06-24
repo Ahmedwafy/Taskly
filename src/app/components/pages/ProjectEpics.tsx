@@ -1,17 +1,17 @@
-// src/app/components/pages/ProjectEpics.tsx
-
 'use client';
+import { useState } from 'react';
 import PageHeader from '../molecules/PageHeader';
 import { ProjectEpic, ProjectProps } from '@/types/shared';
 import * as icons from '@/../public/icons/icons';
 import * as images from '../../../../public/images/images';
 import ProjectEpicsGrid from '../organisms/ProjectEpicsGrid';
-// import EmptyState from './EmptyState';
 import Image from 'next/image';
 import EpicsEmptyState from './EpicsEmptyState';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import DesktopPagination from '../molecules/DesktopPagination';
+import { getEpicDetails } from '@/services/getEpicDetails';
+import EpicDetailsPopUpModal from '../organisms/EpicDetailsPopUpModal';
 
 interface ProjectEpicsProps {
   projectData: ProjectProps;
@@ -19,6 +19,22 @@ interface ProjectEpicsProps {
   totalCount: number;
   currentPage: number;
   limit: number;
+}
+
+export interface EpicUser {
+  name?: string;
+  avatar_url?: string;
+}
+
+export interface EpicDetails {
+  id: string;
+  epic_id?: string;
+  title?: string;
+  description?: string;
+  created_by?: EpicUser;
+  assignee?: EpicUser;
+  deadline?: string;
+  created_at?: string;
 }
 
 const ProjectEpics = ({
@@ -33,15 +49,55 @@ const ProjectEpics = ({
   const router = useRouter();
   const pathname = usePathname();
 
-  // Pagination ---
+  // --- Modal & Fetching States ---
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEpic, setSelectedEpic] = useState<EpicDetails | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // --- Pagination ---
   const totalPages = Math.ceil(totalCount / limit);
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
-    // Update the URL
     router.push(`${pathname}?page=${newPage}&limit=${limit}`);
   };
-  // Pagination ---
+
+  // --- Row Click Handler ---
+  const handleEpicClick = async (epicId: string) => {
+    setIsModalOpen(true);
+    setIsLoadingDetails(true);
+    setErrorMsg(null);
+    setSelectedEpic(null);
+
+    try {
+      const data = await getEpicDetails({ projectId: id, epicId });
+      setSelectedEpic(data);
+    } catch (err) {
+      setErrorMsg(
+        err instanceof Error ? err.message : 'Failed to load epic details.',
+      );
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedEpic(null);
+    setErrorMsg(null);
+  };
+
+  // --- Formatting Helpers ---
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
   const epicValueProps = [
     {
       icon: (
@@ -84,8 +140,7 @@ const ProjectEpics = ({
   ];
 
   return (
-    <main className="w-full">
-      {/* Hide or adjust PageHeader when empty if you prefer, or keep it consistent */}
+    <main className="w-full relative">
       <PageHeader
         href={`/projects/${id}/epics/new`}
         title="Project Epics"
@@ -94,10 +149,9 @@ const ProjectEpics = ({
         icon={icons.Plus}
         className=""
       />
-
       {hasNoEpics ? (
         <EpicsEmptyState
-          imageSrc={images.Empty_State} // Points to your epics specific visual asset
+          imageSrc={images.Empty_State}
           title="No epics in this project yet."
           description="Break down your large project into manageable epics to track progress better and maintain architectural clarity."
           buttonText="Create First Epic"
@@ -112,23 +166,34 @@ const ProjectEpics = ({
           features={epicValueProps}
         />
       ) : (
-        <ProjectEpicsGrid projectEpics={projectEpics} />
+        /* Passing down the trigger function to the list grid */
+        <ProjectEpicsGrid
+          projectEpics={projectEpics}
+          projectId={projectData.id}
+          onEpicClick={handleEpicClick}
+        />
       )}
-
-      {/* Pagination → If More Than 1 Page of Epics */}
-      {/* Pagination → Clean and Reusable */}
       <DesktopPagination
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
-
-      {/* (Optional) Keep info label beneath it */}
       {totalPages > 1 && (
         <div className="text-center text-sm text-gray-500 -mt-4 mb-4">
           Page {currentPage} Of {totalPages} (Total epics: {totalCount})
         </div>
       )}
+      {/* ====== EPIC DETAILS MODAL POPUP ======*/}
+      {isModalOpen && (
+        <EpicDetailsPopUpModal
+          closeModal={closeModal}
+          selectedEpic={selectedEpic}
+          formatDate={formatDate}
+          errorMsg={errorMsg}
+          isLoadingDetails={isLoadingDetails}
+        />
+      )}
+      ```
     </main>
   );
 };
