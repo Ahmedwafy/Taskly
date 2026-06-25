@@ -17,13 +17,16 @@ type Endpoints = {
     // name: (name: string) => string;
   };
   project: {
-    // getProjectEpics: string;
     getProjectEpics: (
       projectId: string,
       limit: number,
       offset: number,
     ) => string;
     epicDetails: (projectId: string, epicId: string) => string;
+  };
+
+  epic: {
+    updateEpic: (epicId: string) => string;
   };
   updateProjectById: (projectId: string) => string;
   projectMembers: (projectId: string) => string;
@@ -53,6 +56,10 @@ export const endPoints: Endpoints = {
       `/rest/v1/project_epics?project_id=eq.${projectId}&limit=${limit}&offset=${offset}`,
     epicDetails: (projectId, epicId) =>
       `/rest/v1/project_epics?project_id=eq.${projectId}&id=eq.${epicId}`,
+  },
+
+  epic: {
+    updateEpic: (epicId) => `/rest/v1/epics?id=eq.${epicId}`,
   },
 
   createNewEpic: '/rest/v1/epics',

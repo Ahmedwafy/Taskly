@@ -2,16 +2,16 @@
 // View User's Projects
 // Authentication
 // Redirect
-import { redirect } from 'next/navigation';
-import { getAuthCookies } from '@/lib/auth';
-import ProjectsMobile from '../../components/organisms/ProjectsMobile';
-import EmptyState from '@/app/components/pages/EmptyState';
-import ProjectsGrid from '@/app/components/pages/ProjectsGrid';
-import DesktopPagination from '@/app/components/molecules/DesktopPagination';
-import PageHeader from '@/app/components/molecules/PageHeader';
 import * as icons from '@/../public/icons/icons';
-import { Suspense } from 'react';
+import EmptyState from '@/app/components/pages/EmptyState';
+import PageHeader from '@/app/components/molecules/PageHeader';
+import ProjectsGrid from '@/app/components/pages/ProjectsGrid';
+import ProjectsMobile from '../../components/organisms/ProjectsMobile';
+import DesktopPagination from '@/app/components/molecules/DesktopPagination';
 import ProjectsPageSkeleton from './ProjectsPageSkeleton';
+import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
+import { getAuthCookies } from '@/lib/auth';
 import { getAllProjectsServer } from '@/services/getAllProjectsServer';
 
 export default async function Projects({
