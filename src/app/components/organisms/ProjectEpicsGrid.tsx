@@ -4,15 +4,10 @@ import Image from 'next/image';
 
 interface ProjectEpicsProps {
   projectEpics: ProjectEpic[];
-  projectId: string;
   onEpicClick: (epicId: string) => void; // Added the trigger prop from parent
 }
 
-const ProjectEpicsGrid = ({
-  projectEpics,
-  projectId,
-  onEpicClick,
-}: ProjectEpicsProps) => {
+const ProjectEpicsGrid = ({ projectEpics, onEpicClick }: ProjectEpicsProps) => {
   return (
     <div className="sm:p-6 min-h-screen bg-background">
       <div className="flex flex-wrap gap-y-6 sm:gap-x-2 mx-auto sm:justify-evenly justify-between mt-10">

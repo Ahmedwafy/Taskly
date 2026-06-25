@@ -195,7 +195,6 @@ const ProjectEpics = ({
       ) : (
         <ProjectEpicsGrid
           projectEpics={projectEpics}
-          projectId={projectData.id}
           onEpicClick={handleEpicClick}
         />
       )}
