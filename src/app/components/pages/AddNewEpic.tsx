@@ -1,6 +1,4 @@
-// src/app/components/pages/AddNewEpics.tsx
-
-// Projects > Project-Name > Epics > New Epic
+// src → app → components → pages → AddNewEpics.tsx
 
 'use client';
 import { toast } from 'sonner';

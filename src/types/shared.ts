@@ -44,3 +44,15 @@ export interface ProjectEpic {
   assignee: UserDetails;
 }
 // --------------------------------
+export interface UpdateEpicPayload {
+  title?: string;
+  description?: string;
+  assignee_id?: string | null;
+  deadline?: string | null;
+}
+
+export interface UpdateEpicArgs {
+  epicId: string;
+  payload: UpdateEpicPayload;
+}
+// --------------------------------

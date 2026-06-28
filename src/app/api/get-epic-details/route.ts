@@ -13,8 +13,7 @@ export async function GET(req: NextRequest) {
     }
 
     const searchParams = req.nextUrl.searchParams;
-    // Align with the query keys used in getEpicDetails.ts
-    // pulls the values out of the incoming mail
+
     const projectId = searchParams.get('projectId');
     const epicId = searchParams.get('epicId');
 

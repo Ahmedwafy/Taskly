@@ -1,17 +1,25 @@
+// src → app → components → pages → ProjectEpics.tsx
+
 'use client';
-import { useState } from 'react';
-import PageHeader from '../molecules/PageHeader';
-import { ProjectEpic, ProjectProps } from '@/types/shared';
+
 import * as icons from '@/../public/icons/icons';
 import * as images from '../../../../public/images/images';
-import ProjectEpicsGrid from '../organisms/ProjectEpicsGrid';
-import Image from 'next/image';
-import EpicsEmptyState from './EpicsEmptyState';
-import { useRouter } from 'next/navigation';
-import { usePathname } from 'next/navigation';
-import DesktopPagination from '../molecules/DesktopPagination';
+import { useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { getEpicDetails } from '@/services/getEpicDetails';
-import EpicDetailsPopUpModal from '../organisms/EpicDetailsPopUpModal';
+import { ProjectEpic, ProjectProps } from '@/types/shared';
+import Image from 'next/image';
+import PageHeader from '../molecules/PageHeader';
+import EpicsEmptyState from './EpicsEmptyState';
+import ProjectEpicsGrid from '../organisms/ProjectEpicsGrid';
+import DesktopPagination from '../molecules/DesktopPagination';
+// 1. Single source of truth import for structural interfaces
+import EpicDetailsPopUpModal, {
+  EpicDetails,
+} from '../organisms/EpicDetailsPopUpModal';
+import { useAppSelector } from '@/redux/reduxHooks';
+import { updateEpicByID } from '@/services/updateEpicByID';
+import { toast } from 'sonner';
 
 interface ProjectEpicsProps {
   projectData: ProjectProps;
@@ -19,22 +27,6 @@ interface ProjectEpicsProps {
   totalCount: number;
   currentPage: number;
   limit: number;
-}
-
-export interface EpicUser {
-  name?: string;
-  avatar_url?: string;
-}
-
-export interface EpicDetails {
-  id: string;
-  epic_id?: string;
-  title?: string;
-  description?: string;
-  created_by?: EpicUser;
-  assignee?: EpicUser;
-  deadline?: string;
-  created_at?: string;
 }
 
 const ProjectEpics = ({
@@ -48,16 +40,17 @@ const ProjectEpics = ({
   const hasNoEpics = projectEpics.length === 0;
   const router = useRouter();
   const pathname = usePathname();
+  const members = useAppSelector((state) => state.members.list);
 
   // --- Modal & Fetching States ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEpic, setSelectedEpic] = useState<EpicDetails | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [, setIsSaving] = useState(false);
 
   // --- Pagination ---
   const totalPages = Math.ceil(totalCount / limit);
-
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
     router.push(`${pathname}?page=${newPage}&limit=${limit}`);
@@ -69,7 +62,6 @@ const ProjectEpics = ({
     setIsLoadingDetails(true);
     setErrorMsg(null);
     setSelectedEpic(null);
-
     try {
       const data = await getEpicDetails({ projectId: id, epicId });
       setSelectedEpic(data);
@@ -139,6 +131,41 @@ const ProjectEpics = ({
     },
   ];
 
+  const handleUpdateEpicField = async (
+    epicId: string,
+    updatedFields: Partial<EpicDetails> & { assignee_id?: string | null },
+  ) => {
+    if (!selectedEpic) return;
+
+    const previousState = { ...selectedEpic };
+
+    // Optimistic UI Update
+    setSelectedEpic((prev) => (prev ? { ...prev, ...updatedFields } : null));
+    setIsSaving(true);
+
+    try {
+      const { title, description, assignee_id, deadline } = updatedFields;
+      const rawPayload = { title, description, assignee_id, deadline };
+
+      const payload = Object.fromEntries(
+        Object.entries(rawPayload).filter(([, value]) => value !== undefined),
+      );
+
+      if (Object.keys(payload).length === 0) return;
+
+      await updateEpicByID({ epicId, payload });
+      router.refresh();
+
+      // Confirms the blur save completed successfully
+      toast.success(`Epic Updated Successfully`);
+    } catch (err) {
+      setSelectedEpic(previousState);
+      toast.error(`Failed to update epic. Please try again.`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <main className="w-full relative">
       <PageHeader
@@ -166,10 +193,8 @@ const ProjectEpics = ({
           features={epicValueProps}
         />
       ) : (
-        /* Passing down the trigger function to the list grid */
         <ProjectEpicsGrid
           projectEpics={projectEpics}
-          projectId={projectData.id}
           onEpicClick={handleEpicClick}
         />
       )}
@@ -183,17 +208,20 @@ const ProjectEpics = ({
           Page {currentPage} Of {totalPages} (Total epics: {totalCount})
         </div>
       )}
+
       {/* ====== EPIC DETAILS MODAL POPUP ======*/}
       {isModalOpen && (
         <EpicDetailsPopUpModal
+          key={selectedEpic?.id || 'epic-modal-closed'} // → The key forces React to reset local state whenever the epic changes!
           closeModal={closeModal}
           selectedEpic={selectedEpic}
           formatDate={formatDate}
           errorMsg={errorMsg}
           isLoadingDetails={isLoadingDetails}
+          membersData={members}
+          handleUpdateEpicField={handleUpdateEpicField}
         />
       )}
-      ```
     </main>
   );
 };
