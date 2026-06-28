@@ -19,7 +19,7 @@ interface BreadcrumbProps {
   projectName?: string;
   className?: string;
 }
-// [projectID] = '123' or 'bd3c69cc-cad9-442e-8169-e2a689fb1a9c' or etc...
+// [projectID] = '123'
 const Breadcrumb = ({ projectName, className }: BreadcrumbProps) => {
   const pathname = usePathname(); // Ex → "/projects/123/members"
   const segments = pathname.split('/').filter(Boolean); // ["projects", 123 , "members"]

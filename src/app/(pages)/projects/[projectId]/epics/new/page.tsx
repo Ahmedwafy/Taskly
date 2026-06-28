@@ -1,4 +1,4 @@
-// src/app/(pages)/projects/[projectId]/epics/new/page.tsx
+// src → app → (pages) → projects → [projectId] → epics → new → page.tsx
 
 import Breadcrumb from '@/app/components/organisms/Breadcrumb';
 import AddNewEpic from '@/app/components/pages/AddNewEpic';
@@ -17,9 +17,9 @@ export default async function AndNewEpic({ params }: ProjectEpicsPageProps) {
   console.log(project.name);
 
   return (
-    <div className="px-40 py-10 max-w-400 mx-auto">
+    <main className="px-40 py-10 max-w-400 mx-auto">
       <Breadcrumb projectName={project.name} />
       <AddNewEpic />
-    </div>
+    </main>
   );
 }

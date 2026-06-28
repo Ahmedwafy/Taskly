@@ -20,16 +20,16 @@ interface InputProps {
   optional?: string;
   maxLength?: number;
   requiredd?: boolean;
+  error?: string;
+  disabled?: boolean;
+  min?: string | number;
+  epicStyle?: string;
   onChange?: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
   onBlur?: (
     event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
-  error?: string;
-  disabled?: boolean;
-  min?: string | number;
-  epicStyle?: string;
 }
 
 const InputField = forwardRef<
@@ -55,8 +55,8 @@ const InputField = forwardRef<
       maxLength,
       requiredd,
       disabled,
-      min,
       epicStyle,
+      min,
     },
     ref,
   ) => {
@@ -136,6 +136,7 @@ const InputField = forwardRef<
                   setInternalValue(e.target.value);
                 if (onChange) onChange(e);
               }}
+              min={min}
               onBlur={onBlur}
               aria-invalid={!!error}
               aria-describedby={errorId}

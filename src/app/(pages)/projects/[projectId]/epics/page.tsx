@@ -28,7 +28,7 @@ export default async function ProjectEpicsPage({
   });
 
   return (
-    <div className="mt-10 sm:mt-0 p-5 sm:p-10 h-full">
+    <main className="mt-10 sm:mt-0 p-5 sm:p-10 h-full">
       <ProjectEpics
         projectData={project}
         projectEpics={projectEpics}
@@ -36,6 +36,6 @@ export default async function ProjectEpicsPage({
         currentPage={currentPage}
         limit={currentLimit}
       />
-    </div>
+    </main>
   );
 }

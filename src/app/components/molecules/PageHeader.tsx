@@ -37,7 +37,7 @@ const PageHeader = ({
         <h1 className="display-lg">{title}</h1>
       </div>
 
-      {/* Button */}
+      {/* Blue Button */}
       {isProjectEpics ? (
         <div className="flex gap-4 w-full justify-between items-end">
           <div className="w-full relative">

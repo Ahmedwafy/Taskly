@@ -1,10 +1,11 @@
 // src/services/getProjectByIdServer.ts
 
+import { cache } from 'react';
 import { getAuthCookies } from '@/lib/auth';
 import { baseURL, supabaseKey } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
 
-export const getProjectByIdServer = async (projectId: string) => {
+export const getProjectByIdServer = cache(async (projectId: string) => {
   const { accessToken } = await getAuthCookies();
 
   if (!accessToken) {
@@ -24,8 +25,6 @@ export const getProjectByIdServer = async (projectId: string) => {
     },
   );
 
-  const data = await response.json();
-
   if (!response.ok) {
     throw {
       status: response.status,
@@ -33,5 +32,22 @@ export const getProjectByIdServer = async (projectId: string) => {
     };
   }
 
+  const data = await response.json();
   return data[0] ?? null;
-};
+});
+
+// Why used cache ?
+// To be able to →
+
+// Component 1:
+// const project = await getProjectByIdServer(projectId);
+
+// Component 2:
+// const project = await getProjectByIdServer(projectId);
+
+// Component 3:
+// const project = await getProjectByIdServer(projectId);
+
+// and more
+
+// Network Cost: 1 request to Supabase.

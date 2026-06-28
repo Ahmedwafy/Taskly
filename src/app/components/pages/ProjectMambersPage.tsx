@@ -1,5 +1,4 @@
 // src/app/components/pages/ProjectMembersPage.tsx
-// here used reduc thunk + redux tool kit to → fetch members'd data and store data
 'use client';
 
 import { useEffect } from 'react';
@@ -11,16 +10,6 @@ import MambersLoadingSkeleton from '@/app/(pages)/projects/[projectId]/members/M
 import { fetchProjectMembers } from '@/features/members/membersSlice';
 import { useAppSelector, useAppDispatch } from '@/redux/reduxHooks';
 import Button from '../atoms/Button';
-// import { useAppDispatch } from '@/redux/reduxHooks';
-
-// type Member = {
-//   member_id: string;
-//   email: string;
-//   role: string;
-//   metadata: {
-//     name: string;
-//   };
-// };
 
 interface ProjectMembersPageProps {
   projectName: string;
@@ -33,18 +22,26 @@ const ProjectMembersPage = ({ projectName }: ProjectMembersPageProps) => {
     ? params.projectId[0]
     : (params.projectId ?? '');
 
-  // console.log(projectId); // bac9d718-56d0-4467-958c-e5840c4aaada
-
+  // 1 ── Redux members state ──
   const {
     list: members,
+    isFetched,
     loading,
     error,
   } = useAppSelector((state) => state.members);
-
+  // 2 ── conditional fetch ──
   useEffect(() => {
     if (!projectId) return;
-    dispatch(fetchProjectMembers(projectId));
-  }, [projectId, dispatch]);
+
+    // Check if the current members in store belong to a completely different project ID
+    const isDifferentProject =
+      members.length > 0 && members[0].project_id !== projectId;
+
+    // Only dispatch if it hasn't been fetched yet, OR we just swapped to a different project
+    if ((!isFetched && !loading) || isDifferentProject) {
+      dispatch(fetchProjectMembers(projectId as string));
+    }
+  }, [projectId, isFetched, loading, members, dispatch]);
 
   if (loading)
     return (

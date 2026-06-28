@@ -1,7 +1,5 @@
 // src → app → components → pages → ProjectEpics.tsx
-
 'use client';
-
 import * as icons from '@/../public/icons/icons';
 import * as images from '../../../../public/images/images';
 import { useState } from 'react';
@@ -167,7 +165,7 @@ const ProjectEpics = ({
   };
 
   return (
-    <main className="w-full relative">
+    <section className="w-full relative">
       <PageHeader
         href={`/projects/${id}/epics/new`}
         title="Project Epics"
@@ -220,9 +218,10 @@ const ProjectEpics = ({
           isLoadingDetails={isLoadingDetails}
           membersData={members}
           handleUpdateEpicField={handleUpdateEpicField}
+          projectId={id}
         />
       )}
-    </main>
+    </section>
   );
 };
 

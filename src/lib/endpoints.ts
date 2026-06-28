@@ -23,6 +23,7 @@ type Endpoints = {
       offset: number,
     ) => string;
     epicDetails: (projectId: string, epicId: string) => string;
+    createNewTask: string;
   };
 
   epic: {
@@ -56,6 +57,7 @@ export const endPoints: Endpoints = {
       `/rest/v1/project_epics?project_id=eq.${projectId}&limit=${limit}&offset=${offset}`,
     epicDetails: (projectId, epicId) =>
       `/rest/v1/project_epics?project_id=eq.${projectId}&id=eq.${epicId}`,
+    createNewTask: `/rest/v1/tasks`,
   },
 
   epic: {
