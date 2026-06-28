@@ -27,6 +27,8 @@ import Chart from './Chart.png';
 import popupLogo from './popupLogo.png';
 import emptyState from './emptyState.png';
 import Close from './close.png';
+import dropDownArrow from './dropDownArrow.png';
+
 export {
   Arrow,
   Timer,
@@ -57,4 +59,5 @@ export {
   popupLogo,
   emptyState,
   Close,
+  dropDownArrow,
 };

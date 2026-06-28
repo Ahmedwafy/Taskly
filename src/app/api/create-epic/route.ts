@@ -1,4 +1,4 @@
-// src/app/api/create-epic/route.ts
+// src → app → api → create-epic → route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthCookies } from '@/lib/auth';
 import { endPoints } from '@/lib/endpoints';
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(targetURL, {
       method: 'POST',
       headers: {
-        apiKey: supabaseKey || '',
+        apiKey: supabaseKey,
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },

@@ -1,16 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-// import { signIn } from '@/services/auth';
 import { SignInFormData } from '@/types/shared';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Button from '@/app/components/atoms/Button';
 import { useForm } from 'react-hook-form';
 import { DevTool } from '@hookform/devtools';
 import { toast } from 'sonner';
 import { useAppDispatch } from '@/redux/reduxHooks';
 import { loginUser } from '@/features/auth/authSlice';
+import Link from 'next/link';
+import Button from '@/app/components/atoms/Button';
 import InputField from '../atoms/input';
 // import Input from '@/app/components/atoms/input';
 
@@ -29,6 +28,9 @@ const LogInForm = () => {
     defaultValues: { email: '', password: '' },
   });
 
+  // import { SubmitHandler } from 'react-hook-form';
+  //   const onSubmit: SubmitHandler<SignInFormData> = (data) => {...}
+  // - - - or - - -
   const onSubmit = async (data: SignInFormData) => {
     setAuthError('');
 

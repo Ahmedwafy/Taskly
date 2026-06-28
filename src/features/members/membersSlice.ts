@@ -7,7 +7,7 @@ import { getProjectMembers } from '@/services/getProjectMembers';
 
 export interface ProjectMember {
   member_id: string;
-  project_id: string;
+  project_id: string; // Every member has the projectID they belong to. + every single member inside that array will share the exact same project_id.
   user_id: string;
   role: string;
   email: string;
@@ -25,12 +25,14 @@ interface MembersState {
   list: ProjectMember[];
   loading: boolean;
   error: string | null;
+  isFetched: boolean;
 }
 
 const initialState: MembersState = {
   list: [],
   loading: false,
   error: null,
+  isFetched: false,
 };
 
 // thunk
@@ -45,6 +47,15 @@ export const fetchProjectMembers = createAsyncThunk(
         error instanceof Error ? error.message : 'Failed to load members',
       );
     }
+  },
+  {
+    condition: (projectId, { getState }) => {
+      const { members } = getState() as { members: MembersState };
+
+      if (members.loading || members.isFetched) {
+        return false;
+      }
+    },
   },
 );
 
@@ -61,6 +72,7 @@ const membersSlice = createSlice({
       .addCase(fetchProjectMembers.fulfilled, (state, action) => {
         state.loading = false;
         state.list = action.payload;
+        state.isFetched = true;
       })
       .addCase(fetchProjectMembers.rejected, (state, action) => {
         state.loading = false;

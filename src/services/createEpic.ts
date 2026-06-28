@@ -1,4 +1,4 @@
-// src/services/createEpics.ts
+// src → services → createEpics.ts
 
 export interface CreateEpicProps {
   title: string;
@@ -7,8 +7,6 @@ export interface CreateEpicProps {
   assignee_id?: string;
   deadline?: string;
 }
-
-// src/services/createEpics.ts
 
 export const createEpic = async (data: CreateEpicProps) => {
   const payload = {

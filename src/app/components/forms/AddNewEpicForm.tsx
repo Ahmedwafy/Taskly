@@ -8,7 +8,6 @@ import {
 } from 'react-hook-form';
 import { DevTool } from '@hookform/devtools';
 import InputField from '../atoms/input';
-// import Input from '@/app/components/atoms/input';
 
 interface AddNewEpicTypes {
   title: string;
@@ -73,6 +72,8 @@ const AddNewEpicForm = ({
         <span className="label-sm text-gray-500">
           TITLE <span className="text-[#BA1A1A] ">*</span>
         </span>
+
+        {/* ○ ○ ○ Titl Input ○ ○ ○ */}
         <div className="w-2/3">
           <InputField
             {...register('title', {
@@ -94,6 +95,8 @@ const AddNewEpicForm = ({
           <span>DESCRIPTION</span>
           <span className="text-gray-400">Optional</span>
         </p>
+
+        {/* ○ ○ ○ Description Text-area ○ ○ ○ */}
         <div className="w-2/3">
           <InputField
             {...register('description', {
@@ -119,11 +122,20 @@ const AddNewEpicForm = ({
           >
             ASSIGNEE
           </label>
+
+          {/* ○ ○ ○ Assignee Selection Input ○ ○ ○ */}
           <select
             id="assignee"
-            {...register('assignee_id')}
-            className={`py-3 px-3 border-gray-300 rounded-md bg-[#D7E2FF]`}
+            {...register('assignee_id', {
+              required: 'Please select an assignee',
+            })}
+            className="py-3 px-3 border-gray-300 rounded-md bg-[#D7E2FF]"
+            defaultValue=""
           >
+            <option value="" disabled>
+              Select an assignee...
+            </option>
+
             {membersData?.map((member) => (
               <option key={member.user_id} value={member.user_id}>
                 {member.metadata.name}
@@ -131,6 +143,8 @@ const AddNewEpicForm = ({
             ))}
           </select>
         </div>
+
+        {/* ○ ○ ○ deadline input ○ ○ ○ */}
         <InputField
           {...register('deadline', {
             required: 'Deadline is required',
@@ -156,14 +170,9 @@ const AddNewEpicForm = ({
           type="date"
           min={new Date().toISOString().split('T')[0]}
         />
-        {/* <Input
-          {...register('deadline', {})}
-          className="w-[49%]"
-          label="DEADLINE"
-          type="date"
-        /> */}
       </div>
-      {/* --- Action Buttons --- */}
+
+      {/* ○ ○ ○ Action Buttons ○ ○ ○ */}
       <div className="flex flex-col-reverse gap-4 lg:flex-row justify-between lg:justify-end mt-8 ">
         <Link
           href="/projects"

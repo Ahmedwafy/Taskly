@@ -1,9 +1,22 @@
 // src/services/getProjectEpics.ts
 // Call Only In --- Client Components ---
 
-export const getProjectEpics = async ({ projectId }: { projectId: string }) => {
-  const res = await fetch(`/api/get-project-epics?projectId=${projectId}`);
+// src/services/getProjectEpics.ts
+import { ProjectEpic } from '@/types/shared';
 
+interface GetProjectEpicsParams {
+  projectId: string;
+}
+
+export interface ClientEpicsResponse {
+  epics: ProjectEpic[];
+  totalCount: number;
+}
+
+export const getProjectEpics = async ({
+  projectId,
+}: GetProjectEpicsParams): Promise<ClientEpicsResponse> => {
+  const res = await fetch(`/api/get-project-epics?projectId=${projectId}`);
   const data = await res.json();
 
   if (!res.ok) {
@@ -12,17 +25,16 @@ export const getProjectEpics = async ({ projectId }: { projectId: string }) => {
 
   return data;
 };
-
 // Client Component
 //       │
-//       ▼
-// getProjectEpics()
+//       ▼  [Triggered on mount via useEffect]
+// getProjectEpics({ projectId })
+//       │
+//       ▼  [Hits local Next.js Route]
+// /api/get-project-epics?projectId=...
+//       │
+//       ▼  [Server fetches with Auth Token]
+// fetchProjectEpics({ projectId, accessToken })
 //       │
 //       ▼
-// /api/get-project-epics
-//       │
-//       ▼
-// fetchProjectEpics()
-//       │
-//       ▼
-// Supabase / Backend
+// Backend / Supabase

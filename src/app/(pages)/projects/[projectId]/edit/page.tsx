@@ -4,8 +4,6 @@
 import { redirect } from 'next/navigation';
 import { getAuthCookies } from '@/lib/auth';
 import EditProjectPage from '@/app/components/pages/EditProjectPage';
-import PageHeader from '@/app/components/molecules/PageHeader';
-import * as icons from '@/../public/icons/icons';
 import { getAllProjectsServer } from '@/services/getAllProjectsServer';
 import { getProjectByIdServer } from '@/services/getProjectByIdServer';
 

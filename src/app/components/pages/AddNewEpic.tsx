@@ -1,5 +1,4 @@
-// src → app → components → pages → AddNewEpics.tsx
-
+// src → app → components → pages → AddNewEpic.tsx
 'use client';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
@@ -17,12 +16,31 @@ interface AddProjectDataTypes {
   project_id: string;
   deadline?: string;
 }
+
 const AddNewEpic = () => {
-  const members = useAppSelector((state) => state.members.list); // from redux store
   const dispatch = useAppDispatch();
   const { projectId } = useParams();
-
   const router = useRouter();
+
+  // 1 ── Redux members state ──
+  const {
+    list: members,
+    isFetched,
+    loading,
+  } = useAppSelector((state) => state.members);
+  // 2 ── conditional fetch ──
+  useEffect(() => {
+    if (!projectId) return;
+
+    // Check if the current members in store belong to a completely different project ID
+    const isDifferentProject =
+      members.length > 0 && members[0].project_id !== projectId;
+
+    // Only dispatch if it hasn't been fetched yet, OR we just swapped to a different project
+    if ((!isFetched && !loading) || isDifferentProject) {
+      dispatch(fetchProjectMembers(projectId as string));
+    }
+  }, [projectId, isFetched, loading, members, dispatch]);
 
   const {
     control,
@@ -38,8 +56,6 @@ const AddNewEpic = () => {
     },
   });
 
-  // console.log(`xxxxxxxxxxxxxxxxxx`, projectId);
-
   const onSubmit = async (data: AddProjectDataTypes) => {
     const dataToSend = {
       title: data.title.trim(),
@@ -47,23 +63,10 @@ const AddNewEpic = () => {
       assignee_id: data.assignee_id?.trim() || '',
       project_id: projectId as string,
       deadline: data.deadline || '',
-
-      // ...(data.description?.trim() && {
-      //   description: data.description?.trim(),
-      // }),
-      // ...(data.assignee?.trim() && {
-      //   assignee_id: data.assignee.trim(),
-      // }),
-
-      // ...(data.deadline && {
-      //   deadline: data.deadline,
-      // }),
     };
-    // description: data.description?.trim() || '',
 
     try {
       await createEpic(dataToSend);
-
       toast.success('Epic created successfully');
       router.push('/projects');
     } catch (error) {
@@ -74,23 +77,17 @@ const AddNewEpic = () => {
     }
   };
 
-  // for testing
-  useEffect(() => {
-    console.log('projectId:', projectId);
-
-    dispatch(fetchProjectMembers(projectId as string));
-  }, [projectId, dispatch]);
-
   return (
-    <div>
-      <div className="flex flex-col gap-2 py-8">
+    <main>
+      <header className="flex flex-col gap-2 py-8">
         <h1 className="display-lg">Create New Epic</h1>
         <p className="w-1/2 title-md text-gray-400">
           Define a major project phase or high-level milestone to group related
           tasks and track architectural progress.
         </p>
-      </div>
-      {/* -- Form -- */}
+      </header>
+
+      {/* ○ ○ ○ Form ○ ○ ○ */}
       <div className="p-8 shadow-md rounded-xl bg-white">
         <AddNewEpicForm
           handleSubmit={handleSubmit}
@@ -99,7 +96,6 @@ const AddNewEpic = () => {
           isSubmitting={isSubmitting}
           errors={errors}
           control={control}
-          //
           placeholder_Title="e.g. Structural Foundation Phase"
           placeholder_Description="Describe the scope and objectives of this epic..."
           required_Message="title is required."
@@ -109,7 +105,7 @@ const AddNewEpic = () => {
           membersData={members}
         />
       </div>
-    </div>
+    </main>
   );
 };
 

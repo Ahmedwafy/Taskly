@@ -2,10 +2,12 @@
 
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
 import * as icons from '@/../public/icons/icons';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ProjectMember } from '@/features/members/membersSlice';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export interface UserProfile {
   name?: string;
@@ -34,21 +36,24 @@ interface EpicDetailsPopUpModalProps {
     epicId: string,
     updatedFields: Partial<EpicDetails> & { assignee_id?: string | null },
   ) => Promise<void>;
+  projectId: string;
 }
 
 const EpicDetailsPopUpModal = ({
-  closeModal,
   selectedEpic,
-  formatDate,
   errorMsg,
   isLoadingDetails,
   membersData,
+  projectId,
+  closeModal,
+  formatDate,
   handleUpdateEpicField,
 }: EpicDetailsPopUpModalProps) => {
   // 1. Initialize state directly from the props.
   // No useEffect required because changing the 'key' at the parent level resets this component.
   const [localTitle, setLocalTitle] = useState(selectedEpic?.title || '');
   const [localDesc, setLocalDesc] = useState(selectedEpic?.description || '');
+  const router = useRouter();
 
   // 2. Define the blur save helper
   const handleBlurSave = (
@@ -61,6 +66,17 @@ const EpicDetailsPopUpModal = ({
     if (currentValue.trim() !== originalValue.trim()) {
       handleUpdateEpicField(selectedEpic.id, { [field]: currentValue });
     }
+  };
+
+  // handle onClick → Add Task
+  const handleAddTaskNavigation = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!selectedEpic) return;
+
+    // Store the epic ID in temporary session storage [ use it in onClick '+Add Task' navigation ]
+    sessionStorage.setItem('prefilled_task_epic_id', selectedEpic.id);
+    // Navigate to the completely clean URL
+    router.push(`/projects/${projectId}/tasks/new`);
   };
 
   return (
@@ -267,12 +283,20 @@ const EpicDetailsPopUpModal = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-slate-900">Tasks</h3>
+                  {/* 1. First Add Task Button (Top Right of section) */}
                   <button
-                    onClick={() => {}}
-                    className="text-sm font-bold text-[#004dc7] hover:text-blue-800 transition"
+                    onClick={handleAddTaskNavigation}
+                    className="text-sm font-bold text-[#004dc7] hover:text-blue-800 transition cursor-pointer"
                   >
                     + Add Task
                   </button>
+                  {/* <Link
+                    href={`/projects/${projectId}/tasks/new`}
+                    // href={`/project/${projectId}/tasks/new?epicId=${selectedEpic.id}`}
+                    className="text-sm font-bold text-[#004dc7] hover:text-blue-800 transition"
+                  >
+                    + Add Task
+                  </Link> */}
                 </div>
 
                 <div className="border border-dashed border-[#dce2f5] rounded-xl p-10 flex flex-col items-center justify-center bg-[#F1F3FF] min-h-55">
@@ -282,12 +306,20 @@ const EpicDetailsPopUpModal = ({
                   <p className="text-[15px] text-slate-900 font-medium mb-5">
                     No tasks have been added to this epic yet
                   </p>
+                  {/* 2. Second Add Task Button (Inside Empty State box) */}
                   <button
-                    onClick={() => {}}
-                    className="px-5 py-2.5 bg-[#004dc7] hover:bg-[#003da1] text-white font-semibold text-sm rounded-lg transition shadow-sm flex items-center gap-1.5"
+                    onClick={handleAddTaskNavigation}
+                    className="px-5 py-2.5 bg-[#004dc7] hover:bg-[#003da1] text-white font-semibold text-sm rounded-lg transition shadow-sm flex items-center gap-1.5 cursor-pointer"
                   >
                     <span>+</span> Add Task
                   </button>
+                  {/* <Link
+                    href={`/projects/${projectId}/tasks/new`}
+                    // href={`/project/${projectId}/tasks/new?epicId=${selectedEpic.id}`}
+                    className="px-5 py-2.5 bg-[#004dc7] hover:bg-[#003da1] text-white font-semibold text-sm rounded-lg transition shadow-sm flex items-center gap-1.5"
+                  >
+                    <span>+</span> Add Task
+                  </Link> */}
                 </div>
               </div>
             </>
