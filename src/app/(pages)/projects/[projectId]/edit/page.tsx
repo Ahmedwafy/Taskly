@@ -1,11 +1,10 @@
 // src/app/(pages)/projects/[projectId]/edit/page.tsx
-// Edit Project Page
-
 import { redirect } from 'next/navigation';
-import { getAuthCookies } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { COOKIE_KEYS } from '@/lib/auth-cookie-config';
+import { fetchProjectById, fetchAllProjects } from '@/app/queries/projects'; // ✅ Import your clean queries
 import EditProjectPage from '@/app/components/pages/EditProjectPage';
-import { getAllProjectsServer } from '@/services/getAllProjectsServer';
-import { getProjectByIdServer } from '@/services/getProjectByIdServer';
+import { getAuthCookies } from '@/lib/auth';
 
 interface EditProjectPageProps {
   params: Promise<{
@@ -15,38 +14,27 @@ interface EditProjectPageProps {
 
 export default async function EditProject({ params }: EditProjectPageProps) {
   const { projectId } = await params;
-  const project = await getProjectByIdServer(projectId);
-  console.log(`projectId`, projectId);
   const { accessToken } = await getAuthCookies();
+
   if (!accessToken) {
     redirect('/login');
   }
-  let projects;
 
-  try {
-    const result = await getAllProjectsServer({
-      // accessToken,
-      limit: 1000,
-      offset: 0,
-    });
+  const [currentProject, allProjectsData] = await Promise.all([
+    fetchProjectById({ projectId, accessToken }),
+    fetchAllProjects({ accessToken }),
+  ]);
 
-    projects = result.projects;
-  } catch (error) {
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'status' in error &&
-      error.status === 401 // if token expired
-    ) {
-      redirect('/login');
-    }
-
-    throw error;
+  if (!currentProject) {
+    throw new Error('Project not found.');
   }
 
   return (
     <div className="mt-10 sm:mt-0 p-5 sm:p-10 h-full">
-      <EditProjectPage projects={projects} projectName={project.name} />
+      <EditProjectPage
+        projects={allProjectsData}
+        projectName={currentProject.name}
+      />
     </div>
   );
 }

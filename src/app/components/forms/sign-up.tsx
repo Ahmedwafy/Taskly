@@ -1,13 +1,13 @@
 ﻿'use client';
 
 import Button from '@/app/components/atoms/Button';
-import { signUp } from '@/services/auth';
 import { SignUpFormData } from '@/types/shared';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import Input from '@/app/components/atoms/input';
+import { signUpAction } from '@/app/actions/auth';
 
 const SignUpForm = () => {
   const router = useRouter();
@@ -62,6 +62,7 @@ const SignUpForm = () => {
   const hasAllThree = hasLowercase && hasUppercase && hasNumber;
   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(passwordValue);
 
+  //  ○ ○ ○ Submit with Server Actions  ○ ○ ○
   const onSubmit = async (data: SignUpFormData) => {
     const dataToSend = {
       name: data.name.trim(),
@@ -70,18 +71,20 @@ const SignUpForm = () => {
       password: data.password,
     };
 
-    try {
-      await signUp(dataToSend);
-      toast.success('Account created successfully');
-      router.push('/login');
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Something went wrong',
-      );
-      console.error('Error submitting sign-up form:', error);
-    }
-  };
+    // 1. Remove the try/catch block because server actions return status objects instead of throwing
+    const result = await signUpAction(dataToSend);
 
+    // 2. Explicitly handle the error returned from the Server Action object
+    if (result.error) {
+      toast.error(result.error);
+      console.error('Error submitting sign-up form:', result.error);
+      return; // Stop execution here
+    }
+
+    // 3. If no error is found, it's a guaranteed success!
+    toast.success('Account created successfully');
+    router.push('/login');
+  };
   return (
     <div className="flex flex-col gap-4 justify-center items-center mx-auto max-w-xl px-4 py-8 mt-10 rounded-lg h-full shadow-md bg-background">
       <div className="flex flex-col md:justify-center gap-2 md:text-center w-full relative left-10 sm:left-0">

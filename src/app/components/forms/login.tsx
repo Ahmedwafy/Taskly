@@ -28,25 +28,25 @@ const LogInForm = () => {
     defaultValues: { email: '', password: '' },
   });
 
-  // import { SubmitHandler } from 'react-hook-form';
-  //   const onSubmit: SubmitHandler<SignInFormData> = (data) => {...}
-  // - - - or - - -
   const onSubmit = async (data: SignInFormData) => {
     setAuthError('');
 
     try {
+      // The thunk now safely un-wraps and fires 'catch' if data.error was returned
       await dispatch(
         loginUser({
-          ...data,
-          rememberMe,
+          email: data.email,
+          password: data.password,
+          rememberMe: rememberMe, // Attaches local state
         }),
       ).unwrap();
 
       toast.success('Welcome back!');
       router.push('/projects');
     } catch (error) {
+      // 'error' here is now safely guaranteed to be the string passed from rejectWithValue
       const message =
-        error instanceof Error ? error.message : 'Something went wrong';
+        typeof error === 'string' ? error : 'Something went wrong';
 
       setAuthError(message);
       toast.error(message);

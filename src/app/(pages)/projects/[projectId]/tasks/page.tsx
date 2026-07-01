@@ -1,7 +1,8 @@
 // src → app → (pages) → projects → [projectId] → tasks → page.tsx
-
+import { redirect } from 'next/navigation';
 import ProjectTasks from '@/app/components/pages/ProjectTasks';
-import { getProjectByIdServer } from '@/services/getProjectByIdServer';
+import { fetchProjectById } from '@/app/queries/projects';
+import { getAuthCookies } from '@/lib/auth';
 
 interface ProjectTasksPageProps {
   params: Promise<{
@@ -9,9 +10,22 @@ interface ProjectTasksPageProps {
   }>;
 }
 
-const page = async ({ params }: ProjectTasksPageProps) => {
+const ProjectTasksPage = async ({ params }: ProjectTasksPageProps) => {
   const { projectId } = await params;
-  const project = await getProjectByIdServer(projectId);
+  const { accessToken } = await getAuthCookies();
+
+  if (!accessToken) {
+    redirect('/login');
+  }
+
+  const project = await fetchProjectById({
+    projectId,
+    accessToken,
+  });
+
+  if (!project) {
+    throw new Error('Project not found');
+  }
 
   return (
     <main className="mt-10 sm:mt-0 p-5 sm:p-10 h-full bg-background">
@@ -20,4 +34,4 @@ const page = async ({ params }: ProjectTasksPageProps) => {
   );
 };
 
-export default page;
+export default ProjectTasksPage;

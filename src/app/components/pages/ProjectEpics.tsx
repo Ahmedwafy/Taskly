@@ -4,19 +4,17 @@ import * as icons from '@/../public/icons/icons';
 import * as images from '../../../../public/images/images';
 import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { getEpicDetails } from '@/services/getEpicDetails';
 import { ProjectEpic, ProjectProps } from '@/types/shared';
 import Image from 'next/image';
 import PageHeader from '../molecules/PageHeader';
 import EpicsEmptyState from './EpicsEmptyState';
 import ProjectEpicsGrid from '../organisms/ProjectEpicsGrid';
 import DesktopPagination from '../molecules/DesktopPagination';
-// 1. Single source of truth import for structural interfaces
 import EpicDetailsPopUpModal, {
   EpicDetails,
 } from '../organisms/EpicDetailsPopUpModal';
 import { useAppSelector } from '@/redux/reduxHooks';
-import { updateEpicByID } from '@/services/updateEpicByID';
+import { updateEpicAction } from '@/app/actions/epics';
 import { toast } from 'sonner';
 
 interface ProjectEpicsProps {
@@ -61,7 +59,23 @@ const ProjectEpics = ({
     setErrorMsg(null);
     setSelectedEpic(null);
     try {
-      const data = await getEpicDetails({ projectId: id, epicId });
+      // Direct query to local secure API route proxy handler
+      const res = await fetch(
+        `/api/get-epic-details?projectId=${id}&epicId=${epicId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.message || 'Failed to load epic details.');
+      }
+
       setSelectedEpic(data);
     } catch (err) {
       setErrorMsg(
@@ -137,7 +151,6 @@ const ProjectEpics = ({
 
     const previousState = { ...selectedEpic };
 
-    // Optimistic UI Update
     setSelectedEpic((prev) => (prev ? { ...prev, ...updatedFields } : null));
     setIsSaving(true);
 
@@ -151,14 +164,20 @@ const ProjectEpics = ({
 
       if (Object.keys(payload).length === 0) return;
 
-      await updateEpicByID({ epicId, payload });
-      router.refresh();
+      const result = await updateEpicAction({ epicId, payload });
 
-      // Confirms the blur save completed successfully
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
       toast.success(`Epic Updated Successfully`);
     } catch (err) {
       setSelectedEpic(previousState);
-      toast.error(`Failed to update epic. Please try again.`);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : `Failed to update epic. Please try again.`,
+      );
     } finally {
       setIsSaving(false);
     }
@@ -210,7 +229,7 @@ const ProjectEpics = ({
       {/* ====== EPIC DETAILS MODAL POPUP ======*/}
       {isModalOpen && (
         <EpicDetailsPopUpModal
-          key={selectedEpic?.id || 'epic-modal-closed'} // → The key forces React to reset local state whenever the epic changes!
+          key={selectedEpic?.id || 'epic-modal-closed'}
           closeModal={closeModal}
           selectedEpic={selectedEpic}
           formatDate={formatDate}

@@ -1,7 +1,4 @@
 // src/app/(pages)/projects/page.tsx
-// View User's Projects
-// Authentication
-// Redirect
 import * as icons from '@/../public/icons/icons';
 import EmptyState from '@/app/components/pages/EmptyState';
 import PageHeader from '@/app/components/molecules/PageHeader';
@@ -11,81 +8,62 @@ import DesktopPagination from '@/app/components/molecules/DesktopPagination';
 import ProjectsPageSkeleton from './ProjectsPageSkeleton';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
-import { getAuthCookies } from '@/lib/auth';
-import { getAllProjectsServer } from '@/services/getAllProjectsServer';
+import { cookies } from 'next/headers';
+import { baseURL, supabaseKey } from '@/lib/supabase';
+import { endPoints } from '@/lib/endpoints';
+import { COOKIE_KEYS } from '@/lib/auth-cookie-config';
+import { ProjectsSchema } from '@/schemas/project.schema';
 
 export default async function Projects({
   searchParams,
 }: {
   searchParams: Promise<{ page?: string }>;
-  // searchParams: { page?: string };
 }) {
-  const { accessToken } = await getAuthCookies();
+  // 1. Extract access token. proxy.ts guarantees it is fresh if the session is alive!
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get(COOKIE_KEYS.ACCESS_TOKEN)?.value;
 
   if (!accessToken) {
     redirect('/login');
   }
 
+  // 2. Resolve pagination numbers
   const { page } = await searchParams;
-  // const page = searchParams.page;
-
   const currentPage = Number(page) || 1;
   const limit = 10;
   const offset = (currentPage - 1) * limit;
 
-  let projects;
-  let totalCount = 0;
-  let totalPages = 0;
+  // 3. Directly fetch from Supabase inside the component
+  const res = await fetch(
+    `${baseURL}${endPoints.userData.getAllProjects}?limit=${limit}&offset=${offset}`,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: supabaseKey,
+        Authorization: `Bearer ${accessToken}`,
+        Prefer: 'count=exact',
+      },
+      cache: 'no-store', // Ensures your data is never stale on hard refresh
+    },
+  );
 
-  // const pagination = {
-  //   limit,
-  //   offset,
-  // };
+  const data = await res.json();
 
-  try {
-    const result = await getAllProjectsServer({
-      limit,
-      offset,
-      // accessToken,
-    });
-    projects = result.projects;
-    totalCount = result.totalCount; // 16
-    totalPages = Math.ceil(totalCount / limit);
-    // totalPages = Math.ceil(16 / 10) = 2
-    // Page 1 -> Projects 1 - 10
-    // Page 2 -> Projects 11 - 16
-  } catch (error) {
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'status' in error &&
-      error.status === 401 // if token expired
-    ) {
-      redirect('/login');
-    }
-
-    throw error;
+  if (!res.ok) {
+    throw new Error(data?.message || 'Failed to load projects');
   }
 
-  console.log(`Projects:::::`, projects);
+  // 4. Validate data shape using Zod on the server side
+  const parsed = ProjectsSchema.safeParse(data);
+  if (!parsed.success) {
+    console.error('Zod Parsing Error:', parsed.error);
+    throw new Error('Invalid projects data structure returned from server.');
+  }
 
-  // in first page /projects
-  // console.log({
-  //   currentPage, // 1
-  //   limit, // 10
-  //   offset, // 0
-  //   totalCount, // 16
-  //   totalPages, // 2
-  // });
-
-  // in second page  /projects?page=2
-  // console.log({
-  //   currentPage, // 2
-  //   limit, // 10
-  //   offset, // 10
-  //   totalCount, // 16
-  //   totalPages, // 2
-  // });
+  const projects = parsed.data;
+  const contentRange = res.headers.get('content-range');
+  const totalCount = Number(contentRange?.split('/')[1] || 0);
+  const totalPages = Math.ceil(totalCount / limit);
 
   return (
     <main className="flex flex-col justify-between p-4 bg-background! min-h-screen">
@@ -107,17 +85,12 @@ export default async function Projects({
               <ProjectsGrid projects={projects} />
             </Suspense>
 
-            {/* pagination */}
-
+            {/* Pagination */}
             <DesktopPagination
               currentPage={currentPage}
               totalPages={totalPages}
               baseUrl="/projects"
             />
-            {/* <DesktopPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-            /> */}
           </>
         )}
       </div>

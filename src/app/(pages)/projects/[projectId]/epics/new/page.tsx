@@ -1,8 +1,9 @@
 // src → app → (pages) → projects → [projectId] → epics → new → page.tsx
-
+import { redirect } from 'next/navigation';
 import Breadcrumb from '@/app/components/organisms/Breadcrumb';
 import AddNewEpic from '@/app/components/pages/AddNewEpic';
-import { getProjectByIdServer } from '@/services/getProjectByIdServer';
+import { fetchProjectById } from '@/app/queries/projects';
+import { getAuthCookies } from '@/lib/auth';
 
 interface ProjectEpicsPageProps {
   params: Promise<{
@@ -10,11 +11,24 @@ interface ProjectEpicsPageProps {
   }>;
 }
 
-export default async function AndNewEpic({ params }: ProjectEpicsPageProps) {
+export default async function AddNewEpicPage({
+  params,
+}: ProjectEpicsPageProps) {
   const { projectId } = await params;
-  const project = await getProjectByIdServer(projectId);
-  console.log(`projectId`, projectId);
-  console.log(project.name);
+  const { accessToken } = await getAuthCookies();
+
+  if (!accessToken) {
+    redirect('/login');
+  }
+
+  const project = await fetchProjectById({
+    projectId,
+    accessToken,
+  });
+
+  if (!project) {
+    throw new Error('Project not found');
+  }
 
   return (
     <main className="px-40 py-10 max-w-400 mx-auto">

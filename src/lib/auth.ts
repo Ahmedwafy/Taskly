@@ -1,11 +1,8 @@
-// src/lib/auth.ts
-import { cookies } from 'next/headers';
+// src → lib → auth.ts
+'use server';
 
-export const COOKIE_KEYS = {
-  ACCESS_TOKEN: 'access_token',
-  REFRESH_TOKEN: 'refresh_token',
-  REMEMBER_ME: 'remember_me',
-} as const;
+import { cookies } from 'next/headers';
+import { COOKIE_KEYS, getCookieOptions } from '@/lib/auth-cookie-config';
 
 // Get ( Access-Token & Refresh-Token & rememberMe )
 export async function getAuthCookies() {
@@ -25,7 +22,7 @@ export async function clearAuthCookies() {
   cookieStore.delete({ name: COOKIE_KEYS.REFRESH_TOKEN, path: '/' });
 }
 
-// Stores the (access-Token & refresh-Token & rememberMe ) in secure HTTP-only cookies.
+// (Used only in Server Actions / Sign In)
 export const setAuthCookies = async (
   accessToken: string,
   refreshToken: string,
@@ -33,34 +30,19 @@ export const setAuthCookies = async (
 ) => {
   const cookieStore = await cookies();
 
-  const isProduction = process.env.NODE_ENV === 'production';
-  const accessTokenMaxAge = 60 * 60; // 1 hour
-
-  const refreshTokenMaxAge = rememberMe
-    ? 60 * 60 * 24 * 30 // 30 days
-    : 60 * 60 * 24 * 7; // 7 days
-
-  cookieStore.set(COOKIE_KEYS.ACCESS_TOKEN, accessToken, {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: accessTokenMaxAge,
-  });
-
-  cookieStore.set(COOKIE_KEYS.REFRESH_TOKEN, refreshToken, {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: refreshTokenMaxAge,
-  });
-
-  cookieStore.set(COOKIE_KEYS.REMEMBER_ME, rememberMe ? '1' : '0', {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 30, // 30 days
-  });
+  cookieStore.set(
+    COOKIE_KEYS.ACCESS_TOKEN,
+    accessToken,
+    getCookieOptions(COOKIE_KEYS.ACCESS_TOKEN, rememberMe),
+  );
+  cookieStore.set(
+    COOKIE_KEYS.REFRESH_TOKEN,
+    refreshToken,
+    getCookieOptions(COOKIE_KEYS.REFRESH_TOKEN, rememberMe),
+  );
+  cookieStore.set(
+    COOKIE_KEYS.REMEMBER_ME,
+    rememberMe ? '1' : '0',
+    getCookieOptions(COOKIE_KEYS.REMEMBER_ME, rememberMe),
+  );
 };

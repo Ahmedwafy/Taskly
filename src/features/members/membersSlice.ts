@@ -1,13 +1,9 @@
-// state
-// async logic
-// reducers
-
+// src/features/members/membersSlice.ts
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { getProjectMembers } from '@/services/getProjectMembers';
 
 export interface ProjectMember {
   member_id: string;
-  project_id: string; // Every member has the projectID they belong to. + every single member inside that array will share the exact same project_id.
+  project_id: string;
   user_id: string;
   role: string;
   email: string;
@@ -20,8 +16,8 @@ export interface ProjectMember {
     phone_verified?: boolean;
   };
 }
+
 interface MembersState {
-  // list: any[];
   list: ProjectMember[];
   loading: boolean;
   error: string | null;
@@ -35,13 +31,25 @@ const initialState: MembersState = {
   isFetched: false,
 };
 
-// thunk
+// Updated Thunk calling the API route proxy securely from the client side
 export const fetchProjectMembers = createAsyncThunk(
   'members/fetchProjectMembers',
   async (projectId: string, { rejectWithValue }) => {
-    // console.log('🔥 THUNK CALLED:', projectId);
     try {
-      return await getProjectMembers(projectId);
+      const response = await fetch(`/api/projects/${projectId}/members`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to fetch members');
+      }
+
+      return data as ProjectMember[];
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : 'Failed to load members',
@@ -52,7 +60,11 @@ export const fetchProjectMembers = createAsyncThunk(
     condition: (projectId, { getState }) => {
       const { members } = getState() as { members: MembersState };
 
-      if (members.loading || members.isFetched) {
+      // Cache Guard: Check if matching project data is already loaded to avoid extra hits
+      const isSameProject =
+        members.list.length > 0 && members.list[0].project_id === projectId;
+
+      if (members.loading || (members.isFetched && isSameProject)) {
         return false;
       }
     },

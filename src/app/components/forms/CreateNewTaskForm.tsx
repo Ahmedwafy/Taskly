@@ -1,9 +1,10 @@
+// src/app/components/organisms/CreateNewTaskForm.tsx
 'use client';
+
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from '@/redux/reduxHooks';
 import { fetchProjectMembers } from '@/features/members/membersSlice';
-import { getProjectEpics } from '@/services/getProjectEpics';
 import { ProjectEpic } from '@/types/shared';
 import InputField from '../atoms/input';
 import SelectField from '../atoms/SelectField';
@@ -11,8 +12,9 @@ import Button from '../atoms/Button';
 import Link from 'next/link';
 import { STATUS_OPTIONS } from '@/lib/enums';
 import { useRouter } from 'next/navigation';
-import { createNewTask } from '@/services/create-new-task';
+import { createTaskAction } from '@/app/actions/tasks';
 import { toast } from 'sonner';
+import { fetchProjectEpics } from '@/app/queries/epics';
 
 interface CreateNewTaskProps {
   projectId: string;
@@ -39,14 +41,12 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
   const [isEpicsLoading, setIsEpicsLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // 1 ── Updated Redux Selectors ──
   const {
     list: membersData,
     loading: isMembersLoading,
     isFetched,
   } = useAppSelector((state) => state.members);
 
-  // Define state using a lazy initializer function
   const [prefilledEpicId] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       return sessionStorage.getItem('prefilled_task_epic_id') || '';
@@ -70,7 +70,6 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
     },
   });
 
-  // get selected epic ID + storage cleanup on mount
   useEffect(() => {
     if (prefilledEpicId) {
       setValue('epic_id', prefilledEpicId);
@@ -78,18 +77,16 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
     }
   }, [prefilledEpicId, setValue]);
 
-  // waits until the (epicsList) load
   useEffect(() => {
     if (prefilledEpicId && epicsList.length > 0) {
       setValue('epic_id', prefilledEpicId);
     }
   }, [prefilledEpicId, epicsList, setValue]);
 
-  // Fetch data on mount
+  // Fetch initial data on mount
   useEffect(() => {
     if (!projectId) return;
 
-    // 2 ── Conditional Cache Guard Checks ── check if members already fetched from another component
     const isDifferentProject =
       membersData.length > 0 && membersData[0].project_id !== projectId;
 
@@ -100,8 +97,15 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
     const loadEpics = async () => {
       try {
         setIsEpicsLoading(true);
-        const data = await getProjectEpics({ projectId });
-        setEpicsList(data?.epics || []);
+        // Hits our local API route proxy automatically behind the scenes
+        const data = await fetchProjectEpics({
+          projectId,
+          limit: 1000,
+          offset: 0,
+          accessToken: '',
+        });
+
+        setEpicsList(data?.projectEpics || []);
       } catch (err) {
         console.error('Failed to fill form epics dropdown:', err);
         setEpicsList([]);
@@ -111,22 +115,29 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
     };
 
     loadEpics();
-    // Added the caching selectors to the dependency array below
   }, [projectId, dispatch, isFetched, isMembersLoading, membersData]);
 
   const onSubmit = async (data: TaskFormInputs) => {
     try {
       setSubmitError(null);
-      await createNewTask({
+
+      // ✅ Directly call the Server Action inside your submission block
+      const result = await createTaskAction({
         ...data,
         project_id: projectId,
       });
 
-      toast.success(`Task added sccessfuly`);
+      // Catch any validation or database errors returned from the server side
+      if (result?.error) {
+        toast.error(result.error);
+        setSubmitError(result.error);
+        return;
+      }
+
+      toast.success(`Task added successfully`);
       router.push(`/projects/${projectId}/tasks`);
-      router.refresh();
     } catch (err: unknown) {
-      toast.error(`Faild to add task, try again`);
+      toast.error(`Failed to add task, try again`);
       setSubmitError(
         err instanceof Error ? err.message : 'An unexpected error occurred.',
       );
@@ -197,7 +208,7 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
         error={errors.epic_id?.message}
         options={epicsList.map((epic) => ({
           value: epic.id,
-          label: `${epic.id} ${truncateString(epic.title, 100)}`,
+          label: `${epic.id} ${truncateString(epic.title || '', 100)}`,
         }))}
       />
 

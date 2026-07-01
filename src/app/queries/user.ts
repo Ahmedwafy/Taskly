@@ -1,15 +1,14 @@
+// src/app/queries/user.ts
 import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
-import { cookies } from 'next/headers';
 import { UserDataSchema } from '@/schemas/userData.schema';
 
-export const getUserData = async () => {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get('access_token')?.value;
+interface FetchUserDataParams {
+  accessToken: string;
+}
 
-  if (!accessToken) {
-    return;
-  }
+export async function fetchUserData({ accessToken }: FetchUserDataParams) {
+  if (!accessToken) return null;
 
   const response = await fetch(`${baseURL}${endPoints.userData.userInfo}`, {
     method: 'GET',
@@ -23,8 +22,7 @@ export const getUserData = async () => {
   const data = await response.json();
 
   if (!response.ok) {
-    console.log('Supabase user fetch error:', data);
-
+    console.error('Supabase user fetch error:', data);
     throw new Error(
       data?.msg ||
         data?.error_description ||
@@ -33,19 +31,13 @@ export const getUserData = async () => {
     );
   }
 
-  //  Zod Validation Using Schema
+  // ✅ Zod Validation Using Schema
   const parsed = UserDataSchema.safeParse(data);
 
   if (!parsed.success) {
-    console.error('Invalid user data:', parsed.error);
+    console.error('Invalid user data structure:', parsed.error);
     throw new Error('Invalid user data shape');
   }
 
   return parsed.data;
-  // {
-  //   name: string;
-  //   department: string;
-  // }
-
-  return data;
-};
+}

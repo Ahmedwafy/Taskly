@@ -7,8 +7,8 @@ import * as icons from '../../../../public/icons/icons';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/redux/reduxHooks';
 import { clearUser, setUser } from '@/features/auth/authSlice';
-import { signOut } from '@/services/auth';
 import { toast } from 'sonner';
+import { signOutAction } from '@/app/actions/auth';
 
 interface MobileInterfaceProps {
   userData: {
@@ -34,16 +34,18 @@ const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
   }, [dispatch, userData]);
 
   const handleLogout = async () => {
-    try {
-      setLoading(true);
-      await signOut();
-      dispatch(clearUser());
-      router.replace('/login');
-      setLoading(false);
-    } catch (error) {
-      console.error('Logout failed', error);
-      toast.error('Logout failed');
-    }
+    setLoading(true);
+
+    // 1. Call the Server Action directly instead of the old fetch service
+    // This securely hits Supabase from the server and wipes HTTP-only cookies
+    await signOutAction();
+
+    // 2. Clear your client-side global Redux state
+    dispatch(clearUser());
+
+    // 3. Clear loading and push the user to the login screen
+    setLoading(false);
+    router.replace('/login');
   };
 
   const avatarText = useMemo(() => {

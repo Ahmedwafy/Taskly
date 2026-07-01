@@ -1,4 +1,4 @@
-// src/app/api/refresh-token/route.ts
+// src → app → api → refresh-token → route.ts
 
 import { NextResponse } from 'next/server';
 import { endPoints } from '@/lib/endpoints';

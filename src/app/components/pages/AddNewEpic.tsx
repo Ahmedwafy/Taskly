@@ -1,10 +1,10 @@
-// src → app → components → pages → AddNewEpic.tsx
+// src/app/components/pages/AddNewEpic.tsx
 'use client';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { useParams, useRouter } from 'next/navigation';
 import AddNewEpicForm from '../forms/AddNewEpicForm';
-import { createEpic } from '@/services/createEpic';
+import { createEpicAction } from '@/app/actions/epics';
 import { useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '@/redux/reduxHooks';
 import { fetchProjectMembers } from '@/features/members/membersSlice';
@@ -28,15 +28,14 @@ const AddNewEpic = () => {
     isFetched,
     loading,
   } = useAppSelector((state) => state.members);
+
   // 2 ── conditional fetch ──
   useEffect(() => {
     if (!projectId) return;
 
-    // Check if the current members in store belong to a completely different project ID
     const isDifferentProject =
       members.length > 0 && members[0].project_id !== projectId;
 
-    // Only dispatch if it hasn't been fetched yet, OR we just swapped to a different project
     if ((!isFetched && !loading) || isDifferentProject) {
       dispatch(fetchProjectMembers(projectId as string));
     }
@@ -66,9 +65,15 @@ const AddNewEpic = () => {
     };
 
     try {
-      await createEpic(dataToSend);
+      const result = await createEpicAction(dataToSend);
+
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+
       toast.success('Epic created successfully');
-      router.push('/projects');
+      router.push(`/projects/${projectId}/epics`); // Updated redirect route path to look better
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'Something went wrong',

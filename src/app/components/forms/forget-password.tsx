@@ -6,8 +6,9 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ForgotPasswordFormTypes } from '@/types/shared';
-import { forgotPasswordRequest } from '@/services/auth';
 import InputField from '../atoms/input';
+import { forgotPasswordAction } from '@/app/actions/auth';
+import { toast } from 'sonner';
 // import Input from '@/app/components/atoms/input';
 
 const ForgotPasswordForm = () => {
@@ -54,15 +55,22 @@ const ForgotPasswordForm = () => {
   };
 
   const onSubmit = async (data: ForgotPasswordFormTypes) => {
-    try {
-      await forgotPasswordRequest({ email: data.email.trim() });
-      setCountdown(300);
-      setIsSubmitted(true);
-      reset();
-    } catch (error) {
-      console.error('Error submitting data:', error);
+    // 1. Invoke the Server Action directly
+    const result = await forgotPasswordAction({ email: data.email.trim() });
+
+    // 2. Handle the returned server error if it exists
+    if (result.error) {
+      console.error('Error submitting data:', result.error);
+      toast.error(result.error); // Show error to the user
       setIsSubmitted(false);
+      return; // Halt execution
     }
+
+    // 3. Success track
+    setCountdown(300);
+    setIsSubmitted(true);
+    reset();
+    toast.success('Reset link sent! Please check your inbox.');
   };
 
   return (

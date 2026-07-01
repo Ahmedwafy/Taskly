@@ -1,7 +1,7 @@
-// src/features/auth/authSlice.ts
+// src → features → auth → authSlice.ts
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { signIn } from '@/services/auth';
 import type { SignInPayload, UserData } from '@/types/auth';
+import { signInAction } from '@/app/actions/auth';
 
 interface AuthState {
   user: UserData | null;
@@ -22,9 +22,17 @@ export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (payload: SignInPayload, { rejectWithValue }) => {
     try {
-      const data = await signIn(payload);
+      const data = await signInAction(payload);
+
+      // 1. catch the error object returned by the Server Action
+      if (data.error) {
+        return rejectWithValue(data.error);
+      }
+
+      // 2. If no error, pass the clean user data to .fulfilled
       return data.user;
     } catch (error) {
+      // Handles rare global network drops/crashes
       return rejectWithValue(
         error instanceof Error ? error.message : 'Login failed',
       );
@@ -68,7 +76,8 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message ?? 'Unable to sign in';
+        // Read the value intercepted by rejectWithValue
+        state.error = (action.payload as string) ?? 'Unable to sign in';
       });
   },
 });

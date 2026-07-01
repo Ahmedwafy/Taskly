@@ -1,5 +1,4 @@
 // src/app/components/pages/EditProjectPage.tsx
-// Edit Project Component
 'use client';
 import Image from 'next/image';
 import CardHeader from '../molecules/CardHeader';
@@ -10,7 +9,7 @@ import { useForm } from 'react-hook-form';
 import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import * as icons from '@/../public/icons/icons';
-import { updateProject } from '@/services/update-project';
+import { updateProjectAction } from '@/app/actions/projects';
 import PageHeader from '../molecules/PageHeader';
 
 interface EditProjectDataTypes {
@@ -57,11 +56,21 @@ const EditProjectPage = ({ projects, projectName }: EditProjectPageProps) => {
         toast.error('Invalid project id');
         return;
       }
-      await updateProject(projectId, dataToSend);
+
+      // ✅ Run the server mutation directly
+      const result = await updateProjectAction({
+        projectId,
+        name: dataToSend.name,
+        description: dataToSend.description,
+      });
+
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
 
       toast.success('Project updated successfully');
       router.replace('/projects');
-      // router.push('/projects');
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'Something went wrong',
@@ -109,7 +118,6 @@ const EditProjectPage = ({ projects, projectName }: EditProjectPageProps) => {
             isSubmitting={isSubmitting}
             errors={errors}
             control={control}
-            //
             placeholder_Title="Title ..."
             placeholder_Description="Provide a high-level overview of the project's architectural objectives and key milestones..."
             required_Message="project title is required."

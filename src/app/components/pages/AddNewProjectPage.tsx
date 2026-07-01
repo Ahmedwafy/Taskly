@@ -1,5 +1,4 @@
-// src → app → component → pages → AddNewProjectPage.tsx
-
+// src/app/component/pages/AddNewProjectPage.tsx
 'use client';
 import PageHeader from '../molecules/PageHeader';
 import ProjectForm from '../forms/Project-Form';
@@ -9,7 +8,7 @@ import * as icons from '../../../../public/icons/icons';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { createNewProject } from '@/services/create-new-project';
+import { createProjectAction } from '@/app/actions/projects'; // ✅ Import your new Server Action
 
 interface AddProjectDataTypes {
   name: string;
@@ -34,7 +33,14 @@ const AddNewProjectPage = () => {
     };
 
     try {
-      await createNewProject(dataToSend);
+      const result = await createProjectAction(dataToSend);
+
+      // Check if the backend or validation caught an error
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+
       toast.success('Project created successfully');
       router.push('/projects');
     } catch (error) {
@@ -53,20 +59,17 @@ const AddNewProjectPage = () => {
           title="Add New Project"
           icon={icons.Member}
           buttonName="Invite Member"
-          href="/projects/add" // TODO ::: Navigate To Invtite Member
+          href="/projects/add"
         />
 
         {/* --- Card  --- */}
         <div className="mx-auto rounded-md h-auto mt-10">
-          {/* --- Card Header + Form + Buttons */}
           <div className="max-w-3xl mx-auto p-8 h-fit shadowrounded-t-xl shadow-sm bg-white">
-            {/* --- Card Header ---  */}
             <CardHeader
               title="Initialize New Project"
               description="Define the scope and foundational details of your project."
             />
 
-            {/* --- Add Project Form --- */}
             <ProjectForm
               handleSubmit={handleSubmit}
               onSubmit={onSubmit}
@@ -74,7 +77,6 @@ const AddNewProjectPage = () => {
               isSubmitting={isSubmitting}
               errors={errors}
               control={control}
-              //
               placeholder_Title="Title ..."
               placeholder_Description="Provide a high-level overview of the project's architectural objectives and key milestones..."
               required_Message="name is required."

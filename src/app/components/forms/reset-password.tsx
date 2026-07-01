@@ -1,13 +1,13 @@
+// src → app → components → forms → reset-password.tsx
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { resetPassword } from '@/services/auth';
 import Button from '@/app/components/atoms/Button';
 import Link from 'next/link';
 import InputField from '../atoms/input';
-// import Input from '@/app/components/atoms/input';
+import { resetPasswordAction } from '@/app/actions/auth';
 
 interface ResetPasswordFormData {
   password: string;
@@ -78,29 +78,32 @@ const ResetPasswordForm = () => {
 
   const onSubmit = useCallback(
     async (data: ResetPasswordFormData) => {
-      if (!accessToken) return;
+      // 1. We call the server action passing ONLY the new password.
+      // The server reads the access token securely from HTTP-only cookies!
+      const result = await resetPasswordAction(data.password);
 
-      try {
-        await resetPassword(accessToken, data.password);
-
-        setSuccessMessage(
-          'Your password has been updated successfully. You can now log in.',
-        );
-
-        timeoutRef.current = setTimeout(() => {
-          router.push('/login');
-        }, 3000);
-      } catch (error) {
-        console.error('Error resetting password:', error);
+      // 2. Handle server errors smoothly inside React Hook Form
+      if (result.error) {
+        console.error('Error resetting password:', result.error);
 
         setError('password', {
           type: 'server',
           message:
-            'Failed to reset password. Please try again or contact support.',
+            result.error || 'Failed to reset password. Please try again.',
         });
+        return; // Stop execution here
       }
+
+      // 3. Success track
+      setSuccessMessage(
+        'Your password has been updated successfully. You can now log in.',
+      );
+
+      timeoutRef.current = setTimeout(() => {
+        router.push('/login');
+      }, 3000);
     },
-    [accessToken, router, setError],
+    [router, setError], // Look how clean the dependency array is now without accessToken!
   );
 
   const passwordRegister = register('password', {

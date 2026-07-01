@@ -6,27 +6,14 @@ import ProjectCard from '@/app/components/molecules/ProjectCard';
 import AddProjectCard from '@/app/components/molecules/AddProjectCard';
 import Link from 'next/link';
 import ProjectsPageSkeleton from '@/app/(pages)/projects/ProjectsPageSkeleton';
-import { getAllProjects } from '@/services/getAllProjects';
 import { ProjectProps } from '@/types/shared';
+import { loadMoreProjectsAction } from '@/app/actions/projects'; // Import your Action
 
 interface Props {
   initialProjects: ProjectProps[];
   initialTotalCount: number;
   limit: number;
 }
-
-// TODO ::: If will use this logic many times → Create Custom Hook
-// const fetchProjects = async (limit: number, offset: number) => {
-//   const res = await fetch(
-//     `/api/get-all-projects?limit=${limit}&offset=${offset}`,
-//   );
-
-//   if (!res.ok) {
-//     throw new Error('Failed to fetch projects');
-//   }
-
-//   return res.json();
-// };
 
 export default function ProjectsMobile({
   initialProjects,
@@ -44,44 +31,32 @@ export default function ProjectsMobile({
 
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
-  // useEffect(() => {
-  //   const fetchProjects = async () => {
-  //     try {
-  //       const data = await getAllProjects({
-  //         limit: 10,
-  //         offset: 0,
-  //       });
-
-  //       setProjects(data.projects);
-  //     } catch (err) {
-  //       console.error(err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchProjects();
-  // }, []);
-
-  // load more projects on scroll
-
   const loadMore = useCallback(async () => {
+    if (loading || !hasMore) return;
+
     try {
       setLoading(true);
       setError('');
 
       const currentOffset = offset;
 
-      const data = await getAllProjects({
-        limit,
-        offset: currentOffset,
-      });
+      // ✅ Use the server action cleanly like an async function call
+      const result = await loadMoreProjectsAction(limit, currentOffset);
 
-      setProjects((prev) => [...prev, ...data.projects]);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
 
-      setOffset((prev) => prev + limit);
+      if (result.projects && result.projects.length > 0) {
+        setProjects((prev) => [...prev, ...result.projects]);
+        setOffset((prev) => prev + limit);
+      }
 
-      if (currentOffset + limit >= initialTotalCount) {
+      if (
+        currentOffset + limit >= initialTotalCount ||
+        !result.projects?.length
+      ) {
         setHasMore(false);
       }
     } catch {
@@ -89,16 +64,16 @@ export default function ProjectsMobile({
     } finally {
       setLoading(false);
     }
-  }, [offset, limit, initialTotalCount]);
+  }, [offset, limit, initialTotalCount, loading, hasMore]);
 
-  // Intersection Observer
+  // Intersection Observer remains completely unchanged
   useEffect(() => {
     if (!hasMore) return;
 
     const observer = new IntersectionObserver((entries) => {
       const target = entries[0];
 
-      if (target.isIntersecting && !loading) {
+      if (target.isIntersecting) {
         loadMore();
       }
     });
@@ -108,7 +83,7 @@ export default function ProjectsMobile({
     }
 
     return () => observer.disconnect();
-  }, [hasMore, loadMore, loading]);
+  }, [hasMore, loadMore]);
 
   return (
     <section className="flex flex-col gap-y-8 py-4 px-6 justify-between w-full mt-15">
@@ -123,11 +98,9 @@ export default function ProjectsMobile({
       ))}
 
       <AddProjectCard />
-      {/* {hasMore ? null : <AddProjectCard />} */}
 
       {error && <p className="w-full text-center text-red-500 py-4">{error}</p>}
 
-      {/* {loading && <p className="w-full text-center py-4">Loading...</p>} */}
       {loading && <ProjectsPageSkeleton />}
 
       {hasMore && <div ref={loaderRef} className="h-10 w-full" />}

@@ -1,8 +1,10 @@
-// src/app/(pages)/projects/[projectId]/epics/page.tsx
+// src → app → (pages) → projects → [projectId] → epics → page.tsx
 
+import { redirect } from 'next/navigation';
+import { getAuthCookies } from '@/lib/auth';
+import { fetchProjectById } from '@/app/queries/projects';
+import { fetchProjectEpics } from '@/app/queries/epics';
 import ProjectEpics from '@/app/components/pages/ProjectEpics';
-import { getProjectByIdServer } from '@/services/getProjectByIdServer';
-import { getProjectEpicsServer } from '@/services/getProjectEpicsServer';
 
 interface ProjectEpicsPageProps {
   params: Promise<{ projectId: string }>;
@@ -18,19 +20,30 @@ export default async function ProjectEpicsPage({
 
   const currentPage = parseInt(page || '1', 10);
   const currentLimit = parseInt(limit || '10', 10);
+  const offset = (currentPage - 1) * currentLimit;
+  const { accessToken } = await getAuthCookies();
 
-  const project = await getProjectByIdServer(projectId);
+  if (!accessToken) {
+    redirect('/login');
+  }
 
-  const { epics: projectEpics, totalCount } = await getProjectEpicsServer({
+  // 1. Fetch only the epics using our isolated query helper
+  const { projectEpics, totalCount } = await fetchProjectEpics({
     projectId,
-    page: currentPage,
     limit: currentLimit,
+    offset,
+    accessToken,
+  });
+
+  const projectData = await fetchProjectById({
+    projectId,
+    accessToken,
   });
 
   return (
     <main className="mt-10 sm:mt-0 p-5 sm:p-10 h-full">
       <ProjectEpics
-        projectData={project}
+        projectData={projectData}
         projectEpics={projectEpics}
         totalCount={totalCount}
         currentPage={currentPage}

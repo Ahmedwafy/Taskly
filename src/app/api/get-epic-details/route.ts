@@ -1,8 +1,8 @@
-// src → app → api → get-epics-details → route.ts
-
+// src → app → api → get-epic-details → route.ts
+// This handler to call fetchEpicDetails() in 'use client' components
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthCookies } from '@/lib/auth';
-import { fetchEpicDetails } from '@/lib/api/epicsDetails';
+import { fetchEpicDetails } from '@/app/queries/epics'; // Clean Import!
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,7 +13,6 @@ export async function GET(req: NextRequest) {
     }
 
     const searchParams = req.nextUrl.searchParams;
-
     const projectId = searchParams.get('projectId');
     const epicId = searchParams.get('epicId');
 
@@ -24,9 +23,11 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Call our unified query function directly
     const data = await fetchEpicDetails({
       projectId,
       epicId,
+      accessToken,
     });
 
     return NextResponse.json(data);

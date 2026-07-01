@@ -1,11 +1,11 @@
 // src/lib/endpoints.ts
-
 type Endpoints = {
   auth: {
     login: string;
     logout: string;
     signUp: string;
     forgotPasswod: string;
+    resetPassword: string;
     generateNewToken: string;
   };
 
@@ -40,6 +40,7 @@ export const endPoints: Endpoints = {
     logout: '/auth/v1/logout',
     signUp: '/auth/v1/signup',
     forgotPasswod: '/auth/v1/recover',
+    resetPassword: '/auth/v1/user',
     generateNewToken: '/auth/v1/token?grant_type=refresh_token',
   },
 
