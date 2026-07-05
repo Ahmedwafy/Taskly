@@ -78,11 +78,8 @@ const ResetPasswordForm = () => {
 
   const onSubmit = useCallback(
     async (data: ResetPasswordFormData) => {
-      // 1. We call the server action passing ONLY the new password.
-      // The server reads the access token securely from HTTP-only cookies!
       const result = await resetPasswordAction(data.password);
 
-      // 2. Handle server errors smoothly inside React Hook Form
       if (result.error) {
         console.error('Error resetting password:', result.error);
 
@@ -91,10 +88,9 @@ const ResetPasswordForm = () => {
           message:
             result.error || 'Failed to reset password. Please try again.',
         });
-        return; // Stop execution here
+        return;
       }
 
-      // 3. Success track
       setSuccessMessage(
         'Your password has been updated successfully. You can now log in.',
       );
@@ -103,7 +99,7 @@ const ResetPasswordForm = () => {
         router.push('/login');
       }, 3000);
     },
-    [router, setError], // Look how clean the dependency array is now without accessToken!
+    [router, setError],
   );
 
   const passwordRegister = register('password', {
@@ -186,7 +182,7 @@ const ResetPasswordForm = () => {
             {...confirmPasswordRegister}
           />
 
-          {/* Security Requirements bg-[#f8f9ff]*/}
+          {/* Security Requirements*/}
           <div className="w-full mx-auto bg-[#f8f9ff] py-6 px-2 rounded-2xl shadow-sm">
             <h3 className="text-lg font-semibold text-gray-800 mb-5">
               SECURITY REQUIREMENTS
@@ -196,29 +192,17 @@ const ResetPasswordForm = () => {
               {/* 1st col */}
               <div className="flex-1 space-y-3 body-md">
                 <label className="flex items-center gap-3 text-gray-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={hasLength}
-                    // className="accent-green-600"
-                  />
+                  <input type="checkbox" checked={hasLength} />
                   <span>8 - 64 characters</span>
                 </label>
 
                 <label className="flex items-center gap-3 text-gray-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={hasLowercase}
-                    // className="accent-green-600"
-                  />
+                  <input type="checkbox" checked={hasLowercase} />
                   <span>Lowercase letter</span>
                 </label>
 
                 <label className="flex items-center gap-3 text-gray-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={hasSpecialChar}
-                    // className="accent-green-600"
-                  />
+                  <input type="checkbox" checked={hasSpecialChar} />
                   <span>Special character</span>
                 </label>
               </div>
@@ -226,20 +210,12 @@ const ResetPasswordForm = () => {
               {/* 2nd col */}
               <div className="flex-1 space-y-3">
                 <label className="flex items-center gap-3 text-gray-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={hasUppercase}
-                    // className="accent-green-600"
-                  />
+                  <input type="checkbox" checked={hasUppercase} />
                   <span>Uppercase letter</span>
                 </label>
 
                 <label className="flex items-center gap-3 text-gray-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={hasNumber}
-                    // className="accent-green-600"
-                  />
+                  <input type="checkbox" checked={hasNumber} />
                   <span>One digit</span>
                 </label>
               </div>

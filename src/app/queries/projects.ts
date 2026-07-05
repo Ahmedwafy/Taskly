@@ -5,7 +5,7 @@ import { endPoints } from '@/lib/endpoints';
 import { ProjectsSchema } from '@/schemas/project.schema';
 
 // ======================================================
-// ::: Get Project By ID
+// ::: Get Project By ID :::
 // ======================================================
 interface FetchProjectByIdParams {
   projectId: string;
@@ -36,7 +36,7 @@ export const fetchProjectById = cache(
 );
 
 // ======================================================
-// ::: Get ALL Projects
+// ::: Get ALL Projects :::
 // ======================================================
 interface FetchAllProjectsParams {
   accessToken: string;

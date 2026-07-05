@@ -1,9 +1,9 @@
 // src → app → components → molecules → DesktopPagination.tsx
 // dual-personality reusable component [ Link Mode - Callback Mode ]
 import Link from 'next/link';
-import Image from 'next/image'; // Import Next.js Image component
+import Image from 'next/image';
 import React from 'react';
-import * as icons from '@/../public/icons/icons'; // Make sure this path is correct
+import * as icons from '@/../public/icons/icons';
 
 interface PaginationProps {
   currentPage: number;
@@ -18,18 +18,12 @@ const DesktopPagination = ({
   baseUrl,
   onPageChange,
 }: PaginationProps) => {
-  // If there's only 1 page, we don't need to render pagination controls
+  // If there's only 1 page, don't need to render pagination controls
   if (totalPages <= 1) return null;
 
   // Define icons here
   const previousIcon = (
-    <Image
-      src={icons.Arrow}
-      alt="Previous"
-      width={16}
-      height={16}
-      // className="rotate-180" // Rotates the arrow to face left
-    />
+    <Image src={icons.Arrow} alt="Previous" width={16} height={16} />
   );
   const nextIcon = (
     <Image
@@ -41,7 +35,6 @@ const DesktopPagination = ({
     />
   );
 
-  // Update helper signature to accept React.ReactNode for the label
   const renderPaginationItem = (
     pageNumber: number,
     label: React.ReactNode, // Can be a string, number, or JSX element "Anything that React can render on the screen."
@@ -74,7 +67,7 @@ const DesktopPagination = ({
 
     // Condition 2: Fallback to Next.js Links (Requires baseUrl)
     // If onPageChange doesn't exist, it falls back to a Next.js <Link>.
-    // It automatically appends ?page=X to whatever base path you provided (like: /projects).
+    // It automatically appends ?page=X to whatever base path provided (like: /projects).
     const href = baseUrl ? `${baseUrl}?page=${pageNumber}` : '#';
 
     return (

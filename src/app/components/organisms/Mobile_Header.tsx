@@ -25,7 +25,7 @@ const Mobile_Header = ({
           <span className="font-bold text-xl">TASKLY</span>
         </div>
 
-        {/* Name + Avatar */}
+        {/* ○ ○ ○ Name + Avatar ○ ○ ○ */}
         <div className="flex gap-2 sm:hidden">
           <div className="hidden sm:flex flex-col">
             <span className="text-sm font-semibold">{fullName}</span>

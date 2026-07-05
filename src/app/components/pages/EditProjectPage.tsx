@@ -1,4 +1,4 @@
-// src/app/components/pages/EditProjectPage.tsx
+// src → app → components → pages → EditProjectPage.tsx
 'use client';
 import Image from 'next/image';
 import CardHeader from '../molecules/CardHeader';
@@ -11,15 +11,18 @@ import { useRouter, useParams } from 'next/navigation';
 import * as icons from '@/../public/icons/icons';
 import { updateProjectAction } from '@/app/actions/projects';
 import PageHeader from '../molecules/PageHeader';
+import { UpdateProjectSchema } from '@/schemas/project.schema';
+import { z } from 'zod';
 
-interface EditProjectDataTypes {
-  name: string;
-  description?: string;
-}
 interface EditProjectPageProps {
   projects: ProjectProps[];
   projectName: string;
 }
+
+type EditProjectFormInputs = Omit<
+  z.input<typeof UpdateProjectSchema>,
+  'projectId'
+>;
 
 const EditProjectPage = ({ projects, projectName }: EditProjectPageProps) => {
   const router = useRouter();
@@ -36,11 +39,11 @@ const EditProjectPage = ({ projects, projectName }: EditProjectPageProps) => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<EditProjectDataTypes>({
+  } = useForm<EditProjectFormInputs>({
     defaultValues: { name: '', description: '' },
   });
 
-  const onSubmit = async (data: EditProjectDataTypes) => {
+  const onSubmit = async (data: EditProjectFormInputs) => {
     const dataToSend = {
       name: data.name.trim(),
       description: data.description?.trim(),
@@ -57,7 +60,6 @@ const EditProjectPage = ({ projects, projectName }: EditProjectPageProps) => {
         return;
       }
 
-      // ✅ Run the server mutation directly
       const result = await updateProjectAction({
         projectId,
         name: dataToSend.name,
@@ -100,17 +102,16 @@ const EditProjectPage = ({ projects, projectName }: EditProjectPageProps) => {
         href="/projects/add"
         projectName={projectName}
       />
-      {/* --- Card  --- */}
+      {/* ○ ○ ○  Card  ○ ○ ○  */}
       <div className="mx-auto rounded-md h-auto mt-10">
-        {/* --- Card Header + Form + Pro Tip */}
         <div className="max-w-3xl mx-auto p-8 h-fit shadowrounded-t-xl shadow-sm bg-white">
-          {/* 1 --- Card Header ---  */}
+          {/* ○ ○ ○  Card Header ○ ○ ○   */}
           <CardHeader
             title="Edit Project"
             description="Define the scope and foundational details of your project."
           />
 
-          {/* 2 --- Edit Project Form --- */}
+          {/* ○ ○ ○  Edit Project Form ○ ○ ○  */}
           <ProjectForm
             handleSubmit={handleSubmit}
             onSubmit={onSubmit}
@@ -127,7 +128,7 @@ const EditProjectPage = ({ projects, projectName }: EditProjectPageProps) => {
           />
         </div>
 
-        {/* 3 --- Pro Tip --- */}
+        {/* ○ ○ ○  Pro Tip ○ ○ ○  */}
         <div className="bg-surface-low py-6 px-6 text-[#4F5F7B] flex max-w-3xl mx-auto rounded-b-xl shadow-sm">
           <div className="my-auto mr-2">
             <Image src={icons.ProTip} alt="Pro Tip" width={14} height={14} />

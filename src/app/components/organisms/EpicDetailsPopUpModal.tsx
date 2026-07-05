@@ -1,12 +1,9 @@
 // src → app → components → organisms → EpicDetailsPopModal.tsx
-
 'use client';
-
 import * as icons from '@/../public/icons/icons';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProjectMember } from '@/features/members/membersSlice';
-import Link from 'next/link';
 import Image from 'next/image';
 
 export interface UserProfile {
@@ -68,15 +65,13 @@ const EpicDetailsPopUpModal = ({
     }
   };
 
-  // handle onClick → Add Task
+  // handle onClick → Add Task + Navigate to the new task creation page.
   const handleAddTaskNavigation = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!selectedEpic) return;
 
-    // Store the epic ID in temporary session storage [ use it in onClick '+Add Task' navigation ]
-    sessionStorage.setItem('prefilled_task_epic_id', selectedEpic.id);
-    // Navigate to the completely clean URL
-    router.push(`/projects/${projectId}/tasks/new`);
+    // Navigate to the task creation page with the epic_id as a query parameter.
+    router.push(`/projects/${projectId}/tasks/new?epic_id=${selectedEpic.id}`);
   };
 
   return (
@@ -92,7 +87,7 @@ const EpicDetailsPopUpModal = ({
               <span>{selectedEpic?.epic_id || 'EPIC-101'}</span>
             </div>
 
-            {/* Title - Triggers save exactly on Blur */}
+            {/* ○ ○ ○ Title - Triggers save exactly on Blur ○ ○ ○ */}
             <input
               type="text"
               value={localTitle}
@@ -114,7 +109,7 @@ const EpicDetailsPopUpModal = ({
           </button>
         </div>
 
-        {/* Content Area */}
+        {/* ○ ○ ○ Content Area ○ ○ ○ */}
         <div className="px-10 pb-10 overflow-y-auto space-y-8 flex-1">
           {isLoadingDetails && (
             <div className="flex flex-col items-center justify-center py-12 space-y-3">
@@ -133,7 +128,7 @@ const EpicDetailsPopUpModal = ({
 
           {!isLoadingDetails && !errorMsg && selectedEpic && (
             <>
-              {/* Description - Triggers save exactly on Blur */}
+              {/* ○ ○ ○ Description - Triggers save exactly on Blur ○ ○ ○ */}
               <div>
                 <textarea
                   value={localDesc}
@@ -145,7 +140,7 @@ const EpicDetailsPopUpModal = ({
                 />
               </div>
 
-              {/* Metadata row */}
+              {/* ○ ○ ○ Metadata row ○ ○ ○ */}
               <div className="flex flex-wrap gap-x-12 gap-y-6 pt-2">
                 {/* Created By */}
                 <div className="min-w-35">
@@ -172,7 +167,7 @@ const EpicDetailsPopUpModal = ({
                   </div>
                 </div>
 
-                {/* Assignee Selection */}
+                {/* ○ ○ ○ Assignee Selection ○ ○ ○ */}
                 <div className="min-w-35">
                   <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">
                     Assignee
@@ -230,7 +225,7 @@ const EpicDetailsPopUpModal = ({
                   </div>
                 </div>
 
-                {/* Deadline */}
+                {/* ○ ○ ○ Deadline ○ ○ ○ */}
                 <div className="min-w-35 pl-4 border-l border-slate-200">
                   <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">
                     Deadline
@@ -262,7 +257,7 @@ const EpicDetailsPopUpModal = ({
                 </div>
               </div>
 
-              {/* Created At */}
+              {/* ○ ○ ○ Created At ○ ○ ○ */}
               <div className="pt-2">
                 <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
                   Created At
@@ -279,7 +274,7 @@ const EpicDetailsPopUpModal = ({
 
               <hr className="border-slate-100" />
 
-              {/* Epic Tasks Section */}
+              {/* ○ ○ ○ Epic Tasks Section ○ ○ ○ */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-slate-900">Tasks</h3>
@@ -290,13 +285,6 @@ const EpicDetailsPopUpModal = ({
                   >
                     + Add Task
                   </button>
-                  {/* <Link
-                    href={`/projects/${projectId}/tasks/new`}
-                    // href={`/project/${projectId}/tasks/new?epicId=${selectedEpic.id}`}
-                    className="text-sm font-bold text-[#004dc7] hover:text-blue-800 transition"
-                  >
-                    + Add Task
-                  </Link> */}
                 </div>
 
                 <div className="border border-dashed border-[#dce2f5] rounded-xl p-10 flex flex-col items-center justify-center bg-[#F1F3FF] min-h-55">
@@ -313,13 +301,6 @@ const EpicDetailsPopUpModal = ({
                   >
                     <span>+</span> Add Task
                   </button>
-                  {/* <Link
-                    href={`/projects/${projectId}/tasks/new`}
-                    // href={`/project/${projectId}/tasks/new?epicId=${selectedEpic.id}`}
-                    className="px-5 py-2.5 bg-[#004dc7] hover:bg-[#003da1] text-white font-semibold text-sm rounded-lg transition shadow-sm flex items-center gap-1.5"
-                  >
-                    <span>+</span> Add Task
-                  </Link> */}
                 </div>
               </div>
             </>

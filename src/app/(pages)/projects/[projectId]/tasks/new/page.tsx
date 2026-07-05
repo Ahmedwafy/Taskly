@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import CreateNewTaskForm from '@/app/components/forms/CreateNewTaskForm';
 import Breadcrumb from '@/app/components/organisms/Breadcrumb';
 import { fetchProjectById } from '@/app/queries/projects';
+import { fetchProjectEpics } from '@/app/queries/epics'; // 1. Import your query function
 import { getAuthCookies } from '@/lib/auth';
 
 interface CreateTaskPageProps {
@@ -19,10 +20,10 @@ export default async function CreateNewTask({ params }: CreateTaskPageProps) {
     redirect('/login');
   }
 
-  const project = await fetchProjectById({
-    projectId,
-    accessToken,
-  });
+  const [project, epicsData] = await Promise.all([
+    fetchProjectById({ projectId, accessToken }),
+    fetchProjectEpics({ projectId, limit: 1000, offset: 0, accessToken }), // Grabs all epics for dropdown selection
+  ]);
 
   if (!project) {
     throw new Error('Project not found');
@@ -39,8 +40,11 @@ export default async function CreateNewTask({ params }: CreateTaskPageProps) {
         </p>
       </header>
 
-      {/* Form receives the projectId directly as expected */}
-      <CreateNewTaskForm projectId={projectId} />
+      {/* 3. Pass the fetched epics straight into your form */}
+      <CreateNewTaskForm
+        projectId={projectId}
+        initialEpics={epicsData?.projectEpics || []}
+      />
     </main>
   );
 }

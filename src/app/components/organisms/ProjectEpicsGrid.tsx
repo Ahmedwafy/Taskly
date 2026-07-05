@@ -1,10 +1,10 @@
-import { ProjectEpic } from '@/types/shared';
 import * as icons from '@/../public/icons/icons';
+import { ProjectEpic } from '@/types/shared';
 import Image from 'next/image';
 
 interface ProjectEpicsProps {
   projectEpics: ProjectEpic[];
-  onEpicClick: (epicId: string) => void; // Added the trigger prop from parent
+  onEpicClick: (epicId: string) => void;
 }
 
 const ProjectEpicsGrid = ({ projectEpics, onEpicClick }: ProjectEpicsProps) => {
@@ -14,10 +14,10 @@ const ProjectEpicsGrid = ({ projectEpics, onEpicClick }: ProjectEpicsProps) => {
         {projectEpics.map((epic) => (
           <div
             key={epic.id}
-            onClick={() => onEpicClick(epic.id)} // Triggers the detailed pop-up on click
+            onClick={() => onEpicClick(epic.id)}
             className="bg-white rounded-xl shadow-sm border border-slate-100 sm:border-l-[6px] sm:border-l-emerald-800 flex flex-col justify-between relative w-full sm:max-w-170 cursor-pointer hover:shadow-md hover:border-slate-200 transition duration-200"
           >
-            {/* Card Content Container */}
+            {/* ○ ○ ○  Card Content Container ○ ○ ○  */}
             <div className="p-6 sm:pl-6">
               {/* Top Row: Badge & Menu */}
               <div className="flex justify-between items-center mb-4">
@@ -39,12 +39,12 @@ const ProjectEpicsGrid = ({ projectEpics, onEpicClick }: ProjectEpicsProps) => {
                 </button>
               </div>
 
-              {/* Title */}
+              {/* ○ ○ ○  Title ○ ○ ○  */}
               <h3 className="text-xl font-bold text-slate-900 mb-5 tracking-tight">
                 {epic.title}
               </h3>
 
-              {/* Assignee Section */}
+              {/* ○ ○ ○  Assignee Section ○ ○ ○  */}
               <div className="flex justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-bold bg-[#003D9B] sm:bg-emerald-400 text-white sm:text-emerald-900 text-sm">
@@ -84,10 +84,10 @@ const ProjectEpicsGrid = ({ projectEpics, onEpicClick }: ProjectEpicsProps) => {
               </div>
             </div>
 
-            {/* Divider */}
+            {/*○ ○ ○  Divider ○ ○ ○ */}
             <hr className="border-slate-100 hidden sm:block" />
 
-            {/* Footer Row */}
+            {/* ○ ○ ○  Footer Row ○ ○ ○ */}
             <div className="hidden px-6 py-4 bg-white pl-8 sm:flex justify-between items-center text-xs text-slate-500 font-medium rounded-b-xl">
               <div className="flex items-center gap-1.5">
                 <Image src={icons.Epic} alt="member" />

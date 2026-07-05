@@ -27,7 +27,7 @@ export default async function ProjectEpicsPage({
     redirect('/login');
   }
 
-  // 1. Fetch only the epics using our isolated query helper
+  // Fetch the epics using our query helper
   const { projectEpics, totalCount } = await fetchProjectEpics({
     projectId,
     limit: currentLimit,

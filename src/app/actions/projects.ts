@@ -5,13 +5,17 @@ import { cookies } from 'next/headers';
 import { COOKIE_KEYS } from '@/lib/auth-cookie-config';
 import { baseURL, supabaseKey } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
-import { ProjectsSchema } from '@/schemas/project.schema';
+import {
+  CreateProjectSchema,
+  ProjectsSchema,
+  UpdateProjectSchema,
+} from '@/schemas/project.schema';
 import { getAuthCookies } from '@/lib/auth';
-import { CreateProjectSchema } from '@/schemas/createProject.schema';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 // ======================================================
-// ::: Get More Projects On Scroll ( Mobile View )
+// ::: Get More Projects On Scroll ( Mobile View ) :::
 // ======================================================
 export async function loadMoreProjectsAction(limit: number, offset: number) {
   const cookieStore = await cookies();
@@ -53,35 +57,29 @@ export async function loadMoreProjectsAction(limit: number, offset: number) {
 }
 
 // ======================================================
-// ::: Create New Project
+// ::: Create New Project :::
 // ======================================================
-interface CreateProjectInput {
-  name: string;
-  description?: string;
-}
-export async function createProjectAction(input: CreateProjectInput) {
+export async function createProjectAction(
+  input: z.input<typeof CreateProjectSchema>,
+) {
   try {
-    // 1. Authenticate the server environment context
     const { accessToken } = await getAuthCookies();
     if (!accessToken) {
       return { error: 'Unauthorized. Please log in again.' };
     }
 
-    // 2. Validate input using your Zod Schema
+    // → Validate input using Zod Schema
     const parsed = CreateProjectSchema.safeParse(input);
+
     if (!parsed.success) {
       return {
         error: parsed.error.issues[0]?.message || 'Invalid form input.',
       };
     }
 
-    const { name, description } = parsed.data;
-    const projectPayload = {
-      name: name.trim(),
-      description: description?.trim() ?? '',
-    };
+    // 'projectPayload' is now perfectly sanitized and typed automatically by Zod
+    const projectPayload = parsed.data;
 
-    // 3. Make the backend request straight from the server
     const response = await fetch(
       `${baseURL}${endPoints.userData.createNewProject}`,
       {
@@ -118,8 +116,11 @@ export async function createProjectAction(input: CreateProjectInput) {
       };
     }
 
-    // 4. Force Next.js to purge cached layouts/lists to show the new project immediately
+    // add any other paths that need to be re-validated after create a new project (anywhere that shows the list of projects)
     revalidatePath('/projects');
+    //            ↓
+    // 1. Purges the Cache (Instant)
+    // 2. Forces a re-fetch of the GET projects list (Instant)
 
     const createdProject = Array.isArray(data)
       ? data[0]
@@ -137,27 +138,27 @@ export async function createProjectAction(input: CreateProjectInput) {
 }
 
 // ======================================================
-// ::: Update Project
+// ::: Update Project :::
 // ======================================================
-interface UpdateProjectInput {
-  projectId: string;
-  name: string;
-  description?: string;
-}
-export async function updateProjectAction({
-  projectId,
-  name,
-  description,
-}: UpdateProjectInput) {
+export async function updateProjectAction(
+  input: z.input<typeof UpdateProjectSchema>,
+) {
   try {
     const { accessToken } = await getAuthCookies();
     if (!accessToken) {
       return { error: 'Unauthorized. Please log in again.' };
     }
 
-    if (!name?.trim()) {
-      return { error: 'Project name is required.' };
+    // Validate incoming parameters using Zod Schema
+    const parsed = UpdateProjectSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        error: parsed.error.issues[0]?.message || 'Invalid form input.',
+      };
     }
+
+    // Extract perfectly sanitized values from the output pipeline
+    const { projectId, name, description } = parsed.data;
 
     const response = await fetch(
       `${baseURL}${endPoints.updateProjectById(projectId)}`,
@@ -169,10 +170,7 @@ export async function updateProjectAction({
           Prefer: 'return=representation',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: name.trim(),
-          description: description?.trim() ?? '',
-        }),
+        body: JSON.stringify({ name, description }),
       },
     );
 
@@ -182,7 +180,7 @@ export async function updateProjectAction({
       return { error: data?.message || 'Failed to update project' };
     }
 
-    // 3. Purge the path cache so details and lists update everywhere instantly ( re-fetch after update )
+    // Purge the path cache so everything renders live updates instantly
     revalidatePath('/projects');
     revalidatePath(`/projects/${projectId}`);
 

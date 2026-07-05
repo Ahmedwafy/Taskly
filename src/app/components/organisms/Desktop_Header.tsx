@@ -1,11 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 
-// import { useRouter } from 'next/navigation';
-// import { useAppDispatch } from '@/redux/reduxHooks';
-// import { clearUser } from '@/features/auth/authSlice';
-// import { signOut } from '@/services/auth';
-
 interface Desktop_Header_Types {
   fullName: string;
   department?: string;
@@ -20,8 +15,6 @@ const Desktop_Header = ({
   avatarText,
   department,
   handleLogout,
-  // isCollapsed,
-  // onToggleCollapse,
 }: Desktop_Header_Types) => {
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -42,7 +35,7 @@ const Desktop_Header = ({
 
   return (
     <header className="h-16 border-b border-gray-300 px-4 flex items-center justify-end">
-      {/* Name + Avatar */}
+      {/* --- Name + Avatar --- */}
       <div className="relative flex items-center justify-end gap-2">
         <div className="hidden sm:flex flex-col">
           <span className="text-sm font-semibold">{fullName}</span>

@@ -1,22 +1,39 @@
-// import { z } from 'zod';
+// src → schemas → epic.schema.ts
+import { z } from 'zod';
 
-// export const CreatedBySchema = z.object({
-//   sub: z.string(),
-//   name: z.string(),
-//   email: z.string(),
-//   department: z.string(),
-// });
+// ==============================================================
+// ● ● ● Create Epic Schema ● ● ●
+// ==============================================================
+const nullableString = z
+  .union([z.string(), z.undefined(), z.null()])
+  .transform((val) => (val === '' || val === undefined ? null : val));
 
-// export const ProjectEpicSchema = z.object({
-//   id: z.string(),
-//   title: z.string(),
-//   description: z.string().nullable(),
-//   project_id: z.string(),
-//   created_at: z.string(),
-//   updated_at: z.string(),
-//   epic_id: z.string(),
-//   deadline: z.string(),
-//   created_by: CreatedBySchema,
-// });
+export const CreateEpicSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(3, 'Epic title must be at least 3 characters')
+    .max(150, 'Epic title is too long'),
 
-// export const ProjectEpicsSchema = z.array(ProjectEpicSchema);
+  project_id: z.string().trim().min(1, 'Project ID is required'),
+
+  description: nullableString,
+  assignee_id: nullableString,
+  deadline: nullableString,
+});
+
+// Infer type for the downstream server payload
+export type CreateEpicData = z.infer<typeof CreateEpicSchema>;
+
+// ==============================================================
+// ● ● ● Update Epic Schema ● ● ●
+// ==============================================================
+export const UpdateEpicSchema = z.object({
+  epicId: z.string().trim().min(1, 'Epic ID is required'),
+  projectId: z.string().trim().min(1),
+
+  // .partial() automatically allows fields to be omitted during runtime patches
+  payload: CreateEpicSchema.omit({ project_id: true }).partial(),
+});
+
+export type UpdateEpicData = z.infer<typeof UpdateEpicSchema>;

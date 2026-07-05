@@ -20,31 +20,23 @@ interface MobileInterfaceProps {
 }
 
 const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-
   const fullName = userData?.name ?? '';
   const department = userData?.name ?? '';
-
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const [isOpen, setIsOpen] = useState(false);
+
   // Added client-side state synchronization by dispatching setUser(userData) in a useEffect hook.
   useEffect(() => {
     dispatch(setUser(userData));
   }, [dispatch, userData]);
 
   const handleLogout = async () => {
-    setLoading(true);
-
-    // 1. Call the Server Action directly instead of the old fetch service
-    // This securely hits Supabase from the server and wipes HTTP-only cookies
     await signOutAction();
 
-    // 2. Clear your client-side global Redux state
+    // Clear client-side global Redux state
     dispatch(clearUser());
 
-    // 3. Clear loading and push the user to the login screen
-    setLoading(false);
     router.replace('/login');
   };
 
@@ -65,7 +57,7 @@ const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
         />
       </div>
 
-      {/* Overlay */}
+      {/* ○ ○ ○  Overlay ○ ○ ○  */}
       {isOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/40 lg:hidden"
@@ -73,7 +65,7 @@ const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
         />
       )}
 
-      {/* Sidebar container (kept in DOM to allow slide animation) */}
+      {/* ○ ○ ○  Sidebar container (kept in DOM to allow slide animation) ○ ○ ○  */}
       <div
         className={`fixed inset-y-0 left-0 z-40 w-64 lg:hidden transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'

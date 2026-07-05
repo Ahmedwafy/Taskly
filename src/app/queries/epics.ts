@@ -3,7 +3,7 @@ import { baseURL, supabaseKey } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
 
 // ========================================
-// ::: GET Project's Epics
+// ::: GET Project's Epics ::: Keep it Query Coz of the Pagination :::
 // ========================================
 interface FetchProjectEpicsParams {
   projectId: string;
@@ -46,47 +46,4 @@ export async function fetchProjectEpics({
     projectEpics: data,
     totalCount,
   };
-}
-
-// ========================================
-// ::: GET Epic's Details
-// ========================================
-interface FetchEpicDetailsParams {
-  projectId: string;
-  epicId: string;
-  accessToken: string;
-}
-
-interface BackendErrorResponse {
-  message?: string;
-  error?: string;
-}
-
-export async function fetchEpicDetails({
-  projectId,
-  epicId,
-  accessToken,
-}: FetchEpicDetailsParams) {
-  const response = await fetch(
-    `${baseURL}${endPoints.project.epicDetails(projectId, epicId)}`,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: supabaseKey,
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    const errorData = data as BackendErrorResponse;
-    throw new Error(
-      errorData.message || errorData.error || 'Failed to fetch epic details',
-    );
-  }
-
-  // Handle extracting the first item if Supabase returns it as an array filter query
-  return Array.isArray(data) ? data[0] : data;
 }

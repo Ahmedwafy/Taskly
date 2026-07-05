@@ -1,21 +1,21 @@
-// src → app → components → pages → ProjectEpics.tsx
+// src → app → components → page → ProjectEpics.tsx
 'use client';
 import * as icons from '@/../public/icons/icons';
 import * as images from '../../../../public/images/images';
-import { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { ProjectEpic, ProjectProps } from '@/types/shared';
 import Image from 'next/image';
 import PageHeader from '../molecules/PageHeader';
 import EpicsEmptyState from './EpicsEmptyState';
 import ProjectEpicsGrid from '../organisms/ProjectEpicsGrid';
 import DesktopPagination from '../molecules/DesktopPagination';
+import { toast } from 'sonner';
+import { useState } from 'react';
+import { useAppSelector } from '@/redux/reduxHooks';
+import { useRouter, usePathname } from 'next/navigation';
+import { ProjectEpic, ProjectProps } from '@/types/shared';
+import { updateEpicAction, getEpicDetailsAction } from '@/app/actions/epics';
 import EpicDetailsPopUpModal, {
   EpicDetails,
 } from '../organisms/EpicDetailsPopUpModal';
-import { useAppSelector } from '@/redux/reduxHooks';
-import { updateEpicAction } from '@/app/actions/epics';
-import { toast } from 'sonner';
 
 interface ProjectEpicsProps {
   projectData: ProjectProps;
@@ -38,43 +38,29 @@ const ProjectEpics = ({
   const pathname = usePathname();
   const members = useAppSelector((state) => state.members.list);
 
-  // --- Modal & Fetching States ---
+  // ○ ○ ○ Modal & Fetching States ○ ○ ○
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEpic, setSelectedEpic] = useState<EpicDetails | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [, setIsSaving] = useState(false);
 
-  // --- Pagination ---
+  // ○ ○ ○ Pagination ○ ○ ○
   const totalPages = Math.ceil(totalCount / limit);
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
     router.push(`${pathname}?page=${newPage}&limit=${limit}`);
   };
 
-  // --- Row Click Handler ---
+  // ○ ○ ○ Row Click Handler ( Handle Epic Click ) ○ ○ ○
   const handleEpicClick = async (epicId: string) => {
     setIsModalOpen(true);
     setIsLoadingDetails(true);
     setErrorMsg(null);
     setSelectedEpic(null);
+
     try {
-      // Direct query to local secure API route proxy handler
-      const res = await fetch(
-        `/api/get-epic-details?projectId=${id}&epicId=${epicId}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data?.message || 'Failed to load epic details.');
-      }
+      const data = await getEpicDetailsAction({ projectId: id, epicId });
 
       setSelectedEpic(data);
     } catch (err) {
@@ -92,7 +78,7 @@ const ProjectEpics = ({
     setErrorMsg(null);
   };
 
-  // --- Formatting Helpers ---
+  // ○ ○ ○ Formatting Helpers ○ ○ ○
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -143,6 +129,7 @@ const ProjectEpics = ({
     },
   ];
 
+  // ○ ○ ○ Handle Epic Field Update (Inline Editing) ○ ○ ○
   const handleUpdateEpicField = async (
     epicId: string,
     updatedFields: Partial<EpicDetails> & { assignee_id?: string | null },
@@ -150,21 +137,16 @@ const ProjectEpics = ({
     if (!selectedEpic) return;
 
     const previousState = { ...selectedEpic };
-
     setSelectedEpic((prev) => (prev ? { ...prev, ...updatedFields } : null));
     setIsSaving(true);
 
     try {
-      const { title, description, assignee_id, deadline } = updatedFields;
-      const rawPayload = { title, description, assignee_id, deadline };
-
-      const payload = Object.fromEntries(
-        Object.entries(rawPayload).filter(([, value]) => value !== undefined),
-      );
-
-      if (Object.keys(payload).length === 0) return;
-
-      const result = await updateEpicAction({ epicId, payload });
+      // Directly invoke mutation pipeline. Zod strips unedited keys on-demand.
+      const result = await updateEpicAction({
+        epicId,
+        projectId: id,
+        payload: updatedFields,
+      });
 
       if (result?.error) {
         throw new Error(result.error);

@@ -9,7 +9,6 @@ import { ForgotPasswordFormTypes } from '@/types/shared';
 import InputField from '../atoms/input';
 import { forgotPasswordAction } from '@/app/actions/auth';
 import { toast } from 'sonner';
-// import Input from '@/app/components/atoms/input';
 
 const ForgotPasswordForm = () => {
   const {
@@ -55,10 +54,8 @@ const ForgotPasswordForm = () => {
   };
 
   const onSubmit = async (data: ForgotPasswordFormTypes) => {
-    // 1. Invoke the Server Action directly
     const result = await forgotPasswordAction({ email: data.email.trim() });
 
-    // 2. Handle the returned server error if it exists
     if (result.error) {
       console.error('Error submitting data:', result.error);
       toast.error(result.error); // Show error to the user
@@ -66,7 +63,6 @@ const ForgotPasswordForm = () => {
       return; // Halt execution
     }
 
-    // 3. Success track
     setCountdown(300);
     setIsSubmitted(true);
     reset();

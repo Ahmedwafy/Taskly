@@ -1,5 +1,4 @@
 ﻿'use client';
-
 import Button from '@/app/components/atoms/Button';
 import { SignUpFormData } from '@/types/shared';
 import { useRouter } from 'next/navigation';
@@ -71,17 +70,14 @@ const SignUpForm = () => {
       password: data.password,
     };
 
-    // 1. Remove the try/catch block because server actions return status objects instead of throwing
     const result = await signUpAction(dataToSend);
 
-    // 2. Explicitly handle the error returned from the Server Action object
     if (result.error) {
       toast.error(result.error);
       console.error('Error submitting sign-up form:', result.error);
-      return; // Stop execution here
+      return;
     }
 
-    // 3. If no error is found, it's a guaranteed success!
     toast.success('Account created successfully');
     router.push('/login');
   };

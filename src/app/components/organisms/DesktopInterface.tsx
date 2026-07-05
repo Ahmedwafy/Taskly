@@ -25,7 +25,6 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
 
-  // Added a client-side state synchronization using useEffect to dispatch setUser(userData) on mount.
   useEffect(() => {
     dispatch(setUser(userData));
   }, [dispatch, userData]);
@@ -70,10 +69,7 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
           handleLogout={handleLogout}
         />
 
-        <main
-          className={`flex-1 overflow-auto transition-all duration-300`}
-          // style={{ paddingLeft: isCollapsed ? '5rem' : '16rem' }}
-        >
+        <main className={`flex-1 overflow-auto transition-all duration-300`}>
           {children}
         </main>
       </div>

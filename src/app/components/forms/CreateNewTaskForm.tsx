@@ -1,6 +1,4 @@
-// src/app/components/organisms/CreateNewTaskForm.tsx
 'use client';
-
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from '@/redux/reduxHooks';
@@ -11,35 +9,37 @@ import SelectField from '../atoms/SelectField';
 import Button from '../atoms/Button';
 import Link from 'next/link';
 import { STATUS_OPTIONS } from '@/lib/enums';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createTaskAction } from '@/app/actions/tasks';
 import { toast } from 'sonner';
-import { fetchProjectEpics } from '@/app/queries/epics';
+import { z } from 'zod';
+import { CreateTaskSchema } from '@/schemas/createNewTask.schema';
 
 interface CreateNewTaskProps {
   projectId: string;
+  initialEpics: ProjectEpic[];
 }
 
-interface TaskFormInputs {
-  title: string;
-  description?: string;
-  assignee_id?: string;
-  due_date?: string;
-  epic_id?: string;
-  status: (typeof STATUS_OPTIONS)[number];
-}
+// Define the type for the form inputs based on the Zod schema instead of :
+// manually defining it. This ensures that the form inputs are always in sync with the schema.
+//
+// z.input, TypeScript and React Hook Form will accept empty strings "" or undefined when the user interacts with the form.
+// Add 'project_id' to remove it from the form inputs, since it's already provided via props and not user input.
+type TaskFormInputs = Omit<z.input<typeof CreateTaskSchema>, 'project_id'>;
 
 const truncateString = (str: string, num: number) => {
   if (!str) return '';
   return str.length <= num ? str : str.slice(0, num) + '...';
 };
 
-const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
+const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
-  const [epicsList, setEpicsList] = useState<ProjectEpic[]>([]);
-  const [isEpicsLoading, setIsEpicsLoading] = useState(false);
+  const [epicsList] = useState<ProjectEpic[]>(initialEpics);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const epicIdFromUrl = searchParams.get('epic_id') || '';
 
   const {
     list: membersData,
@@ -47,17 +47,9 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
     isFetched,
   } = useAppSelector((state) => state.members);
 
-  const [prefilledEpicId] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('prefilled_task_epic_id') || '';
-    }
-    return '';
-  });
-
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<TaskFormInputs>({
     defaultValues: {
@@ -65,25 +57,14 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
       status: 'TO_DO',
       assignee_id: '',
       due_date: '',
-      epic_id: '',
+      epic_id: epicIdFromUrl,
       description: '',
     },
   });
 
-  useEffect(() => {
-    if (prefilledEpicId) {
-      setValue('epic_id', prefilledEpicId);
-      sessionStorage.removeItem('prefilled_task_epic_id');
-    }
-  }, [prefilledEpicId, setValue]);
+  // 5. (Clean up) All old prefilledEpicId states and related useEffects are removed.
 
-  useEffect(() => {
-    if (prefilledEpicId && epicsList.length > 0) {
-      setValue('epic_id', prefilledEpicId);
-    }
-  }, [prefilledEpicId, epicsList, setValue]);
-
-  // Fetch initial data on mount
+  // Fetch remaining project member data on mount
   useEffect(() => {
     if (!projectId) return;
 
@@ -93,41 +74,17 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
     if ((!isFetched && !isMembersLoading) || isDifferentProject) {
       dispatch(fetchProjectMembers(projectId));
     }
-
-    const loadEpics = async () => {
-      try {
-        setIsEpicsLoading(true);
-        // Hits our local API route proxy automatically behind the scenes
-        const data = await fetchProjectEpics({
-          projectId,
-          limit: 1000,
-          offset: 0,
-          accessToken: '',
-        });
-
-        setEpicsList(data?.projectEpics || []);
-      } catch (err) {
-        console.error('Failed to fill form epics dropdown:', err);
-        setEpicsList([]);
-      } finally {
-        setIsEpicsLoading(false);
-      }
-    };
-
-    loadEpics();
   }, [projectId, dispatch, isFetched, isMembersLoading, membersData]);
 
   const onSubmit = async (data: TaskFormInputs) => {
     try {
       setSubmitError(null);
 
-      // ✅ Directly call the Server Action inside your submission block
       const result = await createTaskAction({
         ...data,
         project_id: projectId,
       });
 
-      // Catch any validation or database errors returned from the server side
       if (result?.error) {
         toast.error(result.error);
         setSubmitError(result.error);
@@ -152,13 +109,13 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
       noValidate
       className="flex flex-col gap-8 bg-white p-8 shadow-sm rounded-xl"
     >
+      {/* Form Fields remain exactly as you have them */}
       {submitError && (
         <div className="p-4 bg-red-50 text-red-600 rounded-lg text-sm font-medium">
           {submitError}
         </div>
       )}
 
-      {/* ○ ○ ○ Title Input ○ ○ ○ */}
       <InputField
         {...register('title', { required: 'Task title is required' })}
         label="TITLE"
@@ -167,7 +124,6 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
         error={errors.title?.message}
       />
 
-      {/* ○ ○ ○ Status Drop-down + Assignee Drop-down ○ ○ ○ */}
       <div className="flex w-full justify-between gap-10">
         <SelectField
           {...register('status', { required: 'Please select a status' })}
@@ -197,14 +153,10 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
         />
       </div>
 
-      {/* ○ ○ ○ Epic Drop-down ○ ○ ○ */}
       <SelectField
         {...register('epic_id')}
         label="EPIC"
-        placeholder={
-          isEpicsLoading ? 'Loading EPICS...' : 'Select Epic Link...'
-        }
-        disabled={isEpicsLoading}
+        placeholder="Select Epic Link..."
         error={errors.epic_id?.message}
         options={epicsList.map((epic) => ({
           value: epic.id,
@@ -212,7 +164,6 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
         }))}
       />
 
-      {/* ○ ○ ○ Deadline Input ○ ○ ○ */}
       <InputField
         {...register('due_date', {
           validate: (value) => {
@@ -231,7 +182,6 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
         min={todayString}
       />
 
-      {/* ○ ○ ○ Description Input ○ ○ ○ */}
       <InputField
         {...register('description')}
         label="DESCRIPTION"
@@ -240,7 +190,6 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
         placeholder="Provide detailed context..."
       />
 
-      {/* ○ ○ ○ Action Buttons ○ ○ ○ */}
       <div className="flex flex-col-reverse gap-4 lg:flex-row justify-between lg:justify-end mt-8">
         <Link
           href={`/projects/${projectId}/tasks`}
@@ -252,7 +201,7 @@ const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
           name="Create Task"
           type="submit"
           isSubmitting={isSubmitting}
-          disabled={isSubmitting || isEpicsLoading}
+          disabled={isSubmitting}
           className="w-full lg:w-1/4!"
         />
       </div>

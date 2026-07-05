@@ -1,6 +1,5 @@
-// src/app/(pages)/projects/ProjectsMobile.tsx
+// src → app → (pages) → projects → ProjectsMobile.tsx
 'use client';
-
 import { useEffect, useState, useRef, useCallback } from 'react';
 import ProjectCard from '@/app/components/molecules/ProjectCard';
 import AddProjectCard from '@/app/components/molecules/AddProjectCard';
@@ -40,7 +39,6 @@ export default function ProjectsMobile({
 
       const currentOffset = offset;
 
-      // ✅ Use the server action cleanly like an async function call
       const result = await loadMoreProjectsAction(limit, currentOffset);
 
       if (result.error) {

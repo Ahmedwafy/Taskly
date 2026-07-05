@@ -1,3 +1,4 @@
+// src → app → components → organisms → Side-Bar.tsx
 'use client';
 import Image from 'next/image';
 import * as icons from '../../../../public/icons/icons';
@@ -34,7 +35,6 @@ const SideBar = ({
   const navItems = [
     {
       label: 'Projects',
-      // icon: mobileIcon ? mobileIcon : icons.Projects,
       icon: icons.Collapsed_Projects,
       alt: 'Projects',
       href: '/projects',
@@ -85,9 +85,9 @@ const SideBar = ({
       }`}
     >
       <div>
-        {/* -- Mobile close button -- */}
+        {/* ○ ○ ○ Mobile close button ○ ○ ○ */}
         <div className="lg:hidden flex items-center justify-end px-3"></div>
-        {/* -- Logo -- */}
+        {/* ○ ○ Logo ○ ○ */}
         <div
           className={`w-full flex items-center py-6 mb-10 transition-all duration-500 ease-in-out min-h-20
             ${isCollapsed ? 'justify-center gap-0' : 'justify-start gap-2'}`}
@@ -112,7 +112,7 @@ const SideBar = ({
           </span>
         </div>
 
-        {/* -- Navigation -- */}
+        {/* ○ ○ ○  Navigation ○ ○ ○  */}
         <div className="flex flex-col gap-4 pl-6 py-6">
           {navItems.map((item) => {
             return (
@@ -142,7 +142,7 @@ const SideBar = ({
         </div>
       </div>
 
-      {/* -- Collapse & Logout -- */}
+      {/* ○ ○ ○  Collapse & Logout ○ ○ ○  */}
       <div className="flex flex-col gap-4 pl-8 py-6">
         <button
           type="button"

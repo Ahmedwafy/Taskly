@@ -1,52 +1,41 @@
-// src/app/actions/epics.ts
+// src → app → actions → epics.ts
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
 import { getAuthCookies } from '@/lib/auth';
-import { UpdateEpicArgs } from '@/types/shared';
+import { z } from 'zod';
+import { CreateEpicSchema, UpdateEpicSchema } from '@/schemas/epic.schema';
 
 // ======================================================
-// ::: Create New Epic
+// ::: Create Epic Action :::
 // ======================================================
-interface CreateEpicInput {
-  title: string;
-  project_id: string;
-  description?: string | null;
-  assignee_id?: string | null;
-  deadline?: string | null;
-}
-export async function createEpicAction(input: CreateEpicInput) {
+export async function createEpicAction(
+  input: z.input<typeof CreateEpicSchema>,
+) {
   try {
-    // 1. Grab server-side tokens
     const { accessToken } = await getAuthCookies();
     if (!accessToken) {
       return { error: 'Unauthorized. Please log in again.' };
     }
 
-    // 2. Validate crucial runtime inputs
-    if (!input.title?.trim()) {
-      return { error: 'Title is required' };
-    }
-    if (!input.project_id?.trim()) {
-      return { error: 'Project ID is required' };
+    // Validate and automatically transform inputs using Zod
+    const parsed = CreateEpicSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        error: parsed.error.issues[0]?.message || 'Invalid form input.',
+      };
     }
 
-    // 3. Format and sanitize payload for PostgreSQL parsing rules
-    const epicPayload = {
-      title: input.title.trim(),
-      project_id: input.project_id.trim(),
-      description: input.description?.trim() || null,
-      assignee_id: input.assignee_id?.trim() || null,
-      deadline: input.deadline?.trim() ? input.deadline.trim() : null,
-    };
+    // Destructure data cleanly. Everything here is already post-transform (sanitized & null-mapped)
+    const { project_id } = parsed.data;
+    const epicPayload = parsed.data;
 
-    // 4. Dispatch fetch mutation directly upstream to Supabase cluster
     const response = await fetch(`${baseURL}${endPoints.createNewEpic}`, {
       method: 'POST',
       headers: {
-        apiKey: supabaseKey, // Keeping your lowercase/uppercase header name matching your original endpoint file
+        apiKey: supabaseKey,
         'Content-Type': 'application/json',
         Authorization: `Bearer ${accessToken}`,
       },
@@ -73,8 +62,7 @@ export async function createEpicAction(input: CreateEpicInput) {
       };
     }
 
-    // 5. Instantly clear cache across your layouts to render live updates
-    revalidatePath(`/projects/${input.project_id}/epics`);
+    revalidatePath(`/projects/${project_id}/epics`);
 
     return { success: true, data: result || { success: true } };
   } catch (error) {
@@ -89,21 +77,28 @@ export async function createEpicAction(input: CreateEpicInput) {
 }
 
 // ======================================================
-// ::: Update Epic
+// ::: Update Epic Action :::
 // ======================================================
-export async function updateEpicAction({ epicId, payload }: UpdateEpicArgs) {
+export async function updateEpicAction(
+  input: z.input<typeof UpdateEpicSchema>,
+) {
   try {
-    // 1. Grab server-side tokens
     const { accessToken } = await getAuthCookies();
     if (!accessToken) {
       return { error: 'Unauthorized. Please log in again.' };
     }
 
-    if (!epicId) {
-      return { error: 'Missing Epic ID' };
+    // Structural runtime schema sanitization
+    const parsed = UpdateEpicSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        error: parsed.error.issues[0]?.message || 'Invalid update arguments.',
+      };
     }
 
-    // 2. Dispatch PATCH directly upstream to Supabase
+    const { epicId, projectId, payload } = parsed.data;
+
+    // Transmit sanitized patch structural request directly upstream
     const response = await fetch(
       `${baseURL}${endPoints.epic.updateEpic(epicId)}`,
       {
@@ -128,8 +123,7 @@ export async function updateEpicAction({ epicId, payload }: UpdateEpicArgs) {
     const text = await response.text();
     const data = text ? JSON.parse(text) : { success: true };
 
-    // 3. Revalidate paths to drop stale caches instantly
-    revalidatePath('/projects');
+    revalidatePath(`/projects/${projectId}/epics`);
 
     return { success: true, data };
   } catch (error) {
@@ -140,5 +134,59 @@ export async function updateEpicAction({ epicId, payload }: UpdateEpicArgs) {
           ? error.message
           : 'An unexpected server error occurred.',
     };
+  }
+}
+
+// ======================================================
+// ::: Get Epic Details Action :::
+// ======================================================
+interface GetEpicDetailsPayload {
+  projectId: string;
+  epicId: string;
+}
+
+export async function getEpicDetailsAction({
+  projectId,
+  epicId,
+}: GetEpicDetailsPayload) {
+  try {
+    const { accessToken } = await getAuthCookies();
+    if (!accessToken) {
+      throw new Error('Unauthorized. Please log in again.');
+    }
+
+    if (!projectId || !epicId) {
+      throw new Error('Both Project ID and Epic ID are required.');
+    }
+
+    const response = await fetch(
+      `${baseURL}${endPoints.project.epicDetails(projectId, epicId)}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: supabaseKey,
+          Authorization: `Bearer ${accessToken}`,
+        },
+        // Optional: Ensure it always grabs the latest data
+        cache: 'no-store',
+      },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data?.message ||
+          data?.error ||
+          'Failed to fetch epic details from database.',
+      );
+    }
+
+    // extracting the first item if return an array
+    return Array.isArray(data) ? data[0] : data;
+  } catch (error) {
+    console.error('CRITICAL: Get Epic Details Action Crashed:', error);
+    throw error; // Let the client component's try/catch block handle the UI message
   }
 }

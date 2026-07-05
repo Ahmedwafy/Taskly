@@ -1,4 +1,4 @@
-// src/app/(pages)/layout.tsx
+// src → app → (pages) → layout.tsx
 import { redirect } from 'next/navigation';
 import MobileInterface from '../components/organisms/MobileInterface';
 import DesktopInterface from '../components/organisms/DesktopInterface';

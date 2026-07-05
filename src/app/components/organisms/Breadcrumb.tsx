@@ -47,7 +47,6 @@ const Breadcrumb = ({ projectName, className }: BreadcrumbProps) => {
         const isLast = index === segments.length - 1;
 
         return (
-          // <div key={index} className="flex items-center gap-2"></div>
           <div key={`${href}-${index}`} className="flex items-center gap-2">
             {isLast ? (
               <span

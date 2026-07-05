@@ -19,7 +19,6 @@ export default async function Projects({
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
-  // 1. Extract access token. proxy.ts guarantees it is fresh if the session is alive!
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(COOKIE_KEYS.ACCESS_TOKEN)?.value;
 
@@ -27,13 +26,12 @@ export default async function Projects({
     redirect('/login');
   }
 
-  // 2. Resolve pagination numbers
+  // Resolve pagination numbers
   const { page } = await searchParams;
   const currentPage = Number(page) || 1;
   const limit = 10;
   const offset = (currentPage - 1) * limit;
 
-  // 3. Directly fetch from Supabase inside the component
   const res = await fetch(
     `${baseURL}${endPoints.userData.getAllProjects}?limit=${limit}&offset=${offset}`,
     {

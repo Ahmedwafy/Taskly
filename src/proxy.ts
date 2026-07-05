@@ -1,4 +1,4 @@
-// src/proxy.ts
+// src → proxy.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { COOKIE_KEYS, getCookieOptions } from '@/lib/auth-cookie-config';

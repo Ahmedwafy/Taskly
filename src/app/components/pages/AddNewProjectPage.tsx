@@ -1,4 +1,4 @@
-// src/app/component/pages/AddNewProjectPage.tsx
+// src → app → component → pages → AddNewProjectPage.tsx
 'use client';
 import PageHeader from '../molecules/PageHeader';
 import ProjectForm from '../forms/Project-Form';
@@ -9,11 +9,15 @@ import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { createProjectAction } from '@/app/actions/projects'; // ✅ Import your new Server Action
+import { z } from 'zod';
+import { CreateProjectSchema } from '@/schemas/project.schema';
 
-interface AddProjectDataTypes {
-  name: string;
-  description?: string;
-}
+// Define the type for the form inputs based on the Zod schema instead of :
+//  manually defining it. This ensures that the form inputs are always in sync with the schema.
+//
+// z.input, TypeScript and React Hook Form will accept empty strings "" or undefined when the user interacts with the form.
+// Add 'project_id' to remove it from the form inputs, since it's already provided via props and not user input.
+type AddProjectFormInputs = z.input<typeof CreateProjectSchema>;
 
 const AddNewProjectPage = () => {
   const router = useRouter();
@@ -22,11 +26,11 @@ const AddNewProjectPage = () => {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<AddProjectDataTypes>({
+  } = useForm<AddProjectFormInputs>({
     defaultValues: { name: '', description: '' },
   });
 
-  const onSubmit = async (data: AddProjectDataTypes) => {
+  const onSubmit = async (data: AddProjectFormInputs) => {
     const dataToSend = {
       name: data.name.trim(),
       description: data.description?.trim(),
@@ -35,7 +39,6 @@ const AddNewProjectPage = () => {
     try {
       const result = await createProjectAction(dataToSend);
 
-      // Check if the backend or validation caught an error
       if (result?.error) {
         toast.error(result.error);
         return;
@@ -54,7 +57,6 @@ const AddNewProjectPage = () => {
   return (
     <main className="h-screen">
       <section>
-        {/* --- Page Header --- */}
         <PageHeader
           title="Add New Project"
           icon={icons.Member}
@@ -62,7 +64,7 @@ const AddNewProjectPage = () => {
           href="/projects/add"
         />
 
-        {/* --- Card  --- */}
+        {/* ○ ○ ○  Card  ○ ○ ○  */}
         <div className="mx-auto rounded-md h-auto mt-10">
           <div className="max-w-3xl mx-auto p-8 h-fit shadowrounded-t-xl shadow-sm bg-white">
             <CardHeader
@@ -86,7 +88,7 @@ const AddNewProjectPage = () => {
             />
           </div>
 
-          {/* --- Pro Tip --- */}
+          {/* ○ ○ ○  Pro Tip ○ ○ ○  */}
           <div className="bg-surface-low py-6 px-6 text-[#4F5F7B] flex max-w-3xl mx-auto rounded-b-xl shadow-sm">
             <div className="my-auto mr-2">
               <Image src={icons.ProTip} alt="Pro Tip" width={14} height={14} />

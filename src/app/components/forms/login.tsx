@@ -11,7 +11,6 @@ import { loginUser } from '@/features/auth/authSlice';
 import Link from 'next/link';
 import Button from '@/app/components/atoms/Button';
 import InputField from '../atoms/input';
-// import Input from '@/app/components/atoms/input';
 
 const LogInForm = () => {
   const router = useRouter();
@@ -32,7 +31,6 @@ const LogInForm = () => {
     setAuthError('');
 
     try {
-      // The thunk now safely un-wraps and fires 'catch' if data.error was returned
       await dispatch(
         loginUser({
           email: data.email,
@@ -44,7 +42,6 @@ const LogInForm = () => {
       toast.success('Welcome back!');
       router.push('/projects');
     } catch (error) {
-      // 'error' here is now safely guaranteed to be the string passed from rejectWithValue
       const message =
         typeof error === 'string' ? error : 'Something went wrong';
 
@@ -68,14 +65,6 @@ const LogInForm = () => {
       return 'Password must contain a special character.';
     return true;
   };
-
-  // field = {
-  //   name: 'email',
-  //   value: '...',
-  //   onChange: fn,
-  //   onBlur: fn,
-  //   ref: fn,
-  // };
 
   return (
     <div className="flex flex-col gap-6 max-w-md mx-auto my-auto px-8 py-10 rounded-lg shadow-lg bg-background mt-16">

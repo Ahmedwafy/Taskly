@@ -8,7 +8,6 @@ interface ProjectTasksProps {
 }
 
 const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
-  //   console.log(`---- projectId -----`, projectId); // works
   const { id, name } = projectData;
   console.log(`projectData → `, id, name); // works
 

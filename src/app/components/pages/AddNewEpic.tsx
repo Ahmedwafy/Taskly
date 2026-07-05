@@ -1,5 +1,6 @@
-// src/app/components/pages/AddNewEpic.tsx
+// src → app → components → pages → AddNewEpic.tsx
 'use client';
+
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { useParams, useRouter } from 'next/navigation';
@@ -8,28 +9,22 @@ import { createEpicAction } from '@/app/actions/epics';
 import { useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '@/redux/reduxHooks';
 import { fetchProjectMembers } from '@/features/members/membersSlice';
+import { z } from 'zod';
+import { CreateEpicSchema } from '@/schemas/epic.schema';
 
-interface AddProjectDataTypes {
-  title: string;
-  description?: string;
-  assignee_id?: string;
-  project_id: string;
-  deadline?: string;
-}
+type AddEpicFormInputs = Omit<z.input<typeof CreateEpicSchema>, 'project_id'>;
 
 const AddNewEpic = () => {
   const dispatch = useAppDispatch();
   const { projectId } = useParams();
   const router = useRouter();
 
-  // 1 ── Redux members state ──
   const {
     list: members,
     isFetched,
     loading,
   } = useAppSelector((state) => state.members);
 
-  // 2 ── conditional fetch ──
   useEffect(() => {
     if (!projectId) return;
 
@@ -46,7 +41,7 @@ const AddNewEpic = () => {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<AddProjectDataTypes>({
+  } = useForm<AddEpicFormInputs>({
     defaultValues: {
       title: '',
       description: '',
@@ -55,17 +50,12 @@ const AddNewEpic = () => {
     },
   });
 
-  const onSubmit = async (data: AddProjectDataTypes) => {
-    const dataToSend = {
-      title: data.title.trim(),
-      description: data.description?.trim() || '',
-      assignee_id: data.assignee_id?.trim() || '',
-      project_id: projectId as string,
-      deadline: data.deadline || '',
-    };
-
+  const onSubmit = async (data: AddEpicFormInputs) => {
     try {
-      const result = await createEpicAction(dataToSend);
+      const result = await createEpicAction({
+        ...data,
+        project_id: projectId as string,
+      });
 
       if (result?.error) {
         toast.error(result.error);
@@ -73,7 +63,7 @@ const AddNewEpic = () => {
       }
 
       toast.success('Epic created successfully');
-      router.push(`/projects/${projectId}/epics`); // Updated redirect route path to look better
+      router.push(`/projects/${projectId}/epics`);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'Something went wrong',
@@ -92,7 +82,6 @@ const AddNewEpic = () => {
         </p>
       </header>
 
-      {/* ○ ○ ○ Form ○ ○ ○ */}
       <div className="p-8 shadow-md rounded-xl bg-white">
         <AddNewEpicForm
           handleSubmit={handleSubmit}

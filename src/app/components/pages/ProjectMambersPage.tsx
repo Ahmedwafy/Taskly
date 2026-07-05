@@ -1,4 +1,4 @@
-// src/app/components/pages/ProjectMembersPage.tsx
+// src → app → components → pages → ProjectMembersPage.tsx
 'use client';
 
 import { useEffect } from 'react';
@@ -22,14 +22,14 @@ const ProjectMembersPage = ({ projectName }: ProjectMembersPageProps) => {
     ? params.projectId[0]
     : (params.projectId ?? '');
 
-  // 1 ── Redux members state ──
+  // ── Redux members state ──
   const {
     list: members,
     isFetched,
     loading,
     error,
   } = useAppSelector((state) => state.members);
-  // 2 ── conditional fetch ──
+
   useEffect(() => {
     if (!projectId) return;
 

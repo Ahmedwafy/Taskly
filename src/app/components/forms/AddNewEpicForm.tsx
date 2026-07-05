@@ -8,14 +8,8 @@ import {
 } from 'react-hook-form';
 import { DevTool } from '@hookform/devtools';
 import InputField from '../atoms/input';
-
-interface AddNewEpicTypes {
-  title: string;
-  description?: string;
-  assignee_id?: string;
-  project_id: string;
-  deadline?: string;
-}
+import { z } from 'zod';
+import { CreateEpicSchema } from '@/schemas/epic.schema';
 
 interface ProjectMember {
   member_id: string;
@@ -30,13 +24,15 @@ interface ProjectMember {
   };
 }
 
+type AddEpicFormInputs = Omit<z.input<typeof CreateEpicSchema>, 'project_id'>;
+
 interface AddNewProjectProps {
-  handleSubmit: UseFormHandleSubmit<AddNewEpicTypes>;
-  onSubmit: (data: AddNewEpicTypes) => Promise<void>;
-  register: UseFormRegister<AddNewEpicTypes>;
+  handleSubmit: UseFormHandleSubmit<AddEpicFormInputs>;
+  onSubmit: (data: AddEpicFormInputs) => Promise<void>;
+  register: UseFormRegister<AddEpicFormInputs>;
+  control: Control<AddEpicFormInputs>;
+  errors: FieldErrors<AddEpicFormInputs>;
   isSubmitting: boolean;
-  errors: FieldErrors<AddNewEpicTypes>;
-  control: Control<AddNewEpicTypes>;
   required_Message?: string;
   minLength_Message?: string;
   maxLength_Message?: string;
@@ -149,10 +145,10 @@ const AddNewEpicForm = ({
           {...register('deadline', {
             required: 'Deadline is required',
             validate: (value) => {
-              // 1. Guard check: If there's no value, let the 'required' rule handle it
+              // Guard check: If there's no value, let the 'required' rule handle it
               if (!value) return true;
 
-              // 2. Safely parse the value now that TypeScript knows it's a string
+              // Safely parse the value now that TypeScript knows it's a string
               const selectedDate = new Date(value);
               selectedDate.setHours(0, 0, 0, 0);
 

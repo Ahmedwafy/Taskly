@@ -1,6 +1,5 @@
-// src/app/components/pages/NewEmptyState.tsx
+// src → app → components → pages → NewEmptyState.tsx
 'use client';
-
 import Image, { StaticImageData } from 'next/image';
 import React from 'react';
 import Link from 'next/link';
@@ -32,12 +31,12 @@ const EpicsEmptyState = ({
 }: EmptyStateProps) => {
   return (
     <div className="flex flex-col items-center justify-center py-12 px-4 max-w-4xl mx-auto">
-      {/* Central Illustrative Graphic */}
+      {/* ○ ○ ○ Central Illustrative Graphic ○ ○ ○ */}
       <div className="mb-6 drop-shadow-sm">
         <Image src={imageSrc} alt={title} width={240} height={240} priority />
       </div>
 
-      {/* Primary Message */}
+      {/* ○ ○ ○  Primary Message ○ ○ ○  */}
       <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight">
         {title}
       </h2>
@@ -45,7 +44,7 @@ const EpicsEmptyState = ({
         {description}
       </p>
 
-      {/* Call to Action Button */}
+      {/* ○ ○ ○  Call to Action Button ○ ○ ○  */}
       <Link
         href={buttonHref}
         className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-colors mb-16 text-sm"
@@ -54,7 +53,7 @@ const EpicsEmptyState = ({
         {buttonText}
       </Link>
 
-      {/* Secondary Feature Highlights Grid */}
+      {/* ○ ○ ○  Secondary Feature Highlights Grid ○ ○ ○  */}
       {features && features.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl">
           {features.map((feature, i) => (

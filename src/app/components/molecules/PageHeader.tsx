@@ -7,7 +7,6 @@ import Button from '../atoms/Button';
 import { StaticImageData } from 'next/image';
 import Breadcrumb from '../organisms/Breadcrumb';
 import InputField from '../atoms/input';
-// import Input from '@/app/components/atoms/input';
 
 interface PageHeaderTypes {
   href: string;
@@ -29,7 +28,7 @@ const PageHeader = ({
   const isProjectEpics = title === 'Project Epics';
   return (
     <header className={`hidden md:flex justify-between w-full ${className}`}>
-      {/* Header */}
+      {/* --- Header --- */}
       <div className="w-full h-fit pt-2 pl-4 flex flex-col gap-2">
         <div className="flex gap-4">
           <Breadcrumb projectName={projectName} />
@@ -37,7 +36,7 @@ const PageHeader = ({
         <h1 className="display-lg">{title}</h1>
       </div>
 
-      {/* Blue Button */}
+      {/* --- Button --- */}
       {isProjectEpics ? (
         <div className="flex gap-4 w-full justify-between items-end">
           <div className="w-full relative">
