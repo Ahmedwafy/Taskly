@@ -5,30 +5,17 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProjectMember } from '@/features/members/membersSlice';
 import Image from 'next/image';
-
-export interface UserProfile {
-  name?: string;
-  avatar_url?: string;
-}
-
-export interface EpicDetails {
-  id: string;
-  epic_id?: string;
-  title?: string;
-  description?: string;
-  created_by?: UserProfile;
-  assignee?: UserProfile;
-  deadline?: string | null;
-  created_at?: string;
-}
+import { EpicDetails } from '@/types/shared';
+import { ProjectTask } from '@/features/tasks/tasksSlice';
 
 interface EpicDetailsPopUpModalProps {
   closeModal: () => void;
+  formatDate: (dateString?: string, variant?: 'US' | 'EU') => string;
   selectedEpic: EpicDetails | null;
-  formatDate: (dateString?: string) => string;
   errorMsg: string | null;
   isLoadingDetails: boolean;
   membersData: ProjectMember[];
+  epicTasks: ProjectTask[];
   handleUpdateEpicField: (
     epicId: string,
     updatedFields: Partial<EpicDetails> & { assignee_id?: string | null },
@@ -45,14 +32,12 @@ const EpicDetailsPopUpModal = ({
   closeModal,
   formatDate,
   handleUpdateEpicField,
+  epicTasks,
 }: EpicDetailsPopUpModalProps) => {
-  // 1. Initialize state directly from the props.
-  // No useEffect required because changing the 'key' at the parent level resets this component.
   const [localTitle, setLocalTitle] = useState(selectedEpic?.title || '');
   const [localDesc, setLocalDesc] = useState(selectedEpic?.description || '');
   const router = useRouter();
 
-  // 2. Define the blur save helper
   const handleBlurSave = (
     field: 'title' | 'description',
     currentValue: string,
@@ -65,12 +50,10 @@ const EpicDetailsPopUpModal = ({
     }
   };
 
-  // handle onClick → Add Task + Navigate to the new task creation page.
   const handleAddTaskNavigation = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!selectedEpic) return;
 
-    // Navigate to the task creation page with the epic_id as a query parameter.
     router.push(`/projects/${projectId}/tasks/new?epic_id=${selectedEpic.id}`);
   };
 
@@ -87,14 +70,13 @@ const EpicDetailsPopUpModal = ({
               <span>{selectedEpic?.epic_id || 'EPIC-101'}</span>
             </div>
 
-            {/* ○ ○ ○ Title - Triggers save exactly on Blur ○ ○ ○ */}
             <input
               type="text"
               value={localTitle}
               onChange={(e) => setLocalTitle(e.target.value)}
               onBlur={() => handleBlurSave('title', localTitle)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') e.currentTarget.blur(); // Quick shortcut to save on hit enter
+                if (e.key === 'Enter') e.currentTarget.blur();
               }}
               className="text-[26px] font-bold text-[#0f172a] tracking-tight w-full bg-transparent border border-transparent hover:border-slate-200 focus:border-indigo-500 focus:bg-slate-50 px-2 py-1 rounded-lg outline-none transition"
               placeholder="Epic Title"
@@ -109,7 +91,7 @@ const EpicDetailsPopUpModal = ({
           </button>
         </div>
 
-        {/* ○ ○ ○ Content Area ○ ○ ○ */}
+        {/* Content Area */}
         <div className="px-10 pb-10 overflow-y-auto space-y-8 flex-1">
           {isLoadingDetails && (
             <div className="flex flex-col items-center justify-center py-12 space-y-3">
@@ -128,7 +110,6 @@ const EpicDetailsPopUpModal = ({
 
           {!isLoadingDetails && !errorMsg && selectedEpic && (
             <>
-              {/* ○ ○ ○ Description - Triggers save exactly on Blur ○ ○ ○ */}
               <div>
                 <textarea
                   value={localDesc}
@@ -140,7 +121,7 @@ const EpicDetailsPopUpModal = ({
                 />
               </div>
 
-              {/* ○ ○ ○ Metadata row ○ ○ ○ */}
+              {/* Metadata row */}
               <div className="flex flex-wrap gap-x-12 gap-y-6 pt-2">
                 {/* Created By */}
                 <div className="min-w-35">
@@ -167,7 +148,7 @@ const EpicDetailsPopUpModal = ({
                   </div>
                 </div>
 
-                {/* ○ ○ ○ Assignee Selection ○ ○ ○ */}
+                {/* Assignee Selection */}
                 <div className="min-w-35">
                   <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">
                     Assignee
@@ -225,7 +206,7 @@ const EpicDetailsPopUpModal = ({
                   </div>
                 </div>
 
-                {/* ○ ○ ○ Deadline ○ ○ ○ */}
+                {/* Deadline */}
                 <div className="min-w-35 pl-4 border-l border-slate-200">
                   <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">
                     Deadline
@@ -257,7 +238,7 @@ const EpicDetailsPopUpModal = ({
                 </div>
               </div>
 
-              {/* ○ ○ ○ Created At ○ ○ ○ */}
+              {/* Created At */}
               <div className="pt-2">
                 <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
                   Created At
@@ -274,11 +255,10 @@ const EpicDetailsPopUpModal = ({
 
               <hr className="border-slate-100" />
 
-              {/* ○ ○ ○ Epic Tasks Section ○ ○ ○ */}
+              {/* Tasks Section */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-slate-900">Tasks</h3>
-                  {/* 1. First Add Task Button (Top Right of section) */}
                   <button
                     onClick={handleAddTaskNavigation}
                     className="text-sm font-bold text-[#004dc7] hover:text-blue-800 transition cursor-pointer"
@@ -287,21 +267,61 @@ const EpicDetailsPopUpModal = ({
                   </button>
                 </div>
 
-                <div className="border border-dashed border-[#dce2f5] rounded-xl p-10 flex flex-col items-center justify-center bg-[#F1F3FF] min-h-55">
-                  <div className="w-12 h-12 bg-[#dae3f8] text-[#4770db] rounded-xl flex items-center justify-center mb-4">
-                    <Image src={icons.emptyState} alt="empty-state" />
+                {!epicTasks || epicTasks.length === 0 ? (
+                  <div className="border border-dashed border-[#dce2f5] rounded-xl p-10 flex flex-col items-center justify-center bg-[#F1F3FF] min-h-55">
+                    <div className="w-12 h-12 bg-[#dae3f8] text-[#4770db] rounded-xl flex items-center justify-center mb-4">
+                      <Image src={icons.emptyState} alt="empty-state" />
+                    </div>
+                    <p className="text-[15px] text-slate-900 font-medium mb-5">
+                      No tasks have been added to this epic yet
+                    </p>
+                    <button
+                      onClick={handleAddTaskNavigation}
+                      className="px-5 py-2.5 bg-[#004dc7] hover:bg-[#003da1] text-white font-semibold text-sm rounded-lg transition shadow-sm flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span>+</span> Add Task
+                    </button>
                   </div>
-                  <p className="text-[15px] text-slate-900 font-medium mb-5">
-                    No tasks have been added to this epic yet
-                  </p>
-                  {/* 2. Second Add Task Button (Inside Empty State box) */}
-                  <button
-                    onClick={handleAddTaskNavigation}
-                    className="px-5 py-2.5 bg-[#004dc7] hover:bg-[#003da1] text-white font-semibold text-sm rounded-lg transition shadow-sm flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <span>+</span> Add Task
-                  </button>
-                </div>
+                ) : (
+                  <div className="space-y-3">
+                    {epicTasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className="flex items-center gap-3 py-2 px-4 border border-slate-100 rounded-lg bg-white hover:bg-slate-50 transition cursor-pointer"
+                      >
+                        <div className="flex justify-between w-full items-center">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-medium text-slate-900">
+                              {task.title}
+                            </span>
+                            <div className="flex gap-2 items-center">
+                              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-container text-[10px] font-semibold text-white">
+                                {task.assignee.name
+                                  .trim()
+                                  .split(/\s+/)
+                                  .map((w) => w[0])
+                                  .slice(0, 2)
+                                  .join('')
+                                  .toUpperCase()}
+                              </span>
+                              <span className="text-sm text-slate-500">
+                                {task.assignee.name}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Due Date */}
+                          <span className="text-sm font-medium text-slate-400">
+                            {task.due_date
+                              ? formatDate(task.due_date, 'EU')
+                              : 'No due date'}
+                            {/* <span>{formatDate(task.due_date, 'EU')}</span> */}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -312,3 +332,22 @@ const EpicDetailsPopUpModal = ({
 };
 
 export default EpicDetailsPopUpModal;
+
+// [ User types a new title ]
+//           │
+//           ▼
+// 1. "updateEpicOptimistically" fires instantly in Redux!
+//    ├── It clones the current epic and tucks it away safely in `backupEpic`
+//    └── It updates `selectedEpic` on the screen immediately. (Zero delay for the user! )
+//           │
+//           ▼
+// 2. The Server Action (`updateEpicAction`) runs in the background.
+//           │
+//     ┌─────┴────────────────┐
+//     ▼                      ▼
+// [ SUCCESS ]            [ FAILURE ]
+// The database matches   The internet dropped or database failed!
+// our UI. We are done!   "rollbackEpicUpdate" fires.
+//                        It grabs the original copy out of `backupEpic`
+//                        and snaps the UI right back to how it was,
+//                        then shows an error toast.

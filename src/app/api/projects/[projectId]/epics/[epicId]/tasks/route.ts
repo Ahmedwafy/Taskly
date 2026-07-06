@@ -1,11 +1,11 @@
-// src → app → api → projects → [projectId] → members → route.ts
+// src → app → api → projects → [projectId] → epics → [epicId] → tasks → route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthCookies } from '@/lib/auth';
-import { fetchProjectMembersList } from '@/app/queries/members'; // Clean Import!
+import { fetchEpicTasksList } from '@/app/queries/epics';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> },
+  { params }: { params: Promise<{ projectId: string; epicId: string }> },
 ) {
   try {
     const { accessToken } = await getAuthCookies();
@@ -17,11 +17,11 @@ export async function GET(
       );
     }
 
-    const { projectId } = await params;
+    // 2. Resolve the dynamic parameters from the path URL
+    const { epicId } = await params;
 
-    // Call our unified query function directly
-    const data = await fetchProjectMembersList({
-      projectId,
+    const data = await fetchEpicTasksList({
+      epicId,
       accessToken,
     });
 
@@ -29,7 +29,10 @@ export async function GET(
   } catch (error) {
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown error occurred while fetching tasks',
       },
       { status: 500 },
     );

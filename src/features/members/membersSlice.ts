@@ -1,4 +1,4 @@
-// src/features/members/membersSlice.ts
+// src → features → members → membersSlice.ts
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 export interface ProjectMember {

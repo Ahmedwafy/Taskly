@@ -94,7 +94,7 @@ export async function signInAction(formData: SignInFormData) {
       };
     }
 
-    // ✅ Securely store the auth tokens in HTTP-only cookies natively on the server
+    // store the auth tokens in HTTP-only cookies natively on the server
     await setAuthCookies(data.access_token, data.refresh_token, rememberMe);
 
     return { success: true, user: data.user };
@@ -123,7 +123,6 @@ export async function forgotPasswordAction(formData: ForgotPasswordFormTypes) {
       body: JSON.stringify({ email }),
     });
 
-    // Extract the response text first to safely inspect it
     const responseText = await response.text();
     const data = responseText ? JSON.parse(responseText) : null;
 

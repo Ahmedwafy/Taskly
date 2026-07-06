@@ -56,3 +56,18 @@ export interface UpdateEpicArgs {
   payload: UpdateEpicPayload;
 }
 // --------------------------------
+export interface UserProfile {
+  name?: string;
+  avatar_url?: string;
+}
+export interface EpicDetails {
+  id: string;
+  epic_id?: string;
+  title?: string;
+  description?: string;
+  created_by?: UserProfile;
+  assignee?: UserProfile;
+  deadline?: string | null;
+  created_at?: string;
+}
+// --------------------------------

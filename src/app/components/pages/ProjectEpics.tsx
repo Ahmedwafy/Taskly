@@ -9,13 +9,18 @@ import ProjectEpicsGrid from '../organisms/ProjectEpicsGrid';
 import DesktopPagination from '../molecules/DesktopPagination';
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { useAppSelector } from '@/redux/reduxHooks';
+import { useAppSelector, useAppDispatch } from '@/redux/reduxHooks'; // Added useAppDispatch
 import { useRouter, usePathname } from 'next/navigation';
-import { ProjectEpic, ProjectProps } from '@/types/shared';
-import { updateEpicAction, getEpicDetailsAction } from '@/app/actions/epics';
-import EpicDetailsPopUpModal, {
-  EpicDetails,
-} from '../organisms/EpicDetailsPopUpModal';
+import { EpicDetails, ProjectEpic, ProjectProps } from '@/types/shared';
+import { updateEpicAction } from '@/app/actions/epics';
+import {
+  fetchEpicDetails,
+  clearSelectedEpic,
+  updateEpicOptimistically,
+  rollbackEpicUpdate,
+} from '@/features/epics/epicsSlice'; // Added new Redux actions
+import EpicDetailsPopUpModal from '../organisms/EpicDetailsPopUpModal';
+import { clearTasks, fetchEpicTasks } from '@/features/tasks/tasksSlice';
 
 interface ProjectEpicsProps {
   projectData: ProjectProps;
@@ -36,56 +41,87 @@ const ProjectEpics = ({
   const hasNoEpics = projectEpics.length === 0;
   const router = useRouter();
   const pathname = usePathname();
-  const members = useAppSelector((state) => state.members.list);
+  const dispatch = useAppDispatch();
 
-  // ○ ○ ○ Modal & Fetching States ○ ○ ○
+  // === Redux State Sync ===
+  // === Redux State Sync ===
+  const members = useAppSelector((state) => state.members.list);
+  const selectedEpic = useAppSelector((state) => state.epics.selectedEpic);
+  const isLoadingDetails = useAppSelector((state) => state.epics.loading);
+  const epicTasks = useAppSelector((state) => state.tasks.list);
+  const isLoadingTasks = useAppSelector((state) => state.tasks.loading);
+  const reduxErrorMsg = useAppSelector((state) => state.epics.error);
+
+  console.log('epic Tasks:', epicTasks); // Debugging line
+
+  // === Modal UI States ===
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedEpic, setSelectedEpic] = useState<EpicDetails | null>(null);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [, setIsSaving] = useState(false);
 
-  // ○ ○ ○ Pagination ○ ○ ○
+  // === Pagination ===
   const totalPages = Math.ceil(totalCount / limit);
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
     router.push(`${pathname}?page=${newPage}&limit=${limit}`);
   };
 
-  // ○ ○ ○ Row Click Handler ( Handle Epic Click ) ○ ○ ○
+  // === ( Handle Epic Click ) ===
   const handleEpicClick = async (epicId: string) => {
     setIsModalOpen(true);
-    setIsLoadingDetails(true);
     setErrorMsg(null);
-    setSelectedEpic(null);
 
-    try {
-      const data = await getEpicDetailsAction({ projectId: id, epicId });
+    const results = await Promise.allSettled([
+      dispatch(fetchEpicDetails({ projectId: id, epicId })).unwrap(),
+      dispatch(fetchEpicTasks({ projectId: id, epicId })).unwrap(),
+    ]);
 
-      setSelectedEpic(data);
-    } catch (err) {
+    const detailsResult = results[0];
+    const tasksResult = results[1];
+
+    // Check if the critical epic details failed
+    if (detailsResult.status === 'rejected') {
       setErrorMsg(
-        err instanceof Error ? err.message : 'Failed to load epic details.',
+        detailsResult.reason instanceof Error
+          ? detailsResult.reason.message
+          : 'Failed to load epic details.',
       );
-    } finally {
-      setIsLoadingDetails(false);
+    }
+
+    // If tasks failed, it won't crash the modal.
+    if (tasksResult.status === 'rejected') {
+      console.error(
+        'Tasks failed to load, but details are fine:',
+        tasksResult.reason,
+      );
     }
   };
 
+  // === when user closes the modal ===
   const closeModal = () => {
     setIsModalOpen(false);
-    setSelectedEpic(null);
     setErrorMsg(null);
+    dispatch(clearSelectedEpic());
+    dispatch(clearTasks());
   };
 
-  // ○ ○ ○ Formatting Helpers ○ ○ ○
-  const formatDate = (dateString?: string) => {
+  // === Date Helper ===
+  const formatDate = (dateString?: string, variant: 'US' | 'EU' = 'US') => {
     if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('en-US', {
+
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+
+    // 'en-US' natively formats: "Jun 27, 2026"
+    // 'en-GB' natively formats: "27 Jun 2026"
+    const locale = variant === 'US' ? 'en-US' : 'en-GB';
+
+    return new Intl.DateTimeFormat(locale, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
-    });
+    }).format(date);
   };
 
   const epicValueProps = [
@@ -129,19 +165,18 @@ const ProjectEpics = ({
     },
   ];
 
-  // ○ ○ ○ Handle Epic Field Update (Inline Editing) ○ ○ ○
+  // === Handle Epic Field Update (Inline Editing) ===
   const handleUpdateEpicField = async (
     epicId: string,
     updatedFields: Partial<EpicDetails> & { assignee_id?: string | null },
   ) => {
-    if (!selectedEpic) return;
-
-    const previousState = { ...selectedEpic };
-    setSelectedEpic((prev) => (prev ? { ...prev, ...updatedFields } : null));
     setIsSaving(true);
 
+    // 1. Trigger an optimistic update directly in your Redux slice
+    // (We'll make sure your slice handles this action to update state immediately)
+    dispatch(updateEpicOptimistically({ updatedFields }));
+
     try {
-      // Directly invoke mutation pipeline. Zod strips unedited keys on-demand.
       const result = await updateEpicAction({
         epicId,
         projectId: id,
@@ -154,7 +189,9 @@ const ProjectEpics = ({
 
       toast.success(`Epic Updated Successfully`);
     } catch (err) {
-      setSelectedEpic(previousState);
+      // 2. Rollback to original server values from Redux if it fails
+      dispatch(rollbackEpicUpdate());
+
       toast.error(
         err instanceof Error
           ? err.message
@@ -214,9 +251,10 @@ const ProjectEpics = ({
           key={selectedEpic?.id || 'epic-modal-closed'}
           closeModal={closeModal}
           selectedEpic={selectedEpic}
+          epicTasks={epicTasks}
           formatDate={formatDate}
-          errorMsg={errorMsg}
-          isLoadingDetails={isLoadingDetails}
+          errorMsg={errorMsg || reduxErrorMsg}
+          isLoadingDetails={isLoadingDetails || isLoadingTasks}
           membersData={members}
           handleUpdateEpicField={handleUpdateEpicField}
           projectId={id}

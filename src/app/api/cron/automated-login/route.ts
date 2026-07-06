@@ -1,10 +1,9 @@
-// src/app/api/cron/automated-login/route.ts
+// src → app → api → cron → automated-login → route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { signInAction } from '@/app/actions/auth'; // Ensure this path matches where your action lives
+import { signInAction } from '@/app/actions/auth';
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Verify cron-job.org is authorized via the header secret
     const authHeader = req.headers.get('Authorization');
     const expectedSecret = process.env.CRON_SECRET;
 
@@ -15,7 +14,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Extract worker credentials from your server environment variables
     const email = process.env.AUTOMATED_USER_EMAIL;
     const password = process.env.AUTOMATED_USER_PASSWORD;
 
@@ -26,7 +24,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Directly trigger your server action
     const result = await signInAction({
       email,
       password,

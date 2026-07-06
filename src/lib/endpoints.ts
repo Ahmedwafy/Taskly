@@ -13,9 +13,8 @@ type Endpoints = {
     userInfo: string;
     createNewProject: string;
     getAllProjects: string;
-    // getProjectByID: (id: string) => string;
-    // name: (name: string) => string;
   };
+
   project: {
     getProjectEpics: (
       projectId: string,
@@ -28,7 +27,9 @@ type Endpoints = {
 
   epic: {
     updateEpic: (epicId: string) => string;
+    getEpicTasks: (epicId: string) => string;
   };
+
   updateProjectById: (projectId: string) => string;
   projectMembers: (projectId: string) => string;
   createNewEpic: string;
@@ -63,6 +64,7 @@ export const endPoints: Endpoints = {
 
   epic: {
     updateEpic: (epicId) => `/rest/v1/epics?id=eq.${epicId}`,
+    getEpicTasks: (epicId) => `/rest/v1/project_tasks?epic_id=eq.${epicId}`,
   },
 
   createNewEpic: '/rest/v1/epics',

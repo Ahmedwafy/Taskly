@@ -1,11 +1,11 @@
-// src → app → api → projects → [projectId] → members → route.ts
+// src → app → api → projects → [projectId] → epics → [epicId] → route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthCookies } from '@/lib/auth';
-import { fetchProjectMembersList } from '@/app/queries/members'; // Clean Import!
+import { fetchEpicDetailsList } from '@/app/queries/epics';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> },
+  { params }: { params: Promise<{ projectId: string; epicId: string }> },
 ) {
   try {
     const { accessToken } = await getAuthCookies();
@@ -17,11 +17,11 @@ export async function GET(
       );
     }
 
-    const { projectId } = await params;
+    const { projectId, epicId } = await params;
 
-    // Call our unified query function directly
-    const data = await fetchProjectMembersList({
+    const data = await fetchEpicDetailsList({
       projectId,
+      epicId,
       accessToken,
     });
 
