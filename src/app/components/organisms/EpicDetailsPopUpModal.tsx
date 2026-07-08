@@ -91,7 +91,7 @@ const EpicDetailsPopUpModal = ({
           </button>
         </div>
 
-        {/* Content Area */}
+        {/* =============== Content Area =============== */}
 
         {/* === Loading Case === */}
         <div className="px-10 pb-10 overflow-y-auto space-y-8 flex-1">
@@ -111,6 +111,7 @@ const EpicDetailsPopUpModal = ({
             </div>
           )}
 
+          {/* === Success Case === */}
           {!isLoadingDetails && !errorMsg && selectedEpic && (
             <>
               <div>
@@ -270,6 +271,7 @@ const EpicDetailsPopUpModal = ({
                   </button>
                 </div>
 
+                {/* === Tasks List === */}
                 {!epicTasks || epicTasks.length === 0 ? (
                   <div className="border border-dashed border-[#dce2f5] rounded-xl p-10 flex flex-col items-center justify-center bg-[#F1F3FF] min-h-55">
                     <div className="w-12 h-12 bg-[#dae3f8] text-[#4770db] rounded-xl flex items-center justify-center mb-4">
@@ -305,10 +307,10 @@ const EpicDetailsPopUpModal = ({
                                   .map((w) => w[0])
                                   .slice(0, 2)
                                   .join('')
-                                  .toUpperCase()}
+                                  .toUpperCase() ?? 'Unassigned'}
                               </span>
                               <span className="text-sm text-slate-500">
-                                {task.assignee.name}
+                                {task.assignee.name ?? 'Unassigned'}
                               </span>
                             </div>
                           </div>
@@ -318,7 +320,6 @@ const EpicDetailsPopUpModal = ({
                             {task.due_date
                               ? formatDate(task.due_date, 'EU')
                               : 'No due date'}
-                            {/* <span>{formatDate(task.due_date, 'EU')}</span> */}
                           </span>
                         </div>
                       </div>
