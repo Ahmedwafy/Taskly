@@ -92,6 +92,8 @@ const EpicDetailsPopUpModal = ({
         </div>
 
         {/* Content Area */}
+
+        {/* === Loading Case === */}
         <div className="px-10 pb-10 overflow-y-auto space-y-8 flex-1">
           {isLoadingDetails && (
             <div className="flex flex-col items-center justify-center py-12 space-y-3">
@@ -102,6 +104,7 @@ const EpicDetailsPopUpModal = ({
             </div>
           )}
 
+          {/* === Error Case === */}
           {errorMsg && (
             <div className="p-4 bg-red-50 text-red-600 rounded-lg text-sm font-medium">
               {errorMsg}

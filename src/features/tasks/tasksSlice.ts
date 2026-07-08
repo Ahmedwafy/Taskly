@@ -104,7 +104,7 @@ const tasksSlice = createSlice({
       })
       .addCase(fetchEpicTasks.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload as string; // Saves the error message to state coming from the thunk
       });
   },
 });

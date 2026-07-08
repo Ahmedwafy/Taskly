@@ -44,13 +44,21 @@ const ProjectEpics = ({
   const dispatch = useAppDispatch();
 
   // === Redux State Sync ===
-  // === Redux State Sync ===
   const members = useAppSelector((state) => state.members.list);
+
+  // === Epic Details Modal State ===
   const selectedEpic = useAppSelector((state) => state.epics.selectedEpic);
-  const isLoadingDetails = useAppSelector((state) => state.epics.loading);
-  const epicTasks = useAppSelector((state) => state.tasks.list);
-  const isLoadingTasks = useAppSelector((state) => state.tasks.loading);
-  const reduxErrorMsg = useAppSelector((state) => state.epics.error);
+  const isLoadingEpicDetails = useAppSelector((state) => state.epics.loading);
+  const epicsErrorMsg = useAppSelector((state) => state.epics.error);
+
+  // === Epic's Tasks State ===
+  // const epicTasks = useAppSelector((state) => state.tasks.list);
+  // const isLoadingTasks = useAppSelector((state) => state.tasks.loading);
+  const {
+    list: epicTasks,
+    error: tasksError,
+    loading: isLoadingTasks,
+  } = useAppSelector((state) => state.tasks);
 
   console.log('epic Tasks:', epicTasks); // Debugging line
 
@@ -91,10 +99,7 @@ const ProjectEpics = ({
 
     // If tasks failed, it won't crash the modal.
     if (tasksResult.status === 'rejected') {
-      console.error(
-        'Tasks failed to load, but details are fine:',
-        tasksResult.reason,
-      );
+      console.error('failed to load Tasks', tasksResult.reason || tasksError);
     }
   };
 
@@ -106,7 +111,7 @@ const ProjectEpics = ({
     dispatch(clearTasks());
   };
 
-  // === Date Helper ===
+  // === Date Format Helper ===
   const formatDate = (dateString?: string, variant: 'US' | 'EU' = 'US') => {
     if (!dateString) return '';
 
@@ -173,7 +178,7 @@ const ProjectEpics = ({
     setIsSaving(true);
 
     // 1. Trigger an optimistic update directly in your Redux slice
-    // (We'll make sure your slice handles this action to update state immediately)
+    // (make sure slice handles this action to update state immediately)
     dispatch(updateEpicOptimistically({ updatedFields }));
 
     try {
@@ -253,8 +258,8 @@ const ProjectEpics = ({
           selectedEpic={selectedEpic}
           epicTasks={epicTasks}
           formatDate={formatDate}
-          errorMsg={errorMsg || reduxErrorMsg}
-          isLoadingDetails={isLoadingDetails || isLoadingTasks}
+          errorMsg={errorMsg || epicsErrorMsg}
+          isLoadingDetails={isLoadingEpicDetails || isLoadingTasks}
           membersData={members}
           handleUpdateEpicField={handleUpdateEpicField}
           projectId={id}
