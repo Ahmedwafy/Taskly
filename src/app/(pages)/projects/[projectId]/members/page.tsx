@@ -30,7 +30,7 @@ export default async function ProjectMembers({
   }
 
   return (
-    <div className="mt-10 sm:mt-0 p-5 sm:p-10 h-full">
+    <div className="mt-10 sm:mt-0 p-5 sm:p-10 h-full bg-background">
       <ProjectMambersPage projectName={project.name} />
     </div>
   );

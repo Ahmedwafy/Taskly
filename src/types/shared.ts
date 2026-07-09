@@ -7,17 +7,17 @@ export interface SignUpFormData {
   password: string;
   confirmPassword?: string | number;
 }
-// --------------------------------
+// ====================================================
 export interface SignInFormData {
   email: string;
   password: string;
   rememberMe?: boolean;
 }
-// --------------------------------
+// ====================================================
 export interface ForgotPasswordFormTypes {
   email: string;
 }
-// --------------------------------
+// ====================================================
 export interface ProjectProps {
   id: string;
   name: string;
@@ -25,14 +25,13 @@ export interface ProjectProps {
   created_by: string;
   created_at: string;
 }
-// --------------------------------
+// ====================================================
 export interface UserDetails {
   sub: string;
   name: string;
   email: string;
   department: string;
 }
-
 export interface ProjectEpic {
   id: string; // epic id
   epic_id: string;
@@ -43,19 +42,18 @@ export interface ProjectEpic {
   created_by: UserDetails;
   assignee: UserDetails;
 }
-// --------------------------------
+// ====================================================
 export interface UpdateEpicPayload {
   title?: string;
   description?: string;
   assignee_id?: string | null;
   deadline?: string | null;
 }
-
 export interface UpdateEpicArgs {
   epicId: string;
   payload: UpdateEpicPayload;
 }
-// --------------------------------
+// ====================================================
 export interface UserProfile {
   name?: string;
   avatar_url?: string;
@@ -70,4 +68,4 @@ export interface EpicDetails {
   deadline?: string | null;
   created_at?: string;
 }
-// --------------------------------
+// ====================================================

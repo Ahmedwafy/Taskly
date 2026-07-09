@@ -5,6 +5,7 @@
 import { forwardRef, useState } from 'react';
 import * as icons from '../../../../public/icons/icons';
 import Image from 'next/image';
+import SearchIcon from '@/../public/svgIcons/SearchIcon.svg';
 
 interface InputProps {
   id?: string;
@@ -65,6 +66,7 @@ const InputField = forwardRef<
     const isPasswordField = type === 'password' && !multiline;
     const errorId = error ? 'error' : undefined;
     const maxLen = maxLength ?? 500;
+    const isPlaceholder = placeholder === 'Search Tasks...';
 
     const displayedValue =
       value !== undefined && value !== null ? String(value) : internalValue;
@@ -121,27 +123,34 @@ const InputField = forwardRef<
               </div>
             </div>
           ) : (
-            <input
-              id={id ?? name}
-              ref={ref as React.Ref<HTMLInputElement>}
-              name={name}
-              type={
-                isPasswordField ? (showPassword ? 'text' : 'password') : type
-              }
-              placeholder={placeholder}
-              value={displayedValue}
-              disabled={disabled}
-              onChange={(e) => {
-                if (value === undefined || value === null)
-                  setInternalValue(e.target.value);
-                if (onChange) onChange(e);
-              }}
-              min={min}
-              onBlur={onBlur}
-              aria-invalid={!!error}
-              aria-describedby={errorId}
-              className={`w-full p-3 pr-12 border-gray-300 rounded-md ${error ? `bg-inputBgError` : `bg-[#D7E2FF]`} disabled:opacity-60 disabled:cursor-not-allowed ${epicStyle}`}
-            />
+            <div className="relative">
+              <input
+                id={id ?? name}
+                ref={ref as React.Ref<HTMLInputElement>}
+                name={name}
+                type={
+                  isPasswordField ? (showPassword ? 'text' : 'password') : type
+                }
+                placeholder={placeholder}
+                value={displayedValue}
+                disabled={disabled}
+                onChange={(e) => {
+                  if (value === undefined || value === null)
+                    setInternalValue(e.target.value);
+                  if (onChange) onChange(e);
+                }}
+                min={min}
+                onBlur={onBlur}
+                aria-invalid={!!error}
+                aria-describedby={errorId}
+                className={`w-full p-3 pr-12 border-gray-300 rounded-md ${error ? `bg-inputBgError` : `bg-[#D7E2FF]`} disabled:opacity-60 disabled:cursor-not-allowed ${epicStyle} 
+                  ${isPlaceholder && 'pl-14'}
+                `}
+              />
+              {isPlaceholder && (
+                <SearchIcon className="absolute left-4 w-5 h-5 -top-10" />
+              )}
+            </div>
           )}
 
           {isPasswordField && (

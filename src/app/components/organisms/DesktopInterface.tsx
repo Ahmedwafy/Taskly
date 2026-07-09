@@ -44,7 +44,9 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen w-screen overflow-hidden">
+      {' '}
+      {/* Force the screen limits here */}
       <div className="hidden md:block">
         <SideBar
           isCollapsed={isCollapsed}
@@ -52,8 +54,9 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
           handleLogout={handleLogout}
         />
       </div>
-
-      <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out">
+      {/* CRITICAL FIX 1: Added 'min-w-0' and 'w-full' here. 
+          This stops this right-side container from expanding past the viewport! */}
+      <div className="flex flex-1 flex-col min-w-0 w-full transition-all duration-300 ease-in-out">
         <Desktop_Header
           fullName={fullName}
           department={department}
@@ -69,12 +72,47 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
           handleLogout={handleLogout}
         />
 
-        <main className={`flex-1 overflow-auto transition-all duration-300`}>
+        {/* CRITICAL FIX 2: Changed 'overflow-auto' to 'overflow-hidden' and added 'min-w-0'
+            This protects the header and hands the scrolling duty entirely to the board */}
+        <main className="flex-1 min-w-0 overflow-hidden transition-all duration-300">
           {children}
         </main>
       </div>
     </div>
   );
+
+  // return (
+  //   <div className="flex h-screen">
+  //     <div className="hidden md:block">
+  //       <SideBar
+  //         isCollapsed={isCollapsed}
+  //         onToggleCollapse={() => setIsCollapsed((v) => !v)}
+  //         handleLogout={handleLogout}
+  //       />
+  //     </div>
+
+  //     <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out">
+  //       <Desktop_Header
+  //         fullName={fullName}
+  //         department={department}
+  //         avatarText={fullName
+  //           .trim()
+  //           .split(/\s+/)
+  //           .map((w) => w[0])
+  //           .slice(0, 2)
+  //           .join('')
+  //           .toUpperCase()}
+  //         isCollapsed={isCollapsed}
+  //         onToggleCollapse={() => setIsCollapsed((v) => !v)}
+  //         handleLogout={handleLogout}
+  //       />
+
+  //       <main className={`flex-1 overflow-auto transition-all duration-300`}>
+  //         {children}
+  //       </main>
+  //     </div>
+  //   </div>
+  // );
 };
 
 export default DesktopInterface;
