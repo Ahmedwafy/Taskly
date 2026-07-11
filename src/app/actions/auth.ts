@@ -12,6 +12,7 @@ import {
   SignInFormData,
   ForgotPasswordFormTypes,
 } from '@/types/shared';
+import { success } from 'zod';
 
 // ==========================================
 // 1. SIGN UP
@@ -56,7 +57,13 @@ export async function signUpAction(formData: SignUpFormData) {
 
     return { success: true, data };
   } catch (error) {
-    return { error: 'An unexpected error occurred during registration.' };
+    console.error('An unexpected server error occurred.', error);
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : 'An unexpected error occurred during registration.',
+    };
   }
 }
 
@@ -99,7 +106,13 @@ export async function signInAction(formData: SignInFormData) {
 
     return { success: true, user: data.user };
   } catch (error) {
-    return { error: 'An unexpected server error occurred during login.' };
+    console.error('An unexpected server error occurred.', error);
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : 'An unexpected server error occurred during login.',
+    };
   }
 }
 

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/redux/reduxHooks';
 import { clearUser, setUser } from '@/features/auth/authSlice';
 import { signOutAction } from '@/app/actions/auth';
+import { getInitials } from '@/lib/helpers';
 
 interface DesktopInterfaceProps {
   userData: {
@@ -43,6 +44,8 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
     router.replace('/login');
   };
 
+  const initialFullName = getInitials(fullName); // "John Doe" >>> "JD"
+
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       {' '}
@@ -54,27 +57,17 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
           handleLogout={handleLogout}
         />
       </div>
-      {/* CRITICAL FIX 1: Added 'min-w-0' and 'w-full' here. 
-          This stops this right-side container from expanding past the viewport! */}
       <div className="flex flex-1 flex-col min-w-0 w-full transition-all duration-300 ease-in-out">
         <Desktop_Header
           fullName={fullName}
           department={department}
-          avatarText={fullName
-            .trim()
-            .split(/\s+/)
-            .map((w) => w[0])
-            .slice(0, 2)
-            .join('')
-            .toUpperCase()}
+          avatarText={initialFullName}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed((v) => !v)}
           handleLogout={handleLogout}
         />
 
-        {/* CRITICAL FIX 2: Changed 'overflow-auto' to 'overflow-hidden' and added 'min-w-0'
-            This protects the header and hands the scrolling duty entirely to the board */}
-        <main className="flex-1 min-w-0 overflow-hidden transition-all duration-300">
+        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden transition-all duration-300">
           {children}
         </main>
       </div>

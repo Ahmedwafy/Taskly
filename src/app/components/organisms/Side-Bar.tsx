@@ -6,6 +6,8 @@ import { useState } from 'react';
 import { StaticImageData } from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import LOGO from '@/../public/svgIcons/LOGO.svg';
+// import ProjectEpics from '@/../public/svgIcons/ProjectEpics.svg';
 
 interface SideBarProps {
   isCollapsed?: boolean;
@@ -52,7 +54,7 @@ const SideBar = ({
             label: 'Project Tasks',
             icon: icons.Tasks,
             alt: 'Project Tasks',
-            href: `/projects/${projectId}/tasks`,
+            href: `/projects/${projectId}/tasks?view=board`,
           },
           {
             label: 'Project Members',
@@ -99,7 +101,7 @@ const SideBar = ({
                 : 'relative left-4 mr-4 my-auto pl-6 '
             }`}
           >
-            <Image src={icons.Logo} alt="Logo" width={18} height={20} />
+            <LOGO width={18} height={20} />
           </div>
           <span
             className={`text-[20px] font-bold transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap ${
@@ -123,6 +125,7 @@ const SideBar = ({
                    hover:bg-white hover:shadow-sm hover:text-neutral-100 cursor-pointer hover:pl-4 
                    ${isCollapsed ? '' : ''} `}
               >
+                {/* <ProjectEpics width={18} height={20} /> */}
                 <Image src={item.icon} alt={item.alt} />
 
                 <Link href={item.href}>

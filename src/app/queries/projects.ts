@@ -80,15 +80,21 @@ export const fetchAllProjects = cache(
 interface FetchProjectTasksParams {
   projectId: string;
   accessToken: string;
-  taskStatus: string;
+  taskStatus?: string;
 }
+
 export async function fetchProjectTasks({
   projectId,
   accessToken,
   taskStatus,
 }: FetchProjectTasksParams) {
+  // Determine the endpoint dynamically [ if i have taskStatus or not]
+  const endpointUrl = taskStatus
+    ? endPoints.project.getProjectTasks(projectId, taskStatus) // for Tasks Board View
+    : `${baseURL}/rest/v1/project_tasks?project_id=eq.${projectId}`; // for Tasks List View
+
   const response = await fetch(
-    `${baseURL}${endPoints.project.getProjectTasks(projectId, taskStatus)}`,
+    endpointUrl.startsWith('http') ? endpointUrl : `${baseURL}${endpointUrl}`,
     {
       method: 'GET',
       headers: {

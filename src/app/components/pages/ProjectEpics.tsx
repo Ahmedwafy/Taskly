@@ -233,7 +233,7 @@ const ProjectEpics = ({
         </div>
       )}
 
-      {/* ====== EPIC DETAILS MODAL POPUP ======*/}
+      {/* ====== EPIC DETAILS MODAL POPUP ====== */}
       {isModalOpen && (
         <EpicDetailsPopUpModal
           key={selectedEpic?.id || 'epic-modal-closed'}

@@ -1,26 +1,33 @@
 // src → app → components → organisms → TaskColumn.tsx
 'use client';
-import * as icons from '@/../public/icons/icons';
-import Image from 'next/image';
+// import * as icons from '@/../public/icons/icons';
+// import Image from 'next/image';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { formatDate } from '@/lib/helpers';
+// import { formatDate, getInitials } from '@/lib/helpers';
 import AddTaskIcon from '@/../public/svgIcons/AddTaskIcon.svg';
 import AddTaskIcon2 from '@/../public/svgIcons/AddTaskIcon2.svg';
+import TaskCard from '../molecules/TaskCard';
 
 interface TaskColumnProps {
   projectId: string;
   title: string;
   status: string;
+  onTaskClick: (taskId: string) => void;
 }
 
-const TaskColumn = ({ projectId, title, status }: TaskColumnProps) => {
+const TaskColumn = ({
+  projectId,
+  title,
+  status,
+  onTaskClick,
+}: TaskColumnProps) => {
   const router = useRouter();
   const [tasks, setTasks] = useState<ProjectTask[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  //  error instanceof Error
+
   useEffect(() => {
     const fetchColumnTasks = async () => {
       try {
@@ -71,7 +78,6 @@ const TaskColumn = ({ projectId, title, status }: TaskColumnProps) => {
           className="p-1 rounded-md transition-colors"
           title={`Add task to ${title}`}
         >
-          {/* <Image src={icons.Add_Task} alt="Add-Task" /> */}
           <AddTaskIcon />
         </button>
       </div>
@@ -81,57 +87,18 @@ const TaskColumn = ({ projectId, title, status }: TaskColumnProps) => {
         onClick={handleAddTaskClick}
       >
         <span>
-          {/* <Image src={icons.AddNewTask} alt="Add-Task" /> */}
           <AddTaskIcon2 />
         </span>
         <span>ADD NEW TASK</span>
       </button>
 
-      {/* === State Renderers === */}
-      <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
-        {loading && (
-          <p className="text-sm animate-pulse text-center mt-4">
-            Loading tasks...
-          </p>
-        )}
-        {error && (
-          <p className="text-sm text-red-400 text-center mt-4">
-            Error loading tasks
-          </p>
-        )}
-
-        {!loading && !error && tasks.length === 0 && (
-          <p className="text-sm italic text-center mt-8">No tasks found</p>
-        )}
-
-        {!loading &&
-          !error &&
-          tasks.map((task) => (
-            <div
-              key={task.id}
-              className="flex flex-col p-4 gap-6 transition text-sm shadow-sm bg-white rounded-md"
-            >
-              <span>{task.title}</span>
-              <span className="flex justify-between w-full">
-                <p className="flex gap-2 items-center">
-                  <span>
-                    <Image src={icons.Date} alt="Add-Task" />
-                  </span>
-                  <span> {formatDate(task.created_at)}</span>
-                </p>
-                <p className="bg-primary rounded-full p-1 text-white">
-                  {task.assignee.name
-                    .trim()
-                    .split(/\s+/)
-                    .map((w) => w[0])
-                    .slice(0, 2)
-                    .join('')
-                    .toUpperCase()}
-                </p>
-              </span>
-            </div>
-          ))}
-      </div>
+      {/* === State Renderers [ Task Card ] === */}
+      <TaskCard
+        loading={loading}
+        error={error}
+        tasks={tasks}
+        onTaskClick={onTaskClick}
+      />
     </div>
   );
 };
