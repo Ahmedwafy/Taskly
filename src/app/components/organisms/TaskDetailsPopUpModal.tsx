@@ -123,7 +123,9 @@ const TaskDetailsPopUpModal = ({
               </strong>
               <div className="bg-white py-2 px-2 rounded-md flex gap-4 items-center">
                 <span className="bg-[#DAE2FF] rounded-xl p-1 text-[#001848]">
-                  {getInitials(task.assignee.name)}
+                  {task.assignee.name
+                    ? getInitials(task.assignee.name)
+                    : 'Unassigned'}
                 </span>
                 <p className="flex flex-col">
                   <span className="font-semibold">{task.assignee.name}</span>
@@ -142,7 +144,9 @@ const TaskDetailsPopUpModal = ({
               </strong>
               <div className="py-2 px-2 rounded-md flex gap-4 items-center">
                 <span className="bg-[#DAE2FF] rounded-xl p-1 text-[#001848]">
-                  {getInitials(task.assignee.name)}
+                  {task.assignee.name
+                    ? getInitials(task.assignee.name)
+                    : 'Unassigned'}
                 </span>
                 <p className="flex flex-col">
                   <span className="font-semibold">{task.assignee.name}</span>
