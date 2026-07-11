@@ -1,4 +1,4 @@
-// src/app/(pages)/projects/page.tsx
+// src > app > (pages) > projects > page.tsx
 import * as icons from '@/../public/icons/icons';
 import EmptyState from '@/app/components/pages/EmptyState';
 import PageHeader from '@/app/components/molecules/PageHeader';

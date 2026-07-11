@@ -1,31 +1,27 @@
-// src > app > api > projects > [projectId] > project-tasks > route.ts
+// GET Task Details route handler
+// src > app > api > projects > [projectId] > project-tasks > [taskId] > route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthCookies } from '@/lib/auth';
-import { fetchProjectTasks } from '@/app/queries/projects';
+import { fetchSingleTaskDetais } from '@/app/queries/task';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> },
+  { params }: { params: Promise<{ projectId: string; taskId: string }> },
 ) {
   try {
     // Extract From URL
-    const { projectId } = await params;
+    const { projectId, taskId } = await params;
 
     const { accessToken } = await getAuthCookies();
     if (!accessToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Extract the search query parameters
-    const { searchParams } = new URL(req.url);
-    const taskStatus = searchParams.get('status'); // Will be string or null
-
-    const data = await fetchProjectTasks({
+    const data = await fetchSingleTaskDetais({
       projectId,
-      taskStatus: taskStatus || undefined, // Convert null to undefined
+      taskId,
       accessToken,
     });
-
     return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json(

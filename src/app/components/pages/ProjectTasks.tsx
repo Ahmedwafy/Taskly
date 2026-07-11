@@ -1,9 +1,16 @@
-// src/app/components/pages/ProjectTasks.tsx
+// src → app → components → pages → ProjectTasks.tsx
 'use client';
 import * as icons from '@/../public/icons/icons';
+import TasksListView from '../organisms/TasksListView';
+import Button from '../atoms/Button';
+import Plus from '@/../public/svgIcons/Plus.svg';
+import Link from 'next/link';
 import PageHeader from '../molecules/PageHeader';
-import { ProjectProps } from '@/types/shared';
 import TaskColumn from '../organisms/TaskColumn';
+import { ProjectProps } from '@/types/shared';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import TaskDetailsPopUpModal from '../organisms/TaskDetailsPopUpModal';
 
 interface ProjectTasksProps {
   projectId: string;
@@ -22,9 +29,28 @@ const COLUMNS: { title: string; status: string }[] = [
 ];
 
 const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Handle Open/Close Task Details Pop-Up Modal
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
+  // === Handle Add Query Params To URL === [Start] ===
+  const currentValue =
+    searchParams.get('view')?.toUpperCase() === 'LIST'
+      ? 'LIST_VIEW'
+      : 'BOARD_VIEW';
+
+  const handleViewChange = (newValue: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('view', newValue.toLowerCase().replace('_view', ''));
+    router.push(`${pathname}?${params.toString()}`); // view=board OR view=list
+  };
+  // === Handle Add Query Params To URL === [End] ===
+
   return (
-    // changed h-screen to h-full to stop fighting with the layout's main height
-    <section className="relative w-full p-6 h-full flex flex-col overflow-hidden">
+    <section className="relative w-full h-auto flex flex-col">
       <PageHeader
         href={`/project/${projectId}/tasks/new`}
         title="Active Workboard"
@@ -32,32 +58,53 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
         projectName={projectData.name}
         icon={icons.Plus}
         buttonName="Create Task"
+        currentValue={currentValue}
+        handleViewChange={(e) => handleViewChange(e.target.value)}
       />
-
-      {/* === The Scrollable Container === */}
-      {/* FIX: We use 'overflow-x-scroll' (forced) instead of auto, 
-        and 'max-w-full' to ensure it snaps to the exact size of the main panel space.
-      */}
-      <div className="mt-8 flex-1 w-full max-w-full overflow-x-scroll overflow-y-hidden pb-4">
-        {/* We use 'inline-flex' here. This tells the browser: 
-          "Keep all columns on one line, let them take their full width, and let the parent handle the scroll."
-        */}
-        <div className="inline-flex gap-6 h-full items-start pr-6">
-          {COLUMNS.map((col) => (
-            <div
-              key={col.status}
-              className="w-[320px] shrink-0 h-full"
-              style={{ minWidth: '320px' }} // Bulletproof fallback to prevent shrinking
-            >
-              <TaskColumn
-                projectId={projectId}
-                title={col.title}
-                status={col.status}
-              />
-            </div>
-          ))}
+      {currentValue === 'BOARD_VIEW' ? (
+        //  === < The Horizontally Scrollable == Tasks Board View == Container > ===
+        <div className="mt-8 flex-1 w-full max-w-full overflow-x-scroll overflow-y-hidden pb-4">
+          <div className="inline-flex gap-6 h-full items-start pr-6">
+            {COLUMNS.map((col) => (
+              <div
+                key={col.status}
+                className="w-[320px] shrink-0 h-full"
+                style={{ minWidth: '320px' }} // fallback to prevent shrinking
+              >
+                <TaskColumn
+                  projectId={projectId}
+                  title={col.title}
+                  status={col.status}
+                  onTaskClick={setSelectedTaskId}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        //  === Tasks List View == Container  ===
+        <div className="relative h-screen pt-10">
+          <TasksListView
+            projectId={projectId}
+            onTaskClick={setSelectedTaskId}
+          />
+
+          <Link href={`/projects/${projectId}/tasks/new`}>
+            <Button className="mt-10 w-20! h-15! absolute bottom-40 right-10">
+              <Plus />
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      {/* ====== TASK DETAILS MODAL POPUP ====== */}
+      {selectedTaskId && (
+        <TaskDetailsPopUpModal
+          taskId={selectedTaskId}
+          projectId={projectId}
+          onClose={() => setSelectedTaskId(null)}
+        />
+      )}
     </section>
   );
 };
