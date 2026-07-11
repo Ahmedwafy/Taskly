@@ -21,6 +21,7 @@ import {
 } from '@/features/epics/epicsSlice'; // Added new Redux actions
 import EpicDetailsPopUpModal from '../organisms/EpicDetailsPopUpModal';
 import { clearTasks, fetchEpicTasks } from '@/features/tasks/tasksSlice';
+import { formatDate } from '@/lib/helpers';
 
 interface ProjectEpicsProps {
   projectData: ProjectProps;
@@ -111,24 +112,6 @@ const ProjectEpics = ({
     dispatch(clearTasks());
   };
 
-  // === Date Format Helper ===
-  const formatDate = (dateString?: string, variant: 'US' | 'EU' = 'US') => {
-    if (!dateString) return '';
-
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
-
-    // 'en-US' natively formats: "Jun 27, 2026"
-    // 'en-GB' natively formats: "27 Jun 2026"
-    const locale = variant === 'US' ? 'en-US' : 'en-GB';
-
-    return new Intl.DateTimeFormat(locale, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    }).format(date);
-  };
-
   const epicValueProps = [
     {
       icon: (
@@ -177,7 +160,7 @@ const ProjectEpics = ({
   ) => {
     setIsSaving(true);
 
-    // 1. Trigger an optimistic update directly in your Redux slice
+    // 1. Trigger an optimistic update directly in Redux slice
     // (make sure slice handles this action to update state immediately)
     dispatch(updateEpicOptimistically({ updatedFields }));
 

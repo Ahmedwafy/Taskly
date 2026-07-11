@@ -1,83 +1,62 @@
-// src → app → components → pages → ProjectTasks.tsx
+// src/app/components/pages/ProjectTasks.tsx
 'use client';
 import * as icons from '@/../public/icons/icons';
 import PageHeader from '../molecules/PageHeader';
-import { useEffect } from 'react';
 import { ProjectProps } from '@/types/shared';
-import { fetchEpicTasks, clearTasks } from '@/features/tasks/tasksSlice';
-import { useAppDispatch, useAppSelector } from '@/redux/reduxHooks';
+import TaskColumn from '../organisms/TaskColumn';
 
 interface ProjectTasksProps {
   projectId: string;
   projectData: ProjectProps;
-  epicId?: string;
 }
 
-const ProjectTasks = ({
-  projectId,
-  projectData,
-  epicId,
-}: ProjectTasksProps) => {
-  const { name } = projectData;
-  const dispatch = useAppDispatch();
+const COLUMNS: { title: string; status: string }[] = [
+  { title: 'TO DO', status: 'TO_DO' },
+  { title: 'IN PROGRESS', status: 'IN_PROGRESS' },
+  { title: 'BLOCKED', status: 'BLOCKED' },
+  { title: 'IN REVIEW', status: 'IN_REVIEW' },
+  { title: 'READY FOR QA', status: 'READY_FOR_QA' },
+  { title: 'REOPENED', status: 'REOPENED' },
+  { title: 'READY FOR PRODUCTION', status: 'READY_FOR_PRODUCTION' },
+  { title: 'DONE', status: 'DONE' },
+];
 
-  // Pull your tasks live out of global Redux state!
-  const {
-    list: tasks,
-    loading,
-    error,
-  } = useAppSelector((state) => state.tasks);
-
-  // Only dispatch if we have an active epic context to filter down tasks
-  useEffect(() => {
-    if (projectId && epicId) {
-      dispatch(fetchEpicTasks({ projectId, epicId }));
-    }
-
-    // Optional: Reset store data when the user fully unmounts from the tasks view
-    return () => {
-      dispatch(clearTasks());
-    };
-  }, [projectId, epicId, dispatch]);
-
+const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
   return (
-    <section className="relative w-full">
-      <div>
-        <PageHeader
-          href={`/projects/${projectId}/tasks/new`}
-          title="Project Tasks"
-          buttonName="Create Task"
-          projectName={name}
-          icon={icons.Plus}
-          className=""
-        />
-      </div>
+    // changed h-screen to h-full to stop fighting with the layout's main height
+    <section className="relative w-full p-6 h-full flex flex-col overflow-hidden">
+      <PageHeader
+        href={`/project/${projectId}/tasks/new`}
+        title="Active Workboard"
+        description="Curating Project Alphas production pipeline and milestones."
+        projectName={projectData.name}
+        icon={icons.Plus}
+        buttonName="Create Task"
+      />
 
-      <div className="mt-8 flex flex-col items-center justify-center min-h-50">
-        {loading && <p className="text-gray-400">Loading tasks...</p>}
-        {error && <p className="text-red-500">Error: {error}</p>}
-
-        {!loading && !error && tasks.length === 0 && (
-          <span className="bg-amber-500/10 border border-amber-500/20 text-amber-500 p-4 rounded-xl">
-            Tasks Page -- No tasks found for this epic context --
-          </span>
-        )}
-
-        {!loading && !error && tasks.length > 0 && (
-          <div className="w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                className="p-2 border-b border-zinc-800 last:border-none text-zinc-100"
-              >
-                {task.title}{' '}
-                <span className="text-xs text-zinc-500 ml-2">
-                  ({task.status})
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+      {/* === The Scrollable Container === */}
+      {/* FIX: We use 'overflow-x-scroll' (forced) instead of auto, 
+        and 'max-w-full' to ensure it snaps to the exact size of the main panel space.
+      */}
+      <div className="mt-8 flex-1 w-full max-w-full overflow-x-scroll overflow-y-hidden pb-4">
+        {/* We use 'inline-flex' here. This tells the browser: 
+          "Keep all columns on one line, let them take their full width, and let the parent handle the scroll."
+        */}
+        <div className="inline-flex gap-6 h-full items-start pr-6">
+          {COLUMNS.map((col) => (
+            <div
+              key={col.status}
+              className="w-[320px] shrink-0 h-full"
+              style={{ minWidth: '320px' }} // Bulletproof fallback to prevent shrinking
+            >
+              <TaskColumn
+                projectId={projectId}
+                title={col.title}
+                status={col.status}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

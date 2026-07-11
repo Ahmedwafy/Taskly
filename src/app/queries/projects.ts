@@ -73,3 +73,39 @@ export const fetchAllProjects = cache(
     return parsed.data;
   },
 );
+
+// ==============================================================
+// ::: Get Project's Tasks :::
+// ==============================================================
+interface FetchProjectTasksParams {
+  projectId: string;
+  accessToken: string;
+  taskStatus: string;
+}
+export async function fetchProjectTasks({
+  projectId,
+  accessToken,
+  taskStatus,
+}: FetchProjectTasksParams) {
+  const response = await fetch(
+    `${baseURL}${endPoints.project.getProjectTasks(projectId, taskStatus)}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: supabaseKey,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data?.message || data?.error || 'Failed to fetch project tasks',
+    );
+  }
+
+  return data;
+}

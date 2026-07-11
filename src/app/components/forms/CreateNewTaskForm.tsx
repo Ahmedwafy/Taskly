@@ -40,6 +40,7 @@ const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const epicIdFromUrl = searchParams.get('epic_id') || '';
+  const taskStatus = searchParams.get('status') || '';
 
   const {
     list: membersData,
@@ -54,7 +55,7 @@ const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
   } = useForm<TaskFormInputs>({
     defaultValues: {
       title: '',
-      status: 'TO_DO',
+      status: taskStatus,
       assignee_id: '',
       due_date: '',
       epic_id: epicIdFromUrl,

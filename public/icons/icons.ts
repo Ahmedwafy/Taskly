@@ -28,6 +28,12 @@ import popupLogo from './popupLogo.png';
 import emptyState from './emptyState.png';
 import Close from './close.png';
 import dropDownArrow from './dropDownArrow.png';
+import Add_Task from './grayPlus.png';
+import AddNewTask from './AddNewTask.png';
+import FilterIcon from './filter.png';
+import Squares from './Squares.png';
+import ArrowDown from './ArrowDown.png';
+import SearchIcon from './SerachIcon.png';
 
 export {
   Arrow,
@@ -60,4 +66,10 @@ export {
   emptyState,
   Close,
   dropDownArrow,
+  Add_Task,
+  AddNewTask,
+  FilterIcon,
+  Squares,
+  ArrowDown,
+  SearchIcon,
 };
