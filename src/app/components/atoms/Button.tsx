@@ -24,7 +24,7 @@ const Button = ({
 }: ButtonTypes) => {
   const variants = {
     primary:
-      'text-white w-full bg-linear-to-r from-(--primary) to-(--primary-container) py-3 rounded-md hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 flex justify-center items-center gap-2 transition-colors duration-300',
+      'text-white w-full bg-linear-to-r from-(--primary) to-(--primary-container) py-3 rounded-sm hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 flex justify-center items-center gap-2 transition-colors duration-300',
     secondary: 'bg-gray-200 text-black',
     ghost:
       'w-full py-3 rounded-md hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 flex justify-center items-center gap-2 transition-colors duration-300',

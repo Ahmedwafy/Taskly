@@ -84,14 +84,21 @@ export default function ProjectsMobile({
   }, [hasMore, loadMore]);
 
   return (
-    <section className="flex flex-col gap-y-8 py-4 px-6 justify-between w-full mt-15">
+    <div className="flex flex-col gap-y-8 py-4 px-2 justify-between w-full mt-15">
+      <div className="flex flex-col gap-2">
+        <h1 className="title-style">Projects</h1>
+        <p className="title-desc-style">Manage and curate your projects</p>
+      </div>
       {projects.map((project) => (
         <Link
           href={`/projects/${project.id}/epics`}
           key={project.id}
-          className="bg-surface-low p-4 rounded-xl"
+          className="px-4 py-0 rounded-xl bg-white shadow-sm h-[211.25px]"
         >
-          <ProjectCard project={project} />
+          <ProjectCard
+            project={project}
+            className="flex flex-col justify-between h-full"
+          />
         </Link>
       ))}
 
@@ -102,6 +109,6 @@ export default function ProjectsMobile({
       {loading && <ProjectsPageSkeleton />}
 
       {hasMore && <div ref={loaderRef} className="h-10 w-full" />}
-    </section>
+    </div>
   );
 }

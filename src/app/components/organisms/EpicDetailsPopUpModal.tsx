@@ -7,6 +7,9 @@ import { ProjectMember } from '@/features/members/membersSlice';
 import Image from 'next/image';
 import { EpicDetails } from '@/types/shared';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
+import TaskDetailsPopUpModal from './TaskDetailsPopUpModal';
+import EpicSkeletonPopup from '../loadingSkeletons/EpicDetailsPopUpLoadingSkeleton';
+import Link from 'next/link';
 
 interface EpicDetailsPopUpModalProps {
   closeModal: () => void;
@@ -38,6 +41,9 @@ const EpicDetailsPopUpModal = ({
   const [localDesc, setLocalDesc] = useState(selectedEpic?.description || '');
   const router = useRouter();
 
+  // Handle Open/Close Task Details Pop-Up Modal
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
   const handleBlurSave = (
     field: 'title' | 'description',
     currentValue: string,
@@ -50,15 +56,8 @@ const EpicDetailsPopUpModal = ({
     }
   };
 
-  const handleAddTaskNavigation = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (!selectedEpic) return;
-
-    router.push(`/projects/${projectId}/tasks/new?epic_id=${selectedEpic.id}`);
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-blue/40 p-4 backdrop-blur-xs animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs animate-fadeIn">
       <div className="absolute inset-0" onClick={closeModal} />
 
       <div className="relative w-full max-w-3xl bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] z-10 text-[#1e293b]">
@@ -92,17 +91,9 @@ const EpicDetailsPopUpModal = ({
         </div>
 
         {/* =============== Content Area =============== */}
-
         {/* === Loading Case === */}
         <div className="px-10 pb-10 overflow-y-auto space-y-8 flex-1">
-          {isLoadingDetails && (
-            <div className="flex flex-col items-center justify-center py-12 space-y-3">
-              <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-sm text-slate-500 font-medium">
-                Fetching Epic Details...
-              </p>
-            </div>
-          )}
+          {isLoadingDetails && <EpicSkeletonPopup />}
 
           {/* === Error Case === */}
           {errorMsg && (
@@ -263,12 +254,13 @@ const EpicDetailsPopUpModal = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-slate-900">Tasks</h3>
-                  <button
-                    onClick={handleAddTaskNavigation}
-                    className="text-sm font-bold text-[#004dc7] hover:text-blue-800 transition cursor-pointer"
+                  <Link
+                    href={`/projects/${projectId}/tasks/new?epic_id=${selectedEpic.id}`}
                   >
-                    + Add Task
-                  </button>
+                    <button className="text-sm font-bold text-[#004dc7] hover:text-blue-800 transition cursor-pointer">
+                      + Add Task
+                    </button>
+                  </Link>
                 </div>
 
                 {/* === Tasks List === */}
@@ -280,18 +272,20 @@ const EpicDetailsPopUpModal = ({
                     <p className="text-[15px] text-slate-900 font-medium mb-5">
                       No tasks have been added to this epic yet
                     </p>
-                    <button
-                      onClick={handleAddTaskNavigation}
-                      className="px-5 py-2.5 bg-[#004dc7] hover:bg-[#003da1] text-white font-semibold text-sm rounded-lg transition shadow-sm flex items-center gap-1.5 cursor-pointer"
+                    <Link
+                      href={`/projects/${projectId}/tasks/new?epic_id=${selectedEpic.id}`}
                     >
-                      <span>+</span> Add Task
-                    </button>
+                      <button className="px-5 py-2.5 bg-[#004dc7] hover:bg-[#003da1] text-white font-semibold text-sm rounded-lg transition shadow-sm flex items-center gap-1.5 cursor-pointer">
+                        <span>+</span> Add Task
+                      </button>
+                    </Link>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {epicTasks.map((task) => (
                       <div
                         key={task.id}
+                        onClick={() => setSelectedTaskId(task.id)}
                         className="flex items-center gap-3 py-2 px-4 border border-slate-100 rounded-lg bg-white hover:bg-slate-50 transition cursor-pointer"
                       >
                         <div className="flex justify-between w-full items-center">
@@ -331,6 +325,15 @@ const EpicDetailsPopUpModal = ({
           )}
         </div>
       </div>
+
+      {/* ====== TASK DETAILS MODAL POPUP ====== */}
+      {selectedTaskId && (
+        <TaskDetailsPopUpModal
+          taskId={selectedTaskId}
+          projectId={projectId}
+          onClose={() => setSelectedTaskId(null)}
+        />
+      )}
     </div>
   );
 };

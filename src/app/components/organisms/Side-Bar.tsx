@@ -7,7 +7,8 @@ import { StaticImageData } from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import LOGO from '@/../public/svgIcons/LOGO.svg';
-// import ProjectEpics from '@/../public/svgIcons/ProjectEpics.svg';
+import CollapseIcon from '@/../public/svgIcons/Collapse.svg';
+import LogoutIcon from '@/../public/svgIcons/Logout.svg';
 
 interface SideBarProps {
   isCollapsed?: boolean;
@@ -118,28 +119,27 @@ const SideBar = ({
         <div className="flex flex-col gap-4 pl-6 py-6">
           {navItems.map((item) => {
             return (
-              <button
+              <Link
                 key={item.label}
+                href={item.href}
                 onClick={() => onItemClick?.()}
-                className={`group list-unit flex items-center gap-3 overflow-hidden rounded-sm py-4 transition-all duration-500 ease-in-out min-w-[90%] mx-auto
-                   hover:bg-white hover:shadow-sm hover:text-neutral-100 cursor-pointer hover:pl-4 
-                   ${isCollapsed ? '' : ''} `}
+                className="group list-unit flex items-center gap-3 overflow-hidden rounded-sm py-4 transition-all duration-500 ease-in-out min-w-[90%] mx-auto hover:bg-white hover:shadow-sm hover:text-neutral-100 cursor-pointer hover:pl-4 whitespace-nowrap"
               >
-                {/* <ProjectEpics width={18} height={20} /> */}
-                <Image src={item.icon} alt={item.alt} />
+                {/* Wrapper to keep image layout stable */}
+                <div className="shrink-0">
+                  <Image src={item.icon} alt={item.alt} />
+                </div>
 
-                <Link href={item.href}>
-                  <span
-                    className={`block overflow-hidden whitespace-nowrap text-sm transition-all duration-500 ease-in-out ${
-                      isCollapsed
-                        ? 'max-w-0 opacity-0 scale-100 transition-all! duration-0! ease-in-out!'
-                        : 'max-w-40 opacity-100 scale-100'
-                    }`}
-                  >
-                    {item.label}
-                  </span>
-                </Link>
-              </button>
+                <span
+                  className={`text-sm transition-all duration-500 ease-in-out ${
+                    isCollapsed
+                      ? 'max-w-0 opacity-0 pointer-events-none'
+                      : 'max-w-40 opacity-100'
+                  }`}
+                >
+                  {item.label}
+                </span>
+              </Link>
             );
           })}
         </div>
@@ -150,31 +150,37 @@ const SideBar = ({
         <button
           type="button"
           onClick={handleCollapse}
-          className="hidden sm:flex items-center gap-3 cursor-pointer"
+          className="hidden sm:flex items-center gap-3 cursor-pointer overflow-hidden whitespace-nowrap"
         >
-          <Image
-            src={icons.Collapse}
-            alt="Collapse"
-            className={`transition-transform duration-400 ${
+          <CollapseIcon
+            className={`transition-transform duration-500 ${
               isCollapsed ? 'rotate-180' : ''
             }`}
           />
 
-          {!isCollapsed && <span>Collapse</span>}
+          <span
+            className={`text-sm transition-all duration-500 ease-in-out ${
+              isCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'
+            }`}
+          >
+            Collapse
+          </span>
         </button>
 
         <button
           type="button"
-          className="flex items-center gap-3 cursor-pointer"
+          className="flex items-center gap-3 cursor-pointer overflow-hidden whitespace-nowrap"
           onClick={handleLogout}
         >
-          <Image
-            src={icons.Logout}
-            alt="Logout"
-            className={`transition-transform duration-300`}
-          />
+          <LogoutIcon className="transition-transform duration-300" />
 
-          {!isCollapsed && <span className="text-[#BA1A1A]">Logout</span>}
+          <span
+            className={`text-sm text-[#BA1A1A] transition-all duration-500 ease-in-out ${
+              isCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'
+            }`}
+          >
+            Logout
+          </span>
         </button>
       </div>
     </aside>

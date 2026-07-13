@@ -1,9 +1,9 @@
 // src → app → components → molecules → DesktopPagination.tsx
 // dual-personality reusable component [ Link Mode - Callback Mode ]
 import Link from 'next/link';
-import Image from 'next/image';
 import React from 'react';
-import * as icons from '@/../public/icons/icons';
+import Previous from '@/../public/svgIcons/Previous.svg';
+import Next from '@/../public/svgIcons/Next.svg';
 
 interface PaginationProps {
   currentPage: number;
@@ -21,33 +21,21 @@ const DesktopPagination = ({
   // If there's only 1 page, don't need to render pagination controls
   if (totalPages <= 1) return null;
 
-  // Define icons here
-  const previousIcon = (
-    <Image src={icons.Arrow} alt="Previous" width={16} height={16} />
-  );
-  const nextIcon = (
-    <Image
-      src={icons.Arrow}
-      alt="Next"
-      width={16}
-      height={16}
-      className="rotate-180"
-    />
-  );
-
   const renderPaginationItem = (
     pageNumber: number,
-    label: React.ReactNode, // Can be a string, number, or JSX element "Anything that React can render on the screen."
+    label: React.ReactNode,
     isDisabled: boolean,
     isCurrent: boolean,
   ) => {
-    // Dynamic Tailwind Classes
-    const baseClasses = `px-4 py-2 border rounded transition-colors flex items-center justify-center`;
+    // w-11 h-11 gives it that perfect square layout from your image
+    const baseClasses = `w-11 h-11 border flex items-center justify-center font-semibold text-base transition-colors rounded-md`;
+
+    // Custom hex code matches for the deep blue active state and soft border/text colors
     const stateClasses = isCurrent
-      ? 'bg-primary text-white'
+      ? 'bg-[#0642A6] text-white border-[#0642A6]'
       : isDisabled
-        ? 'pointer-events-none opacity-50'
-        : 'hover:bg-gray-100';
+        ? 'pointer-events-none opacity-40 border-[#E4E7EC] text-[#344054]'
+        : 'bg-[#F9FAFB] border-[#E4E7EC] text-[#344054] hover:bg-gray-100';
 
     const fullClassName = `${baseClasses} ${stateClasses}`;
 
@@ -66,8 +54,6 @@ const DesktopPagination = ({
     }
 
     // Condition 2: Fallback to Next.js Links (Requires baseUrl)
-    // If onPageChange doesn't exist, it falls back to a Next.js <Link>.
-    // It automatically appends ?page=X to whatever base path provided (like: /projects).
     const href = baseUrl ? `${baseUrl}?page=${pageNumber}` : '#';
 
     return (
@@ -83,12 +69,12 @@ const DesktopPagination = ({
   };
 
   return (
-    <div className="flex items-center justify-center gap-2 py-8">
-      {/* Previous Button using the left-pointing arrow icon */}
-      {/* creates a temporary array based on the total number of pages (e.g., [1, 2, 3]). */}
+    // Clean, centered layout without the amber background
+    <div className="flex items-center justify-center gap-2.5 py-6">
+      {/* Previous Button */}
       {renderPaginationItem(
         currentPage - 1,
-        previousIcon,
+        <Previous className="w-4 h-4 text-[#344054]" />,
         currentPage === 1,
         false,
       )}
@@ -98,17 +84,16 @@ const DesktopPagination = ({
         (pageNumber) =>
           renderPaginationItem(
             pageNumber,
-            pageNumber, // Standard number string/number label
+            pageNumber,
             false,
             currentPage === pageNumber,
           ),
       )}
 
-      {/* Next Button using the right-pointing arrow icon */}
-      {/* Sets isDisabled to true if we have reached the last page (currentPage === totalPages). */}
+      {/* Next Button */}
       {renderPaginationItem(
         currentPage + 1,
-        nextIcon,
+        <Next className="w-4 h-4 text-[#344054]" />,
         currentPage === totalPages,
         false,
       )}

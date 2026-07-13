@@ -33,7 +33,7 @@ export default async function CreateNewTask({ params }: CreateTaskPageProps) {
     <main className="px-20 py-10 max-w-400 mx-auto">
       <Breadcrumb projectName={project.name} />
       <header className="flex flex-col gap-2 py-8">
-        <h1 className="display-lg">Create New Task</h1>
+        <h1 className="title-style">Create New Task</h1>
         <p className="w-1/2 title-md text-gray-400">
           Initialize a new work item within the Architectural Workspace
           ecosystem.

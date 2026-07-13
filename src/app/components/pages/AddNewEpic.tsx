@@ -75,7 +75,7 @@ const AddNewEpic = () => {
   return (
     <main>
       <header className="flex flex-col gap-2 py-8">
-        <h1 className="display-lg">Create New Epic</h1>
+        <h1 className="title-style">Create New Epic</h1>
         <p className="w-1/2 title-md text-gray-400">
           Define a major project phase or high-level milestone to group related
           tasks and track architectural progress.

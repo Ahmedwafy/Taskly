@@ -5,16 +5,11 @@
   background-color: var(--background);
 }
 
-/* automatically handles smooth scrolling natively whenever an element with an ID is triggered. -- If needed -- */
-/* html {
-  scroll-behavior: smooth;
-} */
-
 body {
   font-family: var(--font-poppins), sans-serif;
 }
 
-/* Color Palette */
+/* Color Palette & Typography Tokens */
 @layer base {
   :root {
     /* Action Blue & Tonal Range */
@@ -28,6 +23,7 @@ body {
     --color-neutral-100: #041b3c;
     --color-neutral-200: #4f5f7b;
     --color-neutral-300: #c3c6d6;
+    --description-color: #434654;
 
     /* Semantic */
     --success: #82f9bd4d;
@@ -35,10 +31,89 @@ body {
     --warning: #ffb300;
     --disabled: #003e9b7e;
     --inputBgError: #ffdad6;
-  }
 
-  /* .dark {} */
+    /* Title*/
+    --title-size: 36px;
+    --title-weight: 700;
+    --title-line-height: 40px;
+    --title-letter-spacing: 0.9px;
+
+    /* Title Description */
+    --description-size: 16px;
+    --description-weight: 400;
+    --description-line-height: 24px;
+    --description-letter-spacing: 0px;
+
+    /* Desktop Layout Header: Name */
+    --name-weight: 600;
+    --name-size: 14px;
+    --name-letter-height: 20px;
+    --name-letter-space: 0;
+
+    /* Desktop Layout Header: Department */
+    --department-weight: 700;
+    --department-size: 10px;
+    --department-line-height: 20px;
+    --department-letter-spacing: 1px;
+    --department-uppercase: uppercase;
+
+    /* Project Card */
+    --project-card-title-weight: 500;
+    --project-card-title-size: 18px;
+    --project-card-title-line-height: 28px;
+    --project-card-title-letter-spacing: 0;
+
+    /* Project Card Description */
+    --project-card-description-weight: 400;
+    --project-card-description-size: 14px;
+    --project-card-description-line-height: 22.75px;
+    --project-card-description-letter-spacing: 0;
+
+    /* Utility Text Tokens */
+    --text-size: 11px;
+    --text-weight: 700;
+    --text-line-height: 16.5px;
+    --text-letter-spacing: -0.55px;
+    --text-color: #737685;
+
+    /* Utility Text Tokens 2 */
+    --text-2-size: 14px;
+    --text-2-weight: 500;
+    --text-2-line-height: 20px;
+    --text-2-letter-spacing: 0px;
+    --text-2-color: #434654;
+
+    /* ================================================================================== */
+
+    /* Headline */
+    --headline-lg-size: 32px;
+    --headline-lg-weight: 600;
+    --headline-lg-line-height: 40px;
+
+    /* Title Scale */
+    --title-md-size: 18px;
+    --title-md-weight: 500;
+    --title-md-line-height: 27px;
+
+    /* Body Scale */
+    --body-md-size: 14px;
+    --body-md-weight: 400;
+    --body-md-line-height: 22.75px;
+
+    /* Label Scale */
+    --label-sm-size: 11px;
+    --label-sm-weight: 700;
+    --label-sm-line-height: 16.5px;
+    --display-lg-letter-spacing: 1.1px;
+
+    /* List Item Scale */
+    --list-item-size: 14px;
+    --list-item-weight: 500;
+    --list-item-line-height: 20px;
+  }
 }
+
+/* Tailwind v4 Configuration Engine */
 @theme {
   /* Action Blue & Tonal Range */
   --color-primary: var(--primary);
@@ -49,8 +124,10 @@ body {
 
   /* Slate Neutrals */
   --color-neutral-100: var(--color-neutral-100);
-  --color-neutral-100: var(--color-neutral-100);
-  --color-neutral-100: var(--color-neutral-100);
+  --color-neutral-200: var(--color-neutral-200);
+  --color-neutral-300: var(--color-neutral-300);
+  --color-description: var(--description-color);
+  --color-text-custom: var(--text-color);
 
   /* Semantic */
   --color-success: var(--success);
@@ -60,50 +137,79 @@ body {
   --color-inputBgError: var(--inputBgError);
 }
 
-@layer base {
-  :root {
-    /* Typography - Display */
-    --display-lg-size: 56px;
-    --display-lg-weight: 700;
-    --display-lg-line-height: 56px;
-    --display-lg-letter-spacing: -2.8px;
-
-    /* Headline */
-    --headline-lg-size: 32px;
-    --headline-lg-weight: 600;
-    --headline-lg-line-height: 40px;
-
-    /* Title */
-    --title-md-size: 18px;
-    --title-md-weight: 500;
-    --title-md-line-height: 27px;
-
-    /* Body */
-    --body-md-size: 14px;
-    --body-md-weight: 400;
-    --body-md-line-height: 22.75px;
-
-    /* Label */
-    --label-sm-size: 11px;
-    --label-sm-weight: 700;
-    --label-sm-line-height: 16.5px;
-    --display-lg-letter-spacing: 1.1px;
-
-    /* List Item */
-    --list-item-size: 14px;
-    --list-item-weight: 500;
-    --list-item-line-height: 20px;
-  }
-}
-
+/* Component Styling Classes */
 @layer components {
-  .display-lg {
-    font-size: var(--display-lg-size);
-    font-weight: var(--display-lg-weight);
-    line-height: var(--display-lg-line-height);
-    letter-spacing: var(--display-lg-letter-spacing);
+  /* Page Header -- Start -- */
+  .title-style {
+    font-size: var(--title-size);
+    font-weight: var(--title-weight);
+    line-height: var(--title-line-height);
+    letter-spacing: var(--title-letter-spacing);
   }
 
+  .title-desc-style {
+    font-size: var(--description-size);
+    font-weight: var(--description-weight);
+    line-height: var(--description-line-height);
+    letter-spacing: var(--description-letter-spacing);
+    color: var(--color-description);
+  }
+  /* Page Header -- End -- */
+
+  /* Layout Header -- Start -- */
+  .header-department-style {
+    font-size: var(--department-size);
+    font-weight: var(--department-weight);
+    line-height: var(--department-line-height);
+    letter-spacing: var(--department-letter-spacing);
+    text-transform: var(--department-uppercase);
+    color: var(--color-primary);
+  }
+
+  .header-name-style {
+    font-size: var(--name-size);
+    font-weight: var(--name-weight);
+    line-height: var(--name-letter-height);
+    letter-spacing: var(--name-letter-space);
+    color: var(--color-neutral-100);
+  }
+  /* Layout Header -- End -- */
+
+  /* Project Card -- Start -- */
+  .project-card-title {
+    font-weight: var(--project-card-title-weight);
+    font-size: var(--project-card-title-size);
+    line-height: var(--project-card-title-line-height);
+    letter-spacing: var(--project-card-title-letter-spacing);
+    color: var(--color-neutral-100);
+  }
+
+  .project-card-description {
+    font-size: var(--project-card-description-size);
+    font-weight: var(--project-card-description-weight);
+    line-height: var(--project-card-description-line-height);
+    letter-spacing: var(--project-card-description-letter-spacing);
+    color: var(--color-description);
+  }
+
+  .style-1 {
+    font-size: var(--text-size);
+    font-weight: var(--text-weight);
+    line-height: var(--text-line-height);
+    letter-spacing: var(--text-letter-spacing);
+    color: var(--color-text-custom);
+  }
+
+  .style-2 {
+    font-size: var(--text-2-size);
+    font-weight: var(--tex-2-weight);
+    line-height: var(--text-2-line-height);
+    letter-spacing: var(--text-2-letter-spacing);
+    color: var(--color-text-2-custom);
+  }
+  /* Project Card -- End -- */
+
+  /* Global Typography Utilities -- Start -- */
   .headline-lg {
     font-size: var(--headline-lg-size);
     font-weight: var(--headline-lg-weight);
@@ -134,6 +240,7 @@ body {
     font-weight: var(--list-item-weight);
     line-height: var(--list-item-line-height);
   }
+  /* Global Typography Utilities -- End -- */
 }
 
 /* Hide Edge password reveal icon */

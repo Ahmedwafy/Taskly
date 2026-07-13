@@ -36,17 +36,17 @@ const Desktop_Header = ({
   return (
     <header className="h-16 border-b border-gray-300 px-4 flex items-center justify-end">
       {/* --- Name + Avatar --- */}
-      <div className="relative flex items-center justify-end gap-2">
+      <div className="relative flex items-center justify-end gap-4">
         <div className="hidden sm:flex flex-col">
-          <span className="text-sm font-semibold">{fullName}</span>
-          <span className="text-xs text-slate-500">{department}</span>
+          <span className="header-name-style">{fullName}</span>
+          <span className="header-department-style">{department}</span>
         </div>
 
         <div ref={ref} className="relative">
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-container text-sm font-semibold text-white"
+            className="flex h-10 w-10 items-center justify-center rounded-md bg-primary-container text-sm font-semibold text-white"
             aria-expanded={menuOpen}
             aria-label="Open user menu"
           >

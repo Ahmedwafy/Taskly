@@ -1,5 +1,4 @@
 // src > app > (pages) > projects > page.tsx
-import * as icons from '@/../public/icons/icons';
 import EmptyState from '@/app/components/pages/EmptyState';
 import PageHeader from '@/app/components/molecules/PageHeader';
 import ProjectsGrid from '@/app/components/pages/ProjectsGrid';
@@ -13,6 +12,7 @@ import { baseURL, supabaseKey } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
 import { COOKIE_KEYS } from '@/lib/auth-cookie-config';
 import { ProjectsSchema } from '@/schemas/project.schema';
+import WhitePlus from '@/../public/svgIcons/WhitePlus.svg';
 
 export default async function Projects({
   searchParams,
@@ -31,6 +31,7 @@ export default async function Projects({
   const currentPage = Number(page) || 1;
   const limit = 10;
   const offset = (currentPage - 1) * limit;
+  const CreateProjectIcon = WhitePlus;
 
   const res = await fetch(
     `${baseURL}${endPoints.userData.getAllProjects}?limit=${limit}&offset=${offset}`,
@@ -41,7 +42,7 @@ export default async function Projects({
         Authorization: `Bearer ${accessToken}`,
         Prefer: 'count=exact',
       },
-      cache: 'no-store', // Ensures your data is never stale on hard refresh
+      cache: 'no-store', // Ensures data is never stale on hard refresh
     },
   );
 
@@ -63,13 +64,18 @@ export default async function Projects({
   const totalCount = Number(contentRange?.split('/')[1] || 0);
   const totalPages = Math.ceil(totalCount / limit);
 
+  // calculate number of projects are shown on screen
+  const fromItem = totalCount === 0 ? 0 : offset + 1;
+  const toItem = Math.min(offset + limit, totalCount);
+
   return (
     <main className="flex flex-col justify-between p-4 bg-background! min-h-screen">
-      <div className="flex-1 md:block hidden">
+      <div className="flex-1 md:block hidden relative">
         {/* Header */}
         <PageHeader
           title="Projects"
-          icon={icons.Plus}
+          description="Manage and curate your projects"
+          SVGicon={<CreateProjectIcon className="my-auto text-white" />}
           buttonName="Create New Project"
           href="/projects/add"
         />
@@ -78,23 +84,33 @@ export default async function Projects({
           <EmptyState />
         ) : (
           <>
-            {/* Desktop View */}
+            {/* ▲ ▲ ▲ Desktop View ▲ ▲ ▲ */}
             <Suspense fallback={<ProjectsPageSkeleton />}>
               <ProjectsGrid projects={projects} />
             </Suspense>
 
-            {/* Pagination */}
-            <DesktopPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              baseUrl="/projects"
-            />
+            {/* ====== Pagination Section ====== */}
+            <div className="flex justify-between items-center text-sm font-medium text-gray-500">
+              <p>
+                Showing
+                <span className="text-gray-900">
+                  {fromItem}-{toItem}
+                </span>
+                of <span className="text-gray-900">{totalCount}</span> Active
+                Projects
+              </p>
+              <DesktopPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                baseUrl="/projects"
+              />
+            </div>
           </>
         )}
       </div>
 
-      {/* Mobile → Infinite scroll */}
-      <div className="block md:hidden">
+      {/* ▲ ▲ ▲ Mobile → Infinite scroll ▲ ▲ ▲ */}
+      <div className="block md:hidden bg-background!">
         <ProjectsMobile
           initialProjects={projects}
           initialTotalCount={totalCount}

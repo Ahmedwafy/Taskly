@@ -4,6 +4,7 @@ import { ProjectTask } from '@/features/tasks/tasksSlice';
 import { formatDate, getInitials, getStatusStyle } from '@/lib/helpers';
 import { useEffect, useState } from 'react';
 import Link from '@/../public/svgIcons/Link.svg';
+import TaskDetailSkeleton from '../loadingSkeletons/TaskDetailsPopUpLoadingSkeleton';
 
 interface TaskDetailsPopUpModalProps {
   taskId: string;
@@ -18,8 +19,6 @@ const TaskDetailsPopUpModal = ({
   const [task, setTask] = useState<ProjectTask | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // TODO: fetchTaskDetails
 
   useEffect(() => {
     const fetchTaskDetails = async () => {
@@ -52,19 +51,7 @@ const TaskDetailsPopUpModal = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs animate-fadeIn">
       <div className="absolute inset-0" onClick={onClose} />
 
-      {loading && (
-        <div className="flex flex-col items-center justify-center gap-2 mt-4">
-          <div
-            className="h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent text-blue-500"
-            role="status"
-          >
-            <span className="sr-only">Loading...</span>
-          </div>
-          <p className="text-sm animate-pulse text-muted-foreground">
-            Loading tasks...
-          </p>
-        </div>
-      )}
+      {loading && <TaskDetailSkeleton />}
 
       {error && (
         <p className="text-sm text-red-400 text-center mt-4">{error}</p>
@@ -133,10 +120,6 @@ const TaskDetailsPopUpModal = ({
                 </p>
               </div>
             </div>
-
-            {/* <div>
-              <span className="uppercase">reporter</span>
-            </div> */}
 
             <div className="flex flex-col gap-2">
               <strong className="uppercase text-sm text-[#434654]">
