@@ -1,9 +1,10 @@
-// src → app → (pages) → projects → [projectId] → tasks → new → page.tsx
+// src > app > (pages) > projects > [projectId] > tasks > new > page.tsx
+
 import { redirect } from 'next/navigation';
 import CreateNewTaskForm from '@/app/components/forms/CreateNewTaskForm';
 import Breadcrumb from '@/app/components/organisms/Breadcrumb';
 import { fetchProjectById } from '@/app/queries/projects';
-import { fetchProjectEpics } from '@/app/queries/epics'; // 1. Import your query function
+import { fetchProjectEpics } from '@/app/queries/epics';
 import { getAuthCookies } from '@/lib/auth';
 
 interface CreateTaskPageProps {
@@ -30,21 +31,20 @@ export default async function CreateNewTask({ params }: CreateTaskPageProps) {
   }
 
   return (
-    <main className="px-20 py-10 max-w-400 mx-auto">
+    <div className="px-5 sm:px-20 py-10 max-w-400 mx-auto">
       <Breadcrumb projectName={project.name} />
-      <header className="flex flex-col gap-2 py-8">
+      <header className="flex flex-col gap-2 py-8 w-full">
         <h1 className="title-style">Create New Task</h1>
-        <p className="w-1/2 title-md text-gray-400">
+        <p className="w-full title-desc-style">
           Initialize a new work item within the Architectural Workspace
           ecosystem.
         </p>
       </header>
 
-      {/* 3. Pass the fetched epics straight into your form */}
       <CreateNewTaskForm
         projectId={projectId}
         initialEpics={epicsData?.projectEpics || []}
       />
-    </main>
+    </div>
   );
 }

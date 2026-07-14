@@ -73,7 +73,7 @@ const AddNewEpic = () => {
   };
 
   return (
-    <main>
+    <div>
       <header className="flex flex-col gap-2 py-8">
         <h1 className="title-style">Create New Epic</h1>
         <p className="w-1/2 title-md text-gray-400">
@@ -82,7 +82,7 @@ const AddNewEpic = () => {
         </p>
       </header>
 
-      <div className="p-8 shadow-md rounded-xl bg-white">
+      <div className="p-0 sm:p-8 shadow-md rounded-xl">
         <AddNewEpicForm
           handleSubmit={handleSubmit}
           onSubmit={onSubmit}
@@ -99,7 +99,7 @@ const AddNewEpic = () => {
           membersData={members}
         />
       </div>
-    </main>
+    </div>
   );
 };
 

@@ -31,9 +31,9 @@ export default async function AddNewEpicPage({
   }
 
   return (
-    <main className="px-40 py-10 max-w-400 mx-auto">
+    <div className="px-40 py-10 max-w-400 mx-auto">
       <Breadcrumb projectName={project.name} />
       <AddNewEpic />
-    </main>
+    </div>
   );
 }

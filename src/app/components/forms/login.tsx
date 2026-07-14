@@ -117,6 +117,7 @@ const LogInForm = () => {
           {...register('password', {
             validate: passwordValidator,
           })}
+          variant="password"
           label="PASSWORD"
           type="password"
           placeholder="Enter your password"

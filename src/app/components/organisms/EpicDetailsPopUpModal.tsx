@@ -1,29 +1,36 @@
-// src → app → components → organisms → EpicDetailsPopModal.tsx
 'use client';
 import * as icons from '@/../public/icons/icons';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ProjectMember } from '@/features/members/membersSlice';
 import Image from 'next/image';
-import { EpicDetails } from '@/types/shared';
+import { EpicDetails, ProjectMember } from '@/types/shared';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
 import TaskDetailsPopUpModal from './TaskDetailsPopUpModal';
 import EpicSkeletonPopup from '../loadingSkeletons/EpicDetailsPopUpLoadingSkeleton';
 import Link from 'next/link';
+// 1. Import React Select
+import Select, { SingleValue } from 'react-select';
+import { getInitials } from '@/lib/helpers';
 
 interface EpicDetailsPopUpModalProps {
-  closeModal: () => void;
-  formatDate: (dateString?: string, variant?: 'US' | 'EU') => string;
   selectedEpic: EpicDetails | null;
   errorMsg: string | null;
   isLoadingDetails: boolean;
   membersData: ProjectMember[];
   epicTasks: ProjectTask[];
+  projectId: string;
+  closeModal: () => void;
+  formatDate: (dateString?: string, variant?: 'US' | 'EU') => string;
   handleUpdateEpicField: (
     epicId: string,
     updatedFields: Partial<EpicDetails> & { assignee_id?: string | null },
   ) => Promise<void>;
-  projectId: string;
+}
+
+// 2. Define the Option shape for react-select
+interface MemberOption {
+  value: string; // user_id (empty string for unassigned)
+  label: string; // member name or email
+  avatarUrl?: string;
 }
 
 const EpicDetailsPopUpModal = ({
@@ -39,9 +46,6 @@ const EpicDetailsPopUpModal = ({
 }: EpicDetailsPopUpModalProps) => {
   const [localTitle, setLocalTitle] = useState(selectedEpic?.title || '');
   const [localDesc, setLocalDesc] = useState(selectedEpic?.description || '');
-  const router = useRouter();
-
-  // Handle Open/Close Task Details Pop-Up Modal
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   const handleBlurSave = (
@@ -54,6 +58,43 @@ const EpicDetailsPopUpModal = ({
     if (currentValue.trim() !== originalValue.trim()) {
       handleUpdateEpicField(selectedEpic.id, { [field]: currentValue });
     }
+  };
+
+  // 3. Format members list into options accepted by react-select
+  const memberOptions: MemberOption[] = [
+    { value: '', label: 'Unassigned' },
+    ...membersData.map((member) => ({
+      value: member.user_id,
+      label: member.metadata?.name || member.email,
+      avatarUrl: member.metadata?.avatar_url, // optional avatar inclusion
+    })),
+  ];
+
+  // 4. Find current active option based on your component logic
+  const currentAssigneeUserId =
+    membersData.find((m) => m.metadata?.name === selectedEpic?.assignee?.name)
+      ?.user_id || '';
+
+  const currentOption =
+    memberOptions.find((opt) => opt.value === currentAssigneeUserId) ||
+    memberOptions[0];
+
+  // 5. Handle dropdown selections safely
+  const handleAssigneeChange = (newValue: SingleValue<MemberOption>) => {
+    if (!selectedEpic) return;
+
+    const selectedUserId = newValue?.value || '';
+    const chosenMember = membersData.find((m) => m.user_id === selectedUserId);
+
+    handleUpdateEpicField(selectedEpic.id, {
+      assignee_id: selectedUserId || null,
+      assignee: chosenMember
+        ? {
+            name: chosenMember.metadata.name,
+            avatar_url: undefined, // preserves your existing design
+          }
+        : undefined,
+    });
   };
 
   return (
@@ -91,18 +132,15 @@ const EpicDetailsPopUpModal = ({
         </div>
 
         {/* =============== Content Area =============== */}
-        {/* === Loading Case === */}
         <div className="px-10 pb-10 overflow-y-auto space-y-8 flex-1">
           {isLoadingDetails && <EpicSkeletonPopup />}
 
-          {/* === Error Case === */}
           {errorMsg && (
             <div className="p-4 bg-red-50 text-red-600 rounded-lg text-sm font-medium">
               {errorMsg}
             </div>
           )}
 
-          {/* === Success Case === */}
           {!isLoadingDetails && !errorMsg && selectedEpic && (
             <>
               <div>
@@ -143,62 +181,136 @@ const EpicDetailsPopUpModal = ({
                   </div>
                 </div>
 
-                {/* Assignee Selection */}
-                <div className="min-w-35">
+                {/* Assignee Selection (Members) */}
+                <div className="min-w-[180px]">
                   <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">
                     Assignee
                   </span>
-                  <div className="relative flex items-center gap-2 bg-transparent hover:bg-slate-50 border border-slate-100 hover:border-slate-300 rounded-lg px-2.5 py-1.5 transition cursor-pointer">
-                    {selectedEpic.assignee?.avatar_url ? (
-                      <Image
-                        src={selectedEpic.assignee.avatar_url}
-                        alt="Assignee Avatar"
-                        className="w-6 h-6 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold">
-                        {selectedEpic.assignee?.name?.charAt(0).toUpperCase() ||
-                          'U'}
-                      </div>
-                    )}
-
-                    <select
-                      value={
-                        membersData.find(
-                          (m) =>
-                            m.metadata?.name === selectedEpic.assignee?.name,
-                        )?.user_id || ''
-                      }
-                      onChange={(e) => {
-                        const selectedUserId = e.target.value;
-                        const chosenMember = membersData.find(
-                          (m) => m.user_id === selectedUserId,
+                  <Select<MemberOption>
+                    value={currentOption}
+                    options={memberOptions}
+                    onChange={handleAssigneeChange}
+                    isSearchable={true}
+                    placeholder="Select Assignee..."
+                    components={{
+                      // Custom SingleValue structure inside the selection area
+                      SingleValue: ({ children, ...props }) => {
+                        const avatarUrl = props.data.avatarUrl;
+                        const label = props.data.label;
+                        return (
+                          <div className="flex items-center gap-2 h-full">
+                            {avatarUrl ? (
+                              <Image
+                                src={avatarUrl}
+                                alt="Avatar"
+                                width={24}
+                                height={24}
+                                className="w-6 h-6 rounded-full object-cover shrink-0"
+                              />
+                            ) : (
+                              <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold shrink-0">
+                                {label !== 'Unassigned'
+                                  ? label.charAt(0).toUpperCase()
+                                  : 'U'}
+                              </div>
+                            )}
+                            <span className="text-sm font-semibold text-slate-700 truncate">
+                              {children}
+                            </span>
+                          </div>
                         );
-
-                        handleUpdateEpicField(selectedEpic.id, {
-                          assignee_id: selectedUserId || null,
-                          assignee: chosenMember
-                            ? {
-                                name: chosenMember.metadata.name,
-                                avatar_url: undefined,
-                              }
-                            : undefined,
-                        });
-                      }}
-                      className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                    >
-                      <option value="">Unassigned</option>
-                      {membersData.map((member) => (
-                        <option key={member.member_id} value={member.user_id}>
-                          {member.metadata?.name || member.email}
-                        </option>
-                      ))}
-                    </select>
-
-                    <span className="text-sm font-semibold text-slate-700 pr-4">
-                      {selectedEpic.assignee?.name || 'Unassigned'}
-                    </span>
-                  </div>
+                      },
+                      // Dropdown items inside the list menu
+                      Option: ({
+                        children,
+                        innerProps,
+                        isFocused,
+                        isSelected,
+                        data,
+                      }) => (
+                        <div
+                          {...innerProps}
+                          className={`flex items-center gap-2 px-3 py-2 text-sm font-medium cursor-pointer transition ${
+                            isSelected
+                              ? 'bg-indigo-50 text-indigo-700'
+                              : isFocused
+                                ? 'bg-slate-50 text-slate-900'
+                                : 'text-slate-700 bg-white'
+                          }`}
+                        >
+                          {data.avatarUrl ? (
+                            <Image
+                              src={data.avatarUrl}
+                              alt="Avatar"
+                              width={20}
+                              height={20}
+                              className="w-5 h-5 rounded-full object-cover shrink-0"
+                            />
+                          ) : (
+                            <div className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[9px] font-bold shrink-0">
+                              {data.label !== 'Unassigned'
+                                ? data.label.charAt(0).toUpperCase()
+                                : 'U'}
+                            </div>
+                          )}
+                          <span className="truncate">{children}</span>
+                        </div>
+                      ),
+                    }}
+                    styles={{
+                      control: (baseStyles, state) => ({
+                        ...baseStyles,
+                        minHeight: '38px',
+                        borderRadius: '0.5rem', // rounded-lg
+                        borderWidth: '1px',
+                        borderColor: state.isFocused ? '#6366f1' : '#cbd5e1',
+                        backgroundColor: '#ffffff',
+                        boxShadow: 'none',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          borderColor: '#94a3b8',
+                        },
+                      }),
+                      // CRITICAL FIX: Forces the container holding the text/avatar to stay inline and layout correctly
+                      valueContainer: (baseStyles) => ({
+                        ...baseStyles,
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '2px 8px',
+                        gap: '4px',
+                      }),
+                      // CRITICAL FIX: Destroys react-select's absolute positioning defaults on the text value
+                      singleValue: (baseStyles) => ({
+                        ...baseStyles,
+                        position: 'static',
+                        transform: 'none',
+                        maxWidth: '100%',
+                        margin: 0,
+                      }),
+                      menu: (baseStyles) => ({
+                        ...baseStyles,
+                        borderRadius: '0.5rem',
+                        boxShadow:
+                          '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+                        border: '1px solid #e2e8f0',
+                        overflow: 'hidden',
+                        zIndex: 60,
+                      }),
+                      menuList: (baseStyles) => ({
+                        ...baseStyles,
+                        padding: 0,
+                      }),
+                      indicatorSeparator: () => ({ display: 'none' }),
+                      dropdownIndicator: (baseStyles) => ({
+                        ...baseStyles,
+                        color: '#64748b',
+                        padding: '0 8px',
+                        '&:hover': {
+                          color: '#334155',
+                        },
+                      }),
+                    }}
+                  />
                 </div>
 
                 {/* Deadline */}
@@ -255,7 +367,7 @@ const EpicDetailsPopUpModal = ({
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-slate-900">Tasks</h3>
                   <Link
-                    href={`/projects/${projectId}/tasks/new?epic_id=${selectedEpic.id}`}
+                    href={`/projects/${projectId}/tasks/new?epic_id=${selectedEpic.epic_id}`}
                   >
                     <button className="text-sm font-bold text-[#004dc7] hover:text-blue-800 transition cursor-pointer">
                       + Add Task
@@ -296,15 +408,13 @@ const EpicDetailsPopUpModal = ({
                             <div className="flex gap-2 items-center">
                               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-container text-[10px] font-semibold text-white">
                                 {task.assignee.name
-                                  .trim()
-                                  .split(/\s+/)
-                                  .map((w) => w[0])
-                                  .slice(0, 2)
-                                  .join('')
-                                  .toUpperCase() ?? 'Unassigned'}
+                                  ? getInitials(task.assignee.name)
+                                  : 'Unassigned'}
                               </span>
                               <span className="text-sm text-slate-500">
-                                {task.assignee.name ?? 'Unassigned'}
+                                {task.assignee.name
+                                  ? task.assignee.name
+                                  : 'Unassigned'}
                               </span>
                             </div>
                           </div>
@@ -339,22 +449,3 @@ const EpicDetailsPopUpModal = ({
 };
 
 export default EpicDetailsPopUpModal;
-
-// [ User types a new title ]
-//           │
-//           ▼
-// 1. "updateEpicOptimistically" fires instantly in Redux!
-//    ├── It clones the current epic and tucks it away safely in `backupEpic`
-//    └── It updates `selectedEpic` on the screen immediately. (Zero delay for the user! )
-//           │
-//           ▼
-// 2. The Server Action (`updateEpicAction`) runs in the background.
-//           │
-//     ┌─────┴────────────────┐
-//     ▼                      ▼
-// [ SUCCESS ]            [ FAILURE ]
-// The database matches   The internet dropped or database failed!
-// our UI. We are done!   "rollbackEpicUpdate" fires.
-//                        It grabs the original copy out of `backupEpic`
-//                        and snaps the UI right back to how it was,
-//                        then shows an error toast.

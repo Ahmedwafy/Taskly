@@ -5,6 +5,7 @@ import { formatDate, getInitials, getStatusStyle } from '@/lib/helpers';
 import { useEffect, useState } from 'react';
 import Link from '@/../public/svgIcons/Link.svg';
 import TaskDetailSkeleton from '../loadingSkeletons/TaskDetailsPopUpLoadingSkeleton';
+import StackIcon from '@/../public/svgIcons/StackIcon.svg';
 
 interface TaskDetailsPopUpModalProps {
   taskId: string;
@@ -65,11 +66,14 @@ const TaskDetailsPopUpModal = ({
         <div className="flex w-5xl z-10 rounded-lg bg-white">
           {/* === Left Section === */}
           <div className="relative w-2/3 flex flex-col pt-6">
-            <p className="flex gap-2 px-6">
-              <span className="break-all">{task.id}</span>
-              {task.epic_id && (
-                <span className="p-1 rounded-sm break-all">{task.epic_id}</span>
-              )}
+            <p className="flex gap-2 pl-8 items-center">
+              <span className="break-all bg-[#DAE2FF] text-[#003D9B] px-4 py-1 rounded-sm text-[12px] font-bold">
+                {task.task_id}
+              </span>
+              <span className="flex gap-2 items-center p-1 rounded-sm break-all">
+                <StackIcon />
+                {task.epic.epic_id}
+              </span>
             </p>
 
             <h2 className="headline-lg border-b border-[#E8EDFF] pt-4 pb-8 px-6">

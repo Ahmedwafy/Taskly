@@ -1,12 +1,8 @@
 // src > app > components > organisms > TaskListView.tsx
 'use client';
-
 import { ProjectTask } from '@/features/tasks/tasksSlice';
 import { formatDate, getInitials, getStatusStyle } from '@/lib/helpers';
 import { useEffect, useState } from 'react';
-// import { useRouter } from 'next/navigation';
-// import Button from '../atoms/Button';
-// import Plus from '@/../public/svgIcons/Plus.svg';
 
 interface TasksListViewProps {
   projectId: string;

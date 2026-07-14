@@ -65,7 +65,7 @@ export async function createEpicAction(
     revalidatePath(`/projects/${project_id}/epics`);
 
     return { success: true, data: result || { success: true } };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('CRITICAL: Create Epic Action Crashed:', error);
     return {
       error:
@@ -126,7 +126,7 @@ export async function updateEpicAction(
     revalidatePath(`/projects/${projectId}/epics`);
 
     return { success: true, data };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('CRITICAL: Update Epic Action Crashed:', error);
     return {
       error:

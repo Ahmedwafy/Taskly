@@ -1,4 +1,4 @@
-// src → app → components → pages → ProjectTasks.tsx
+// src > app > components > pages > ProjectTasks.tsx
 'use client';
 import * as icons from '@/../public/icons/icons';
 import TasksListView from '../organisms/TasksListView';
@@ -11,6 +11,7 @@ import { ProjectProps } from '@/types/shared';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import TaskDetailsPopUpModal from '../organisms/TaskDetailsPopUpModal';
+import InputField from '../atoms/input';
 
 interface ProjectTasksProps {
   projectId: string;
@@ -50,62 +51,76 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
   // === Handle Add Query Params To URL === [End] ===
 
   return (
-    <section className="relative w-full h-auto flex flex-col">
-      <PageHeader
-        href={`/project/${projectId}/tasks/new`}
-        title="Active Workboard"
-        description="Curating Project Alphas production pipeline and milestones."
-        projectName={projectData.name}
-        icon={icons.Plus}
-        buttonName="Create Task"
-        currentValue={currentValue}
-        handleViewChange={(e) => handleViewChange(e.target.value)}
-      />
-      {currentValue === 'BOARD_VIEW' ? (
-        //  === < The Horizontally Scrollable == Tasks Board View == Container > ===
-        <div className="mt-8 flex-1 w-full max-w-full overflow-x-scroll overflow-y-hidden pb-4">
-          <div className="inline-flex gap-6 h-full items-start pr-6">
-            {COLUMNS.map((col) => (
-              <div
-                key={col.status}
-                className="w-[320px] shrink-0 h-full"
-                style={{ minWidth: '320px' }} // fallback to prevent shrinking
-              >
-                <TaskColumn
-                  projectId={projectId}
-                  title={col.title}
-                  status={col.status}
-                  onTaskClick={setSelectedTaskId}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        //  === Tasks List View == Container  ===
-        <div className="relative h-screen pt-10">
-          <TasksListView
-            projectId={projectId}
-            onTaskClick={setSelectedTaskId}
-          />
-
-          <Link href={`/projects/${projectId}/tasks/new`}>
-            <Button className="mt-10 w-20! h-15! absolute bottom-40 right-10">
-              <Plus />
-            </Button>
-          </Link>
-        </div>
-      )}
-
-      {/* ====== TASK DETAILS MODAL POPUP ====== */}
-      {selectedTaskId && (
-        <TaskDetailsPopUpModal
-          taskId={selectedTaskId}
-          projectId={projectId}
-          onClose={() => setSelectedTaskId(null)}
+    <>
+      {/* ▲ ▲ ▲ Desktop View ▲ ▲ ▲*/}
+      <section className="relative w-full h-full hidden sm:flex flex-col">
+        <PageHeader
+          href={`/project/${projectId}/tasks/new`}
+          title="Active Workboard"
+          description="Curating Project Alphas production pipeline and milestones."
+          projectName={projectData.name}
+          icon={icons.Plus}
+          buttonName="Create Task"
+          currentValue={currentValue}
+          handleViewChange={(value) => handleViewChange(value)} // Simply passes the raw string through
         />
-      )}
-    </section>
+        {currentValue === 'BOARD_VIEW' ? (
+          //  === < The Horizontally Scrollable == Tasks Board View == Container > ===
+          <div className="mt-8 flex-1 w-full max-w-full overflow-x-scroll overflow-y-hidden pb-4">
+            <div className="inline-flex gap-6 h-full items-start pr-6">
+              {COLUMNS.map((col) => (
+                <div
+                  key={col.status}
+                  className="w-[320px] shrink-0 h-screen"
+                  style={{ minWidth: '320px' }} // fallback to prevent shrinking
+                >
+                  <TaskColumn
+                    projectId={projectId}
+                    title={col.title}
+                    status={col.status}
+                    onTaskClick={setSelectedTaskId}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          //  === Tasks List View == Container  ===
+          <div className="relative h-screen pt-10">
+            <TasksListView
+              projectId={projectId}
+              onTaskClick={setSelectedTaskId}
+            />
+
+            <Link href={`/projects/${projectId}/tasks/new`}>
+              <Button className="mt-10 w-20! h-15! fixed right-10">
+                <Plus />
+              </Button>
+            </Link>
+          </div>
+        )}
+
+        {/* ====== TASK DETAILS MODAL POPUP ====== */}
+        {selectedTaskId && (
+          <TaskDetailsPopUpModal
+            taskId={selectedTaskId}
+            projectId={projectId}
+            onClose={() => setSelectedTaskId(null)}
+          />
+        )}
+      </section>
+
+      {/* ▲ ▲ ▲ Mobile View ▲ ▲ ▲ */}
+      <section className="sm:hidden min-h-screen px-4 py-8 relative bg-amber-100 flex flex-col gap-4">
+        {/* Dedicated Mobile Header */}
+        <header className="title-style">Active Workboard</header>
+
+        <div className="px-4 flex flex-col gap-4">
+          <InputField variant="search" placeholder="Search Tasks..." />
+          <Button />
+        </div>
+      </section>
+    </>
   );
 };
 

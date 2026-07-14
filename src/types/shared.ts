@@ -34,11 +34,12 @@ export interface UserDetails {
 }
 export interface ProjectEpic {
   id: string; // epic id
-  epic_id: string;
+  project_id: string;
   title: string;
   description: string | null;
-  deadline: string;
   created_at: string;
+  deadline: string;
+  epic_id: string;
   created_by: UserDetails;
   assignee: UserDetails;
 }
@@ -69,3 +70,19 @@ export interface EpicDetails {
   created_at?: string;
 }
 // ====================================================
+export interface ProjectMember {
+  member_id: string;
+  project_id: string;
+  user_id: string;
+  role: string;
+  email: string;
+  metadata: {
+    sub: string;
+    name: string;
+    email: string;
+    department?: string;
+    email_verified?: boolean;
+    phone_verified?: boolean;
+    avatar_url?: string;
+  };
+}

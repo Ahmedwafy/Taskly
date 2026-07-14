@@ -1,3 +1,4 @@
+// src > app > components > atoms > Button.tsx
 'use client';
 import { ReactNode } from 'react';
 
@@ -62,7 +63,7 @@ const Button = ({
           <span>Submitting Your Request...</span>
         </div>
       ) : (
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           {children ? children : null}
           {name}
         </div>

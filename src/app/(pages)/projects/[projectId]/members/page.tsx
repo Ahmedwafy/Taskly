@@ -1,4 +1,4 @@
-// src → app → (pages) → projects → [projectId] → members → page.tsx
+// src > app > (pages) > projects > [projectId] > members > page.tsx
 import { redirect } from 'next/navigation';
 import ProjectMambersPage from '@/app/components/pages/ProjectMambersPage';
 import { fetchProjectById } from '@/app/queries/projects';

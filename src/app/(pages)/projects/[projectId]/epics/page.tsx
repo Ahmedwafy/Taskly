@@ -1,4 +1,4 @@
-// src → app → (pages) → projects → [projectId] → epics → page.tsx
+// src > app > (pages) > projects > [projectId] > epics > page.tsx
 
 import { redirect } from 'next/navigation';
 import { getAuthCookies } from '@/lib/auth';
@@ -18,16 +18,19 @@ export default async function ProjectEpicsPage({
   const { projectId } = await params;
   const { page, limit } = await searchParams;
 
-  const currentPage = parseInt(page || '1', 10);
-  const currentLimit = parseInt(limit || '10', 10);
+  // Resolve pagination numbers
+  // const currentPage = parseInt(page || '1', 10);
+  // const currentLimit = parseInt(limit || '10', 10);
+  const currentPage = Number(page) || 1;
+  const currentLimit = Number(limit || 10);
   const offset = (currentPage - 1) * currentLimit;
+
   const { accessToken } = await getAuthCookies();
 
   if (!accessToken) {
     redirect('/login');
   }
 
-  // Fetch the epics using our query helper
   const { projectEpics, totalCount } = await fetchProjectEpics({
     projectId,
     limit: currentLimit,
@@ -41,7 +44,7 @@ export default async function ProjectEpicsPage({
   });
 
   return (
-    <main className="mt-10 sm:mt-0 p-5 sm:p-10">
+    <div className="mt-10 sm:mt-0 p-5 sm:p-10">
       <ProjectEpics
         projectData={projectData}
         projectEpics={projectEpics}
@@ -49,6 +52,6 @@ export default async function ProjectEpicsPage({
         currentPage={currentPage}
         limit={currentLimit}
       />
-    </main>
+    </div>
   );
 }

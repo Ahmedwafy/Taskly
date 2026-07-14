@@ -1,21 +1,23 @@
 // src → features → members → membersSlice.ts
+import { ProjectMember } from '@/types/shared';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-export interface ProjectMember {
-  member_id: string;
-  project_id: string;
-  user_id: string;
-  role: string;
-  email: string;
-  metadata: {
-    sub: string;
-    name: string;
-    email: string;
-    department?: string;
-    email_verified?: boolean;
-    phone_verified?: boolean;
-  };
-}
+// export interface ProjectMember {
+//   member_id: string;
+//   project_id: string;
+//   user_id: string;
+//   avatar_url?: string;
+//   role: string;
+//   email: string;
+//   metadata: {
+//     sub: string;
+//     name: string;
+//     email: string;
+//     department?: string;
+//     email_verified?: boolean;
+//     phone_verified?: boolean;
+//   };
+// }
 
 interface MembersState {
   list: ProjectMember[];

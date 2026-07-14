@@ -48,8 +48,6 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden">
-      {' '}
-      {/* Force the screen limits here */}
       <div className="hidden md:block">
         <SideBar
           isCollapsed={isCollapsed}
@@ -57,7 +55,7 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
           handleLogout={handleLogout}
         />
       </div>
-      <div className="flex flex-1 flex-col min-w-0 w-full transition-all duration-300 ease-in-out">
+      <div className="flex flex-1 flex-col min-w-0 w-full transition-all duration-300 ease-in-out bg-white">
         <Desktop_Header
           fullName={fullName}
           department={department}

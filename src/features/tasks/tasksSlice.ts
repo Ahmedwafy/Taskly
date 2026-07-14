@@ -7,20 +7,32 @@ interface Assignee {
   email: string;
   department: string;
 }
-
+interface Epic {
+  id: string;
+  title: string;
+  epic_id: string;
+}
+interface Created_By {
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+}
 export interface ProjectTask {
   id: string;
   project_id: string;
   epic_id: string;
   title: string;
   description: string;
-  assignee: Assignee;
-  due_date: string;
-  status: string; // e.g., 'todo', 'in_progress', 'done'
+  status: string; // "TO_DO", "IN_PROGRESS" ...
   created_at: string;
-  // ... Add any other fields you expect from the API response
+  due_date: string;
+  task_id: string;
+  assignee: Assignee;
+  epic: Epic;
+  created_by: Created_By;
 }
-
+// ------------------------------------------------------
 interface TasksState {
   list: ProjectTask[];
   loading: boolean;

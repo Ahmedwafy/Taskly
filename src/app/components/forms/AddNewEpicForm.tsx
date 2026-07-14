@@ -10,19 +10,7 @@ import { DevTool } from '@hookform/devtools';
 import InputField from '../atoms/input';
 import { z } from 'zod';
 import { CreateEpicSchema } from '@/schemas/epic.schema';
-
-interface ProjectMember {
-  member_id: string;
-  project_id: string;
-  user_id: string;
-  role: string;
-  email: string;
-  metadata: {
-    name: string;
-    email: string;
-    department?: string;
-  };
-}
+import { ProjectMember } from '@/types/shared';
 
 type AddEpicFormInputs = Omit<z.input<typeof CreateEpicSchema>, 'project_id'>;
 
@@ -101,7 +89,7 @@ const AddNewEpicForm = ({
                 message: maxLength_Message || '',
               },
             })}
-            multiline
+            variant="textarea"
             rows={6}
             placeholder={placeholder_Description}
             className="mt-12"

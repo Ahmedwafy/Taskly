@@ -61,7 +61,7 @@ export async function createTaskAction(
     revalidatePath(`/projects/${project_id}/tasks`);
 
     return { success: true, data: responseData };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Task mutation crash error:', error);
     return {
       error:

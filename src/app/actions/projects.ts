@@ -185,7 +185,7 @@ export async function updateProjectAction(
     revalidatePath(`/projects/${projectId}`);
 
     return { success: true, data };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Failed to update project action error:', error);
     return {
       error:

@@ -73,7 +73,7 @@ const ProjectForm = ({
           },
         })}
         label="DESCRIPTION"
-        multiline
+        variant="textarea"
         rows={6}
         optional="Optional"
         placeholder={placeholder_Description}

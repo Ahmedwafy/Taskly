@@ -1,3 +1,4 @@
+// src > app > components > forms > CreateNewTaskForm.tsx
 'use client';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -14,6 +15,7 @@ import { createTaskAction } from '@/app/actions/tasks';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { CreateTaskSchema } from '@/schemas/createNewTask.schema';
+import Plus from '@/../public/svgIcons/Plus.svg';
 
 interface CreateNewTaskProps {
   projectId: string;
@@ -26,11 +28,6 @@ interface CreateNewTaskProps {
 // z.input, TypeScript and React Hook Form will accept empty strings "" or undefined when the user interacts with the form.
 // Add 'project_id' to remove it from the form inputs, since it's already provided via props and not user input.
 type TaskFormInputs = Omit<z.input<typeof CreateTaskSchema>, 'project_id'>;
-
-const truncateString = (str: string, num: number) => {
-  if (!str) return '';
-  return str.length <= num ? str : str.slice(0, num) + '...';
-};
 
 const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
   const router = useRouter();
@@ -63,9 +60,6 @@ const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
     },
   });
 
-  // 5. (Clean up) All old prefilledEpicId states and related useEffects are removed.
-
-  // Fetch remaining project member data on mount
   useEffect(() => {
     if (!projectId) return;
 
@@ -108,9 +102,8 @@ const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
     <form
       onSubmit={handleSubmit(onSubmit)}
       noValidate
-      className="flex flex-col gap-8 bg-white p-8 shadow-sm rounded-xl"
+      className="flex flex-col gap-8 bg-white py-4 px-4 sm:p-8 shadow-sm rounded-xl"
     >
-      {/* Form Fields remain exactly as you have them */}
       {submitError && (
         <div className="p-4 bg-red-50 text-red-600 rounded-lg text-sm font-medium">
           {submitError}
@@ -125,7 +118,7 @@ const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
         error={errors.title?.message}
       />
 
-      <div className="flex w-full justify-between gap-10">
+      <div className="flex flex-col sm:flex-row w-full justify-between gap-8 sm:gap-10">
         <SelectField
           {...register('status', { required: 'Please select a status' })}
           label="STATUS"
@@ -160,8 +153,8 @@ const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
         placeholder="Select Epic Link..."
         error={errors.epic_id?.message}
         options={epicsList.map((epic) => ({
-          value: epic.id,
-          label: `${epic.id} ${truncateString(epic.title || '', 100)}`,
+          value: epic.epic_id,
+          label: `${epic.epic_id}`,
         }))}
       />
 
@@ -186,7 +179,7 @@ const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
       <InputField
         {...register('description')}
         label="DESCRIPTION"
-        multiline
+        variant="textarea"
         rows={6}
         placeholder="Provide detailed context..."
       />
@@ -204,7 +197,9 @@ const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
           isSubmitting={isSubmitting}
           disabled={isSubmitting}
           className="w-full lg:w-1/4!"
-        />
+        >
+          <Plus />
+        </Button>
       </div>
     </form>
   );

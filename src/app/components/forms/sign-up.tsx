@@ -142,6 +142,7 @@ const SignUpForm = () => {
           <Input
             id="password"
             label="PASSWORD"
+            variant="password"
             type="password"
             placeholder="Password"
             className="w-1/2"
@@ -161,6 +162,7 @@ const SignUpForm = () => {
             id="confirmPassword"
             label="CONFIRM PASSWORD"
             type="password"
+            variant="password"
             placeholder="Repeat your password"
             className="w-1/2"
             error={errors.confirmPassword?.message?.toString()}

@@ -105,7 +105,7 @@ export async function signInAction(formData: SignInFormData) {
     await setAuthCookies(data.access_token, data.refresh_token, rememberMe);
 
     return { success: true, user: data.user };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('An unexpected server error occurred.', error);
     return {
       error:
@@ -150,7 +150,7 @@ export async function forgotPasswordAction(formData: ForgotPasswordFormTypes) {
     }
 
     return { success: true };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Forgot password network exception:', error);
     return { error: 'A network error occurred. Please try again.' };
   }
@@ -195,7 +195,7 @@ export async function resetPasswordAction(newPassword: string) {
     cookieStore.delete(COOKIE_KEYS.REFRESH_TOKEN);
 
     return { success: true };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Password reset action crash:', error);
     return { error: 'A network error occurred. Please try again.' };
   }
@@ -220,7 +220,7 @@ export async function signOutAction() {
         },
       });
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Logout background network request failed:', error);
   } finally {
     // Always clear the client's cookies, even if the external API fetch failed

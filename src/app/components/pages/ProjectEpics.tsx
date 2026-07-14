@@ -1,4 +1,4 @@
-// src → app → components → page → ProjectEpics.tsx
+// src > app > components > page > ProjectEpics.tsx
 'use client';
 import * as icons from '@/../public/icons/icons';
 import * as images from '../../../../public/images/images';
@@ -9,19 +9,22 @@ import ProjectEpicsGrid from '../organisms/ProjectEpicsGrid';
 import DesktopPagination from '../molecules/DesktopPagination';
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { useAppSelector, useAppDispatch } from '@/redux/reduxHooks'; // Added useAppDispatch
+import { useAppSelector, useAppDispatch } from '@/redux/reduxHooks';
 import { useRouter, usePathname } from 'next/navigation';
 import { EpicDetails, ProjectEpic, ProjectProps } from '@/types/shared';
 import { updateEpicAction } from '@/app/actions/epics';
+import { clearTasks, fetchEpicTasks } from '@/features/tasks/tasksSlice';
+import { formatDate } from '@/lib/helpers';
+import EpicDetailsPopUpModal from '../organisms/EpicDetailsPopUpModal';
 import {
   fetchEpicDetails,
   clearSelectedEpic,
   updateEpicOptimistically,
   rollbackEpicUpdate,
-} from '@/features/epics/epicsSlice'; // Added new Redux actions
-import EpicDetailsPopUpModal from '../organisms/EpicDetailsPopUpModal';
-import { clearTasks, fetchEpicTasks } from '@/features/tasks/tasksSlice';
-import { formatDate } from '@/lib/helpers';
+} from '@/features/epics/epicsSlice';
+import Link from 'next/link';
+import Button from '../atoms/Button';
+import Plus from '@/../public/svgIcons/Plus.svg';
 
 interface ProjectEpicsProps {
   projectData: ProjectProps;
@@ -53,8 +56,6 @@ const ProjectEpics = ({
   const epicsErrorMsg = useAppSelector((state) => state.epics.error);
 
   // === Epic's Tasks State ===
-  // const epicTasks = useAppSelector((state) => state.tasks.list);
-  // const isLoadingTasks = useAppSelector((state) => state.tasks.loading);
   const {
     list: epicTasks,
     error: tasksError,
@@ -191,7 +192,7 @@ const ProjectEpics = ({
   };
 
   return (
-    <section className="w-full relative">
+    <section className="w-full relative flex flex-col">
       <PageHeader
         href={`/projects/${id}/epics/new`}
         title="Project Epics"
@@ -199,6 +200,7 @@ const ProjectEpics = ({
         projectName={name}
         icon={icons.Plus}
         className=""
+        needSearchIcon="YES"
       />
       {hasNoEpics ? (
         <EpicsEmptyState
@@ -222,16 +224,30 @@ const ProjectEpics = ({
           onEpicClick={handleEpicClick}
         />
       )}
-      <DesktopPagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
-      {totalPages > 1 && (
-        <div className="text-center text-sm text-gray-500 -mt-4 mb-4">
-          Page {currentPage} Of {totalPages} (Total epics: {totalCount})
+      <div className="relative">
+        {/* Show Only in Big Screens */}
+        <div className="hidden md:flex justify-between items-center text-sm font-medium text-gray-500">
+          {totalPages > 1 && (
+            <div className="text-center text-sm text-gray-500 -mt-4 mb-4">
+              Page {currentPage} Of {totalPages} (Total epics: {totalCount})
+            </div>
+          )}
+          <DesktopPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
-      )}
+
+        {/* Show on Mobile */}
+        <div className="block md:hidden">
+          <Link href={`/projects/${id}/epics/new`}>
+            <Button className="mt-10 w-20! h-15! absolute right-0">
+              <Plus />
+            </Button>
+          </Link>
+        </div>
+      </div>
 
       {/* ====== EPIC DETAILS MODAL POPUP ====== */}
       {isModalOpen && (

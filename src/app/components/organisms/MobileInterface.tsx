@@ -48,7 +48,7 @@ const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
 
   return (
     <div className="relative h-screen">
-      <div className="fixed top-0 left-0 w-full z-29">
+      <div className="fixed top-0 left-0 w-full z-29 bg-white">
         <Mobile_Header
           fullName={fullName}
           department={department}
