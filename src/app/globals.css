@@ -20,9 +20,9 @@ body {
     --background: #f9f9ff;
 
     /* Slate Neutrals */
-    --color-neutral-100: #041b3c;
-    --color-neutral-200: #4f5f7b;
-    --color-neutral-300: #c3c6d6;
+    --neutral-100: #041b3c;
+    --neutral-200: #4f5f7b;
+    --neutral-300: #c3c6d6;
     --description-color: #434654;
 
     /* Semantic */
@@ -123,9 +123,9 @@ body {
   --color-background: var(--background);
 
   /* Slate Neutrals */
-  --color-neutral-100: var(--color-neutral-100);
-  --color-neutral-200: var(--color-neutral-200);
-  --color-neutral-300: var(--color-neutral-300);
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-200: var(--neutral-200);
+  --color-neutral-300: var(--neutral-300);
   --color-description: var(--description-color);
   --color-text-custom: var(--text-color);
 

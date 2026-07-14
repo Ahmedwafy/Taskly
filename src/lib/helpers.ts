@@ -26,8 +26,8 @@ export const getStatusStyle = (status: string) => {
     case 'DONE':
       return 'bg-[#82F9BE] text-[#002113] font-bold text-[11px]';
 
-    case 'IN_PROGRESS':
-      return 'bg-primary text-white font-bold text-[11px]';
+    // case 'IN_PROGRESS':
+    //   return 'bg-primary text-white font-bold text-[11px]';
 
     case 'BLOCKED':
       return 'bg-[#FFDAD6] text-[#93000A] font-bold text-[11px]';

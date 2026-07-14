@@ -8,7 +8,6 @@ import {
 } from 'react-hook-form';
 import { DevTool } from '@hookform/devtools';
 import InputField from '../atoms/input';
-// import Input from '@/app/components/atoms/input';
 
 interface ProjectDataTypes {
   name: string;

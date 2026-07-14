@@ -1,16 +1,16 @@
-// src → app → components → molecules → PageHeader.tsxs
+// src > app > components > molecules > PageHeader.tsxs
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
 import Button from '../atoms/Button';
-import { StaticImageData } from 'next/image';
 import Breadcrumb from '../organisms/Breadcrumb';
 import InputField from '../atoms/input';
 import SearchIcon from '@/../public/svgIcons/serachIcon.svg';
-import { TASKS_VIEW_OPTIONS } from '@/lib/enums';
-import TasksViewSelection from '../atoms/TasksViewSelection';
-import { ReactNode } from 'react';
 import InviteMember from '@/../public/svgIcons/InviteMember.svg';
+import TasksViewSelection from '../atoms/TasksViewSelection';
+import { StaticImageData } from 'next/image';
+import { TASKS_VIEW_OPTIONS } from '@/lib/enums';
+import { ReactNode } from 'react';
 
 interface PageHeaderTypes {
   href: string;
@@ -92,7 +92,7 @@ const PageHeader = ({
 
   if (isProjectTasks) {
     return (
-      <header className={`hidden md:flex justify-between w-full ${className}`}>
+      <header className={`hidden md:flex justify-between ${className}`}>
         {/* --- Header --- */}
         <div className="w-1/2 h-fit pt-2 pl-4 flex flex-col gap-2 ">
           <div className="flex gap-4">
@@ -102,8 +102,8 @@ const PageHeader = ({
           {description && <p className="title-desc-style">{description}</p>}
         </div>
 
-        <div className="flex gap-4 w-1/2 justify-between items-end">
-          <div className="w-full relative ">
+        <div className="flex gap-2 items-end justify-end w-full">
+          <div className="w-1/2 relative">
             <InputField
               epicStyle="h-15"
               placeholder="Search Tasks..."
@@ -111,7 +111,7 @@ const PageHeader = ({
             />
           </div>
 
-          <div className="w-1/2 h-15 relative flex items-center bg-white border border-gray-200 rounded-md shadow-sm  hover:bg-gray-50 transition">
+          <div className="h-15 relative flex items-center bg-white border border-gray-200 rounded-md shadow-sm  hover:bg-gray-50 transition">
             <TasksViewSelection
               currentValue={currentValue || ''}
               handleViewChange={handleViewChange ? handleViewChange : () => {}}
@@ -122,8 +122,8 @@ const PageHeader = ({
             />
           </div>
 
-          <button className="bg-[#D7E2FF] h-15 px-8 rounded-md">
-            <SearchIcon className="h-6 w-6" />
+          <button className="bg-[#D7E2FF] rounded-md w-12 h-12 flex items-center justify-center mb-2">
+            <SearchIcon className="h-5 w-5" />
           </button>
         </div>
       </header>

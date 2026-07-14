@@ -1,19 +1,18 @@
 // src → app → components → organisms → TaskColumn.tsx
 'use client';
-// import * as icons from '@/../public/icons/icons';
-// import Image from 'next/image';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-// import { formatDate, getInitials } from '@/lib/helpers';
 import AddTaskIcon from '@/../public/svgIcons/AddTaskIcon.svg';
 import AddTaskIcon2 from '@/../public/svgIcons/AddTaskIcon2.svg';
 import TaskCard from '../molecules/TaskCard';
+import Link from 'next/link';
 
 interface TaskColumnProps {
   projectId: string;
   title: string;
   status: string;
+  tasks: ProjectTask[];
+  loading: boolean;
+  error: string | null;
   onTaskClick: (taskId: string) => void;
 }
 
@@ -21,44 +20,11 @@ const TaskColumn = ({
   projectId,
   title,
   status,
+  tasks,
+  loading,
+  error,
   onTaskClick,
 }: TaskColumnProps) => {
-  const router = useRouter();
-  const [tasks, setTasks] = useState<ProjectTask[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchColumnTasks = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await fetch(
-          `/api/projects/${projectId}/project-tasks?status=${status}`,
-        );
-        const data = await response.json();
-
-        if (!response.ok) throw new Error(data.error || 'Failed to fetch');
-
-        setTasks(data);
-      } catch (error) {
-        setError(
-          error instanceof Error ? error.message : 'An unknown error occurred',
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (projectId) {
-      fetchColumnTasks();
-    }
-  }, [projectId, status]);
-
-  const handleAddTaskClick = () => {
-    router.push(`/projects/${projectId}/tasks/new?status=${status}`);
-  };
   return (
     <div className="p-4 flex flex-col h-full">
       {/* Column Header */}
@@ -73,24 +39,24 @@ const TaskColumn = ({
         </div>
 
         {/* Plus Button Icon */}
-        <button
-          onClick={handleAddTaskClick}
-          className="p-1 rounded-md transition-colors"
-          title={`Add task to ${title}`}
-        >
-          <AddTaskIcon />
-        </button>
+        <Link href={`/projects/${projectId}/tasks/new?status=${status}`}>
+          <button
+            className="p-1 rounded-md transition-colors"
+            title={`Add task to ${title}`}
+          >
+            <AddTaskIcon />
+          </button>
+        </Link>
       </div>
 
-      <button
-        className="flex gap-4 border-2 border-dashed border-[#C3C6D64D] w-full rounded-md py-4 mb-4 text-center items-center justify-center text-[#64748B]"
-        onClick={handleAddTaskClick}
-      >
-        <span>
-          <AddTaskIcon2 />
-        </span>
-        <span>ADD NEW TASK</span>
-      </button>
+      <Link href={`/projects/${projectId}/tasks/new?status=${status}`}>
+        <button className="flex gap-4 border-2 border-dashed border-[#C3C6D64D] w-full rounded-md py-4 mb-4 text-center items-center justify-center text-[#64748B]">
+          <span>
+            <AddTaskIcon2 />
+          </span>
+          <span>ADD NEW TASK</span>
+        </button>
+      </Link>
 
       {/* === State Renderers [ Task Card ] === */}
       <TaskCard
