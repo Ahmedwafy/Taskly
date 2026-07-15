@@ -367,7 +367,7 @@ const EpicDetailsPopUpModal = ({
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-slate-900">Tasks</h3>
                   <Link
-                    href={`/projects/${projectId}/tasks/new?epic_id=${selectedEpic.epic_id}`}
+                    href={`/projects/${projectId}/tasks/new?epicId=${selectedEpic.id}&epic_id=${selectedEpic.epic_id}`}
                   >
                     <button className="text-sm font-bold text-[#004dc7] hover:text-blue-800 transition cursor-pointer">
                       + Add Task
@@ -385,7 +385,7 @@ const EpicDetailsPopUpModal = ({
                       No tasks have been added to this epic yet
                     </p>
                     <Link
-                      href={`/projects/${projectId}/tasks/new?epic_id=${selectedEpic.id}`}
+                      href={`/projects/${projectId}/tasks/new?epicId=${selectedEpic.id}&epic_id=${selectedEpic.epic_id}`}
                     >
                       <button className="px-5 py-2.5 bg-[#004dc7] hover:bg-[#003da1] text-white font-semibold text-sm rounded-lg transition shadow-sm flex items-center gap-1.5 cursor-pointer">
                         <span>+</span> Add Task

@@ -1,4 +1,4 @@
-// src → app → queries → projects.ts
+// src > app > queries > projects.ts
 import { cache } from 'react';
 import { baseURL, supabaseKey } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
@@ -77,21 +77,38 @@ export const fetchAllProjects = cache(
 // ==============================================================
 // ::: Get Project's Tasks :::
 // ==============================================================
+
 interface FetchProjectTasksParams {
   projectId: string;
   accessToken: string;
   taskStatus?: string;
+  limit?: number;
+  offset?: number;
 }
 
 export async function fetchProjectTasks({
   projectId,
   accessToken,
   taskStatus,
+  limit,
+  offset,
 }: FetchProjectTasksParams) {
-  // Determine the endpoint dynamically [ if i have taskStatus or not]
-  const endpointUrl = taskStatus
-    ? endPoints.project.getProjectTasks(projectId, taskStatus) // for Tasks Board View
-    : `${baseURL}/rest/v1/project_tasks?project_id=eq.${projectId}`; // for Tasks List View
+  // Construct parameters dynamically
+  const params = new URLSearchParams();
+  params.append('project_id', `eq.${projectId}`);
+
+  if (taskStatus) {
+    params.append('status', `eq.${taskStatus}`);
+  }
+  if (typeof limit === 'number') {
+    params.append('limit', String(limit));
+  }
+  if (typeof offset === 'number') {
+    params.append('offset', String(offset));
+  }
+
+  // const endpointUrl = `${baseURL}/rest/v1/project_tasks?${params.toString()}`;
+  const endpointUrl = `${baseURL}${endPoints.project.getProjectTasks}?${params.toString()}`;
 
   const response = await fetch(
     endpointUrl.startsWith('http') ? endpointUrl : `${baseURL}${endpointUrl}`,
@@ -101,6 +118,7 @@ export async function fetchProjectTasks({
         'Content-Type': 'application/json',
         apikey: supabaseKey,
         Authorization: `Bearer ${accessToken}`,
+        Prefer: 'count=exact', // Required to receive the total count in response
       },
     },
   );
@@ -113,5 +131,17 @@ export async function fetchProjectTasks({
     );
   }
 
-  return data;
+  // Retrieve Content-Range header (e.g. "0-9/120")
+  const contentRange = response.headers.get('content-range'); // "0-9/120"
+
+  let total = 0;
+
+  if (contentRange) {
+    const parts = contentRange.split('/'); // ["0-9", "120"]
+    if (parts[1]) {
+      total = parseInt(parts[1], 10); // 120
+    }
+  }
+
+  return { data, total }; // { data, total: 120 } → return to route handler
 }

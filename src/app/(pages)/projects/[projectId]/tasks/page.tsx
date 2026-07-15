@@ -28,7 +28,7 @@ const ProjectTasksPage = async ({ params }: ProjectTasksPageProps) => {
   }
 
   return (
-    <div className="mt-10 sm:mt-0 p-5 sm:p-10 h-full bg-background">
+    <div className="mt-10 sm:mt-0 p-5 sm:p-10 bg-background">
       <ProjectTasks projectId={projectId} projectData={project} />
     </div>
   );

@@ -8,7 +8,6 @@ export async function GET(
   { params }: { params: Promise<{ projectId: string }> },
 ) {
   try {
-    // Extract From URL
     const { projectId } = await params;
 
     const { accessToken } = await getAuthCookies();
@@ -16,17 +15,25 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Extract the search query parameters
     const { searchParams } = new URL(req.url);
-    const taskStatus = searchParams.get('status'); // Will be string or null
+    const taskStatus = searchParams.get('status') || undefined;
+    const limit = searchParams.get('limit')
+      ? Number(searchParams.get('limit'))
+      : undefined;
+    const offset = searchParams.get('offset')
+      ? Number(searchParams.get('offset'))
+      : undefined;
 
-    const data = await fetchProjectTasks({
+    const { data, total } = await fetchProjectTasks({
       projectId,
-      taskStatus: taskStatus || undefined, // Convert null to undefined
+      taskStatus,
       accessToken,
+      limit,
+      offset,
     });
 
-    return NextResponse.json(data);
+    // Expose both the paginated list and the exact total count
+    return NextResponse.json({ data, total }); // Client gets: { data: [...], total: 120 }
   } catch (error) {
     return NextResponse.json(
       {

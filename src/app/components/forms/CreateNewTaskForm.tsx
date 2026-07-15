@@ -39,6 +39,8 @@ const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
   const epicIdFromUrl = searchParams.get('epic_id') || '';
   const taskStatus = searchParams.get('status') || '';
 
+  console.log(`epicIdFromUrl`, epicIdFromUrl);
+
   const {
     list: membersData,
     loading: isMembersLoading,
@@ -153,7 +155,7 @@ const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
         placeholder="Select Epic Link..."
         error={errors.epic_id?.message}
         options={epicsList.map((epic) => ({
-          value: epic.epic_id,
+          value: epic.id,
           label: `${epic.epic_id}`,
         }))}
       />

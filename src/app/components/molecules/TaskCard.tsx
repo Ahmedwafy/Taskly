@@ -2,6 +2,7 @@ import Image from 'next/image';
 import * as icons from '@/../public/icons/icons';
 import { formatDate, getInitials } from '@/lib/helpers';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
+import TaskCardSkeleton from '../loadingSkeletons/TaskCardSkeleton';
 
 interface TaskCardProps {
   loading: boolean;
@@ -15,7 +16,7 @@ const TaskCard = ({ loading, error, tasks, onTaskClick }: TaskCardProps) => {
     <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
       {loading && (
         <p className="text-sm animate-pulse text-center mt-4">
-          Loading tasks...
+          <TaskCardSkeleton />
         </p>
       )}
       {error && (
@@ -34,7 +35,7 @@ const TaskCard = ({ loading, error, tasks, onTaskClick }: TaskCardProps) => {
           <div
             key={task.id}
             onClick={() => onTaskClick(task.id)}
-            className="flex flex-col p-4 gap-6 transition text-sm shadow-sm bg-white rounded-md"
+            className={`flex flex-col p-4 gap-6 transition text-sm shadow-sm bg-white rounded-md ${task.status === 'BLOCKED' && 'bg-[#FFDAD633]! border border-[#BA1A1A1A]!'}`}
           >
             <span>{task.title}</span>
             <span className="flex justify-between w-full">

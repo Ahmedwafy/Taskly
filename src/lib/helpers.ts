@@ -43,6 +43,29 @@ export const getStatusStyle = (status: string) => {
   }
 };
 
+export const getTasksStatusStyle = (status: string) => {
+  switch (status) {
+    case 'COMPLETED':
+    case 'DONE':
+      return 'bg-[#82F9BE]';
+
+    case 'IN_PROGRESS':
+      return 'bg-primary';
+
+    case 'BLOCKED':
+      return 'bg-[#BA1A1A]';
+
+    case 'READY_FOR_QA':
+    case 'IN_REVIEW':
+    case 'REOPENED':
+    case 'READY_FOR_PRODUCTION':
+      return 'bg-[#CDDDFF]';
+
+    default: // TO_DO / BACKLOG
+      return 'bg-[#D7E2FF]';
+  }
+};
+
 /**
  * Generates up to 2 uppercase initials from a name string.
  * @param {string} name - The full name (e.g., "John Doe", "  sarah   lee ")

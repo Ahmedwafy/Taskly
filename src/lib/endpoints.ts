@@ -22,7 +22,8 @@ type Endpoints = {
       offset: number,
     ) => string;
     epicDetails: (projectId: string, epicId: string) => string;
-    getProjectTasks: (projectId: string, taskStatus: string) => string;
+    // getProjectTasks: (projectId: string, taskStatus: string) => string;
+    getProjectTasks: string;
     createNewTask: string;
   };
 
@@ -64,8 +65,9 @@ export const endPoints: Endpoints = {
       `/rest/v1/project_epics?project_id=eq.${projectId}&limit=${limit}&offset=${offset}`,
     epicDetails: (projectId, epicId) =>
       `/rest/v1/project_epics?project_id=eq.${projectId}&id=eq.${epicId}`,
-    getProjectTasks: (projectId, taskStatus) =>
-      `/rest/v1/project_tasks?project_id=eq.${projectId}&status=eq.${taskStatus}`,
+    // getProjectTasks: (projectId, taskStatus) =>
+    //   `/rest/v1/project_tasks?project_id=eq.${projectId}&status=eq.${taskStatus}`,
+    getProjectTasks: `/rest/v1/project_tasks`,
     createNewTask: `/rest/v1/tasks`,
   },
 
