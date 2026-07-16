@@ -60,7 +60,6 @@ export const endPoints: Endpoints = {
   },
 
   project: {
-    // getProjectEpics: `/rest/v1/project_epics?project_id=eq.`,
     getProjectEpics: (projectId, limit, offset) =>
       `/rest/v1/project_epics?project_id=eq.${projectId}&limit=${limit}&offset=${offset}`,
     epicDetails: (projectId, epicId) =>

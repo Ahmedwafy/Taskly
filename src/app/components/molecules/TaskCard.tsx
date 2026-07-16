@@ -1,8 +1,11 @@
+// src > app > components > pages > TaskCard.tsx
+'use client';
 import Image from 'next/image';
 import * as icons from '@/../public/icons/icons';
 import { formatDate, getInitials } from '@/lib/helpers';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
 import TaskCardSkeleton from '../loadingSkeletons/TaskCardSkeleton';
+import DateIcon from '@/../public/svgIcons/Date.svg';
 
 interface TaskCardProps {
   loading: boolean;
@@ -35,15 +38,29 @@ const TaskCard = ({ loading, error, tasks, onTaskClick }: TaskCardProps) => {
           <div
             key={task.id}
             onClick={() => onTaskClick(task.id)}
-            className={`flex flex-col p-4 gap-6 transition text-sm shadow-sm bg-white rounded-md ${task.status === 'BLOCKED' && 'bg-[#FFDAD633]! border border-[#BA1A1A1A]!'}`}
+            className={`relative overflow-hidden flex flex-col p-4 gap-6 transition text-sm shadow-sm bg-white rounded-md 
+              ${task.status === 'BLOCKED' && 'bg-[#FFDAD633]! border border-[#BA1A1A1A]!'}
+              ${task.status === 'IN_PROGRESS' && 'pl-6'}
+              `}
           >
+            {task.status === 'IN_PROGRESS' && (
+              <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-primary" />
+            )}
+
             <span>{task.title}</span>
             <span className="flex justify-between w-full">
               <p className="flex gap-2 items-center">
                 <span>
-                  <Image src={icons.Date} alt="Add-Task" />
+                  <DateIcon
+                    className={`text-[#94A3B8]
+                      ${task.status === 'IN_PROGRESS' && 'text-primary'}`}
+                  />
                 </span>
-                <span> {formatDate(task.created_at)}</span>
+                <span
+                  className={`${task.status === 'IN_PROGRESS' && 'text-primary font-semibold'} text-[#94A3B8]`}
+                >
+                  {formatDate(task.created_at)}
+                </span>
               </p>
               {task.assignee.name && (
                 <p className="bg-primary rounded-full p-1 text-white">

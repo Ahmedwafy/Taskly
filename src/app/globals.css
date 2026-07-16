@@ -33,15 +33,15 @@ body {
     --inputBgError: #ffdad6;
 
     /* Title*/
-    --title-size: 36px;
+    --title-size: 30px;
     --title-weight: 700;
     --title-line-height: 40px;
     --title-letter-spacing: 0.9px;
 
     /* Title Description */
-    --description-size: 16px;
+    --description-size: 14px;
     --description-weight: 400;
-    --description-line-height: 24px;
+    --description-line-height: 20px;
     --description-letter-spacing: 0px;
 
     /* Desktop Layout Header: Name */

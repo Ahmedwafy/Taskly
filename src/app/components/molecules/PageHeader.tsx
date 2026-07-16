@@ -24,6 +24,10 @@ interface PageHeaderTypes {
   currentValue?: string;
   needSearchIcon?: string;
   handleViewChange?: (newValue: string) => void; // Updated here
+  // --- ADDED SEARCH PROPS ---
+  searchValue?: string;
+  onSearchChange?: (val: string) => void;
+  isSearching?: boolean;
 }
 
 const PageHeader = ({
@@ -37,6 +41,9 @@ const PageHeader = ({
   currentValue,
   handleViewChange,
   SVGicon,
+  searchValue,
+  onSearchChange,
+  isSearching,
 }: PageHeaderTypes) => {
   const isProjectEpics = title === 'Project Epics';
   const isProjectTasks = title === 'Active Workboard';
@@ -50,7 +57,6 @@ const PageHeader = ({
         <header
           className={`hidden lg:flex justify-between w-full ${className}`}
         >
-          {/* --- Header --- */}
           <div className="w-full h-fit pt-2 pl-4 flex flex-col gap-2">
             <div className="flex gap-4">
               <Breadcrumb projectName={projectName} />
@@ -65,7 +71,14 @@ const PageHeader = ({
                 epicStyle="h-15"
                 placeholder="Search Epics..."
                 variant="search"
+                value={searchValue} // <-- Value prop
+                onChange={(e) => onSearchChange?.(e.target.value)} // <-- Search change handler > Update search local state
               />
+              {isSearching && (
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-400 animate-pulse">
+                  Searching...
+                </span>
+              )}
             </div>
 
             <Link href={href}>
@@ -79,12 +92,19 @@ const PageHeader = ({
         </header>
 
         {/* ==== Mobile View ==== */}
-        <div className="lg:hidden mt-20">
+        <div className="lg:hidden mt-20 relative">
           <InputField
             epicStyle="h-15"
             placeholder="Search Epics..."
             variant="search"
+            value={searchValue} // <-- Value prop
+            onChange={(e) => onSearchChange?.(e.target.value)} // <-- Search change handler
           />
+          {isSearching && (
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-400 animate-pulse">
+              Searching...
+            </span>
+          )}
         </div>
       </>
     );

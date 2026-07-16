@@ -68,7 +68,6 @@ const TaskColumn = ({
       }
     };
   }, []);
-
   const fetchColumnTasks = useCallback(
     async (currentOffset: number, isInitial = false) => {
       if (!hasIntersected) return;
@@ -148,6 +147,8 @@ const TaskColumn = ({
       }
     };
   }, [hasMore, loading, offset, fetchColumnTasks, hasIntersected]);
+
+  // border border-slate-100 sm:border-l-[6px] sm:border-l-emerald-800
 
   return (
     <div

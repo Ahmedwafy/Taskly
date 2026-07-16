@@ -1,6 +1,6 @@
 import { ProjectProps } from '@/types/shared';
 import Link from 'next/link';
-import DataIcon from '@/../public/svgIcons/Data.svg';
+import DataIcon from '@/../public/svgIcons/Date.svg';
 
 interface ProjectCardProps {
   project?: ProjectProps;

@@ -256,9 +256,9 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
 
   return (
     <>
-      {/* Render Desktop Layout */}
+      {/* ▲ ▲ ▲ Desktop Layout ▲ ▲ ▲  h-[calc(100vh-100px)] overflow-hidden*/}
       {!isMobile && (
-        <section className="relative w-full flex flex-col ">
+        <section className="relative w-full flex flex-col">
           <PageHeader
             href={`/project/${projectId}/tasks/new`}
             title="Active Workboard"
@@ -269,13 +269,14 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
             currentValue={currentValue}
             handleViewChange={handleViewChange}
           />
+
           {currentValue === 'BOARD_VIEW' ? (
-            <div className="mt-8 flex-1 w-full max-w-full overflow-x-scroll overflow-y-hidden pb-4">
+            <div className="mt-6 flex-1 min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden pb-4">
               <div className="inline-flex gap-6 h-full items-start pr-6">
                 {COLUMNS.map((col) => (
                   <div
                     key={col.status}
-                    className="w-[320px] shrink-0 h-screen"
+                    className="w-[320px] shrink-0 flex flex-col"
                     style={{ minWidth: '320px' }}
                   >
                     <TaskColumn
@@ -289,7 +290,8 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
               </div>
             </div>
           ) : (
-            <div className="relative pt-10 pb-5">
+            //  Ensure List View also behaves nicely inside this container limit
+            <div className="relative pt-6 pb-5 flex-1 min-h-0 overflow-y-auto">
               <TasksListView
                 tasks={listTasks}
                 loading={listLoading}
@@ -322,7 +324,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
         </section>
       )}
 
-      {/* Render Mobile Layout ONLY if mobile */}
+      {/* ▲ ▲ ▲ Mobile Layout ▲ ▲ ▲ */}
       {isMobile && (
         <section className="min-h-screen px-4 py-8 relative flex flex-col gap-4">
           <header className="title-style">Active Workboard</header>

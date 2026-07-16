@@ -8,9 +8,9 @@ import EpicsEmptyState from './EpicsEmptyState';
 import ProjectEpicsGrid from '../organisms/ProjectEpicsGrid';
 import DesktopPagination from '../molecules/DesktopPagination';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useState, useEffect, useTransition } from 'react'; // <-- Added hooks
 import { useAppSelector, useAppDispatch } from '@/redux/reduxHooks';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'; // <-- Added hook
 import { EpicDetails, ProjectEpic, ProjectProps } from '@/types/shared';
 import { updateEpicAction } from '@/app/actions/epics';
 import { clearTasks, fetchEpicTasks } from '@/features/tasks/tasksSlice';
@@ -32,6 +32,8 @@ interface ProjectEpicsProps {
   totalCount: number;
   currentPage: number;
   limit: number;
+  searchTerm: string;
+  hasError: boolean;
 }
 
 const ProjectEpics = ({
@@ -40,12 +42,57 @@ const ProjectEpics = ({
   totalCount,
   currentPage,
   limit,
+  searchTerm,
+  hasError,
 }: ProjectEpicsProps) => {
   const { id, name } = projectData;
-  const hasNoEpics = projectEpics.length === 0;
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
+
+  // useTransition: fetch the new search results in the background. Meanwhile, keep the current UI fully responsive so the user can keep typing or clicking."
+  const [isPending, startTransition] = useTransition();
+
+  // === Local state for the search input ===
+  const [localSearch, setLocalSearch] = useState(searchTerm);
+
+  // === Sync server search state to local input if updated externally ===
+  useEffect(() => {
+    setLocalSearch(searchTerm);
+  }, [searchTerm]);
+
+  // === Debouncing Logic ===
+  useEffect(() => {
+    // === If the local search is already matching server state, ignore trigger [ No Change ] ===
+    if (localSearch === searchTerm) return;
+
+    const delayDebounceFn = setTimeout(() => {
+      startTransition(() => {
+        const params = new URLSearchParams(searchParams.toString());
+
+        // Reset page configuration when search parameters change
+        params.set('page', '1');
+
+        if (localSearch.trim() !== '') {
+          params.set('search', localSearch); // searchParam →  ?search='...'
+        } else {
+          params.delete('search');
+        }
+
+        router.push(`${pathname}?${params.toString()}`);
+      });
+    }, 400);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [localSearch, pathname, router, searchParams, searchTerm]);
+
+  // Handle errors
+  useEffect(() => {
+    if (hasError) {
+      toast.error('Failed to search epics');
+    }
+  }, [hasError]);
 
   // === Redux State Sync ===
   const members = useAppSelector((state) => state.members.list);
@@ -62,11 +109,8 @@ const ProjectEpics = ({
     loading: isLoadingTasks,
   } = useAppSelector((state) => state.tasks);
 
-  console.log('epic Tasks:', epicTasks); // Debugging line
-
   // === Modal UI States ===
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [, setIsSaving] = useState(false);
 
@@ -74,7 +118,9 @@ const ProjectEpics = ({
   const totalPages = Math.ceil(totalCount / limit);
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
-    router.push(`${pathname}?page=${newPage}&limit=${limit}`);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', String(newPage));
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   // === ( Handle Epic Click ) ===
@@ -90,7 +136,6 @@ const ProjectEpics = ({
     const detailsResult = results[0];
     const tasksResult = results[1];
 
-    // Check if the critical epic details failed
     if (detailsResult.status === 'rejected') {
       setErrorMsg(
         detailsResult.reason instanceof Error
@@ -99,13 +144,11 @@ const ProjectEpics = ({
       );
     }
 
-    // If tasks failed, it won't crash the modal.
     if (tasksResult.status === 'rejected') {
       console.error('failed to load Tasks', tasksResult.reason || tasksError);
     }
   };
 
-  // === when user closes the modal ===
   const closeModal = () => {
     setIsModalOpen(false);
     setErrorMsg(null);
@@ -154,15 +197,11 @@ const ProjectEpics = ({
     },
   ];
 
-  // === Handle Epic Field Update (Inline Editing) ===
   const handleUpdateEpicField = async (
     epicId: string,
     updatedFields: Partial<EpicDetails> & { assignee_id?: string | null },
   ) => {
     setIsSaving(true);
-
-    // 1. Trigger an optimistic update directly in Redux slice
-    // (make sure slice handles this action to update state immediately)
     dispatch(updateEpicOptimistically({ updatedFields }));
 
     try {
@@ -172,15 +211,11 @@ const ProjectEpics = ({
         payload: updatedFields,
       });
 
-      if (result?.error) {
-        throw new Error(result.error);
-      }
+      if (result?.error) throw new Error(result.error);
 
       toast.success(`Epic Updated Successfully`);
     } catch (err) {
-      // 2. Rollback to original server values from Redux if it fails
       dispatch(rollbackEpicUpdate());
-
       toast.error(
         err instanceof Error
           ? err.message
@@ -190,6 +225,10 @@ const ProjectEpics = ({
       setIsSaving(false);
     }
   };
+
+  // Determine empty-state messaging rules
+  const hasNoEpicsAtAll = projectEpics.length === 0 && !searchTerm;
+  const hasNoSearchMatches = projectEpics.length === 0 && !!searchTerm;
 
   return (
     <section className="w-full relative flex flex-col">
@@ -201,11 +240,22 @@ const ProjectEpics = ({
         icon={icons.Plus}
         className=""
         needSearchIcon="YES"
+        //
+        searchValue={localSearch}
+        onSearchChange={setLocalSearch}
+        isSearching={isPending} // Transition state sets to True while router updates background data
       />
-      {hasNoEpics ? (
+
+      {/* --- Loader / Empty / Non-Empty Views --- */}
+      {isPending ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
+          <p className="text-gray-500 font-medium">Searching epics...</p>
+        </div>
+      ) : hasNoEpicsAtAll ? (
         <EpicsEmptyState
           imageSrc={images.Empty_State}
-          title="No epics in this project yet."
+          title="No epics found for this project"
           description="Break down your large project into manageable epics to track progress better and maintain architectural clarity."
           buttonText="Create First Epic"
           buttonHref={`/projects/${id}/epics/new`}
@@ -218,36 +268,62 @@ const ProjectEpics = ({
           }
           features={epicValueProps}
         />
+      ) : hasNoSearchMatches ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="p-4 bg-gray-50 rounded-full mb-4">
+            <svg
+              className="w-12 h-12 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900">
+            No epics found matching your search
+          </h3>
+          <p className="text-gray-500 mt-1">
+            Try checking your spelling or search for another epic title.
+          </p>
+        </div>
       ) : (
         <ProjectEpicsGrid
           projectEpics={projectEpics}
           onEpicClick={handleEpicClick}
         />
       )}
-      <div className="relative">
-        {/* Show Only in Big Screens */}
-        <div className="hidden md:flex justify-between items-center text-sm font-medium text-gray-500">
-          {totalPages > 1 && (
-            <div className="text-center text-sm text-gray-500 -mt-4 mb-4">
-              Page {currentPage} Of {totalPages} (Total epics: {totalCount})
-            </div>
-          )}
-          <DesktopPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        </div>
 
-        {/* Show on Mobile */}
-        <div className="block md:hidden">
-          <Link href={`/projects/${id}/epics/new`}>
-            <Button className="mt-10 w-20! h-15! absolute right-0">
-              <Plus />
-            </Button>
-          </Link>
+      {/* --- Pagination Controls --- */}
+      {!hasNoEpicsAtAll && !hasNoSearchMatches && !isPending && (
+        <div className="relative">
+          <div className="hidden md:flex justify-between items-center text-sm font-medium text-gray-500">
+            {totalPages > 1 && (
+              <div className="text-center text-sm text-gray-500 -mt-4 mb-4">
+                Page {currentPage} Of {totalPages} (Total epics: {totalCount})
+              </div>
+            )}
+            <DesktopPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </div>
+
+          <div className="block md:hidden">
+            <Link href={`/projects/${id}/epics/new`}>
+              <Button className="mt-10 w-20! h-15! absolute right-0">
+                <Plus />
+              </Button>
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ====== EPIC DETAILS MODAL POPUP ====== */}
       {isModalOpen && (
@@ -269,3 +345,14 @@ const ProjectEpics = ({
 };
 
 export default ProjectEpics;
+
+// Start with this local state for the Serach Input ... starts with searchTerm as an empty default value.
+// const [localSearch, setLocalSearch] = useState(searchTerm);
+//
+//  User type in the search input >>> 'setLocalSearch' update 'searchTerm' Value with 'input Value' and pass it back to parent component.
+//
+// Use 'searchTerm' [ input text value ] to add a Search Param > ?search='input text value' (ex: ?search=epic5)
+//
+// From URL : get the value user typed from url search params. (ex: ?search=epic5)
+//
+// Send this value to the api.

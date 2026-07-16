@@ -36,10 +36,8 @@ const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
   const [epicsList] = useState<ProjectEpic[]>(initialEpics);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const epicIdFromUrl = searchParams.get('epic_id') || '';
+  const epicIdFromUrl = searchParams.get('epicId') || '';
   const taskStatus = searchParams.get('status') || '';
-
-  console.log(`epicIdFromUrl`, epicIdFromUrl);
 
   const {
     list: membersData,

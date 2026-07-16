@@ -21,10 +21,21 @@ export default async function CreateNewTask({ params }: CreateTaskPageProps) {
     redirect('/login');
   }
 
-  const [project, epicsData] = await Promise.all([
+  const [projectResult, epicsResult] = await Promise.allSettled([
     fetchProjectById({ projectId, accessToken }),
-    fetchProjectEpics({ projectId, limit: 1000, offset: 0, accessToken }), // Grabs all epics for dropdown selection
+    fetchProjectEpics({ projectId, limit: 1000, offset: 0, accessToken }),
   ]);
+
+  // Extract the values safely by checking their fulfillment status
+  const project =
+    projectResult.status === 'fulfilled' ? projectResult.value : null;
+
+  const epicsData =
+    epicsResult.status === 'fulfilled' ? epicsResult.value : null;
+
+  if (epicsResult.status === 'rejected') {
+    console.error('Failed to fetch epics:', epicsResult.reason);
+  }
 
   if (!project) {
     throw new Error('Project not found');

@@ -8,7 +8,7 @@ import ProjectEpics from '@/app/components/pages/ProjectEpics';
 
 interface ProjectEpicsPageProps {
   params: Promise<{ projectId: string }>;
-  searchParams: Promise<{ page?: string; limit?: string }>;
+  searchParams: Promise<{ page?: string; limit?: string; search?: string }>; // <-- Added search param
 }
 
 export default async function ProjectEpicsPage({
@@ -16,14 +16,12 @@ export default async function ProjectEpicsPage({
   searchParams,
 }: ProjectEpicsPageProps) {
   const { projectId } = await params;
-  const { page, limit } = await searchParams;
+  const { page, limit, search } = await searchParams; // <-- Destructured search : when user type in search input > new param added to url > Ex: ?search='input text value'
 
-  // Resolve pagination numbers
-  // const currentPage = parseInt(page || '1', 10);
-  // const currentLimit = parseInt(limit || '10', 10);
   const currentPage = Number(page) || 1;
   const currentLimit = Number(limit || 10);
   const offset = (currentPage - 1) * currentLimit;
+  const searchTerm = search || '';
 
   const { accessToken } = await getAuthCookies();
 
@@ -31,12 +29,24 @@ export default async function ProjectEpicsPage({
     redirect('/login');
   }
 
-  const { projectEpics, totalCount } = await fetchProjectEpics({
-    projectId,
-    limit: currentLimit,
-    offset,
-    accessToken,
-  });
+  let projectEpics = [];
+  let totalCount = 0;
+  let hasError = false;
+
+  try {
+    const data = await fetchProjectEpics({
+      projectId,
+      limit: currentLimit,
+      offset,
+      accessToken,
+      searchTerm, // <-- Pass down to API fetcher
+    });
+    projectEpics = data.projectEpics;
+    totalCount = data.totalCount;
+  } catch (error) {
+    console.error(error);
+    hasError = true;
+  }
 
   const projectData = await fetchProjectById({
     projectId,
@@ -51,6 +61,9 @@ export default async function ProjectEpicsPage({
         totalCount={totalCount}
         currentPage={currentPage}
         limit={currentLimit}
+        //
+        searchTerm={searchTerm}
+        hasError={hasError}
       />
     </div>
   );

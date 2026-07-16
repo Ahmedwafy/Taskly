@@ -10,40 +10,66 @@ interface FetchProjectEpicsParams {
   limit: number;
   offset: number;
   accessToken: string;
+  searchTerm?: string;
 }
+
 export async function fetchProjectEpics({
   projectId,
   limit,
   offset,
   accessToken,
+  searchTerm,
 }: FetchProjectEpicsParams) {
-  const res = await fetch(
-    `${baseURL}${endPoints.project.getProjectEpics(projectId, limit, offset)}`,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: supabaseKey,
-        Authorization: `Bearer ${accessToken}`,
-        Prefer: 'count=exact',
-      },
-      cache: 'no-store',
-    },
-  );
+  // 1. base endpoint URL with pagination params
+  let url = `${baseURL}${endPoints.project.getProjectEpics(projectId, limit, offset)}`;
 
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data?.message || data?.error || 'Failed to fetch epics');
+  // 2. append title filter if a search term exists
+  if (searchTerm && searchTerm.trim() !== '') {
+    url += `&title=ilike.%25${encodeURIComponent(searchTerm.trim())}%25`; // encodeURIComponent: prevents user input containing special characters
   }
 
-  const contentRange = res.headers.get('content-range');
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      Prefer: 'count=exact', // Required for exact count to read pagination
+    },
+    cache: 'no-store',
+  });
+
+  let data;
+  try {
+    data = await response.json();
+  } catch (error: unknown) {
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : 'Invalid JSON response received from API',
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      data?.message || data?.error || data?.hint || 'Failed to fetch epics',
+    );
+  }
+
+  // Parse total filtered count from Content-Range header ( "0-9/25" )
+  const contentRange = response.headers.get('content-range');
   let totalCount = 0;
+
   if (contentRange && contentRange.includes('/')) {
-    totalCount = parseInt(contentRange.split('/')[1], 10);
+    const parts = contentRange.split('/'); // ['0-9', '25']
+    const parsedCount = parseInt(parts[1], 10); // 25
+    if (!isNaN(parsedCount)) {
+      totalCount = parsedCount;
+    }
   }
 
   return {
-    projectEpics: data,
+    projectEpics: Array.isArray(data) ? data : [], // ensure always return an array
     totalCount,
   };
 }

@@ -27,7 +27,7 @@ const TasksListView = ({
   const totalPages = Math.max(Math.ceil(total / limit), 1);
 
   return (
-    <div className="w-full max-w-7xl mx-auto bg-white rounded-md shadow-sm border border-slate-100 font-sans mb-20">
+    <div className="w-full max-w-7xl mx-auto bg-white rounded-md shadow-sm border border-slate-100 font-sans">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse text-slate-600">
           <thead>
