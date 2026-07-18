@@ -34,6 +34,7 @@ type Endpoints = {
 
   task: {
     getSingleTaskDetails: (projectId: string, taskId: string) => string;
+    updateTaskStatusDragAndDrop: (taskId: string) => string;
   };
 
   updateProjectById: (projectId: string) => string;
@@ -78,6 +79,7 @@ export const endPoints: Endpoints = {
   task: {
     getSingleTaskDetails: (projectId, taskId) =>
       `/rest/v1/project_tasks?project_id=eq.${projectId}&id=eq.${taskId}`,
+    updateTaskStatusDragAndDrop: (taskId) => `/rest/v1/tasks?id=eq.${taskId}`,
   },
 
   createNewEpic: '/rest/v1/epics',

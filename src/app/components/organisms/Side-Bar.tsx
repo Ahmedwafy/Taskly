@@ -116,7 +116,7 @@ const SideBar = ({
         </div>
 
         {/* ○ ○ ○  Navigation ○ ○ ○  */}
-        <div className="flex flex-col gap-4 pl-6 py-6">
+        <div className="flex flex-col gap-1 pl-6 py-6">
           {navItems.map((item) => {
             return (
               <Link

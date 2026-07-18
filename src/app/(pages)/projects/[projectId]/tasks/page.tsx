@@ -18,6 +18,8 @@ const ProjectTasksPage = async ({ params }: ProjectTasksPageProps) => {
     redirect('/login');
   }
 
+  console.log('PROJECT TASKS PAGE');
+
   const project = await fetchProjectById({
     projectId,
     accessToken,

@@ -1,4 +1,4 @@
-// src > app > components > pages > ProjectsTasks.tsx
+//  src > app > components > pages > ProjectsTasks.tsx
 'use client';
 import * as icons from '@/../public/icons/icons';
 import TasksListView from '../organisms/TasksListView';
@@ -13,9 +13,23 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import TaskDetailsPopUpModal from '../organisms/TaskDetailsPopUpModal';
 import InputField from '../atoms/input';
 import PLUS from '@/../public/svgIcons/Plus.svg';
-import DotsIcon from '@/../public/svgIcons/DotsIcon.svg';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
-import { formatDate, getInitials, getStatusStyle } from '@/lib/helpers';
+import { toast } from 'sonner';
+import DotsIcon from '@/../public/svgIcons/DotsIcon.svg';
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragStartEvent,
+  DragOverlay,
+} from '@dnd-kit/core';
+import {
+  formatDate,
+  getInitials,
+  getMobileTasksStatusStyle,
+} from '@/lib/helpers';
 
 interface ProjectTasksProps {
   projectId: string;
@@ -41,25 +55,31 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // === View & Layout State ===
+  // === The View Selector ===
   const currentValue =
-    searchParams.get('view')?.toUpperCase() === 'LIST'
-      ? 'LIST_VIEW'
-      : 'BOARD_VIEW';
+    searchParams.get('view') === 'list' ? 'LIST_VIEW' : 'BOARD_VIEW';
 
+  // Track the active task being dragged via DOM attribute lookup
+  const [activeTask, setActiveTask] = useState<ProjectTask | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
-
-  // ─── STEP 1: DYNAMIC SCREEN DETECTION ──────────────────────────────
-  // Prevents mounting and executing mobile fetch loops on desktop screens!
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
+  // === Configure Sensors ===
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+  );
+
+  // === The Screen Size Check ===
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 640); // 640px is Tailwind's default 'sm' breakpoint
+      setIsMobile(window.innerWidth < 640);
     };
-
-    handleResize(); // Run on mount
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -78,6 +98,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
   const [mobileOffset, setMobileOffset] = useState<number>(0);
   const [mobileHasMore, setMobileHasMore] = useState<boolean>(true);
   const mobileObserverTarget = useRef<HTMLDivElement | null>(null);
+  const fetchingMobileRef = useRef<string | null>(null);
 
   const handleViewChange = (newValue: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -85,15 +106,13 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  // === Fetch for List View ===
+  // ──────────────────────────────────────── Start List View ─────────────────────────────────────────────────
   const fetchListTasks = useCallback(
     async (page: number, activeSignal: { current: boolean }) => {
       try {
-        await Promise.resolve();
-        if (!activeSignal.current) return;
-
         setListLoading(true);
         setListError(null);
+
         const offset = (page - 1) * LIMIT_LIST;
         const res = await fetch(
           `/api/projects/${projectId}/project-tasks?limit=${LIMIT_LIST}&offset=${offset}`,
@@ -103,7 +122,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
         if (!activeSignal.current) return;
         if (!res.ok) throw new Error(json.error || 'Failed to fetch tasks');
 
-        setListTasks(json.data); // overwrites the previous page's tasks completely.
+        setListTasks(json.data);
         setListTotal(json.total);
       } catch (err: unknown) {
         if (activeSignal.current) {
@@ -118,26 +137,31 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
       }
     },
     [projectId],
+    // [projectId, currentValue],
   );
-
-  // ─── STEP 2: RUN ONLY ON LIST VIEW & PREVENT DOUBLE RUNS ──────────
   useEffect(() => {
     const activeSignal = { current: true };
 
+    // ONLY fetch if on desktop layout
     if (isMobile === false && currentValue === 'LIST_VIEW' && projectId) {
       fetchListTasks(listPage, activeSignal);
     }
 
     return () => {
-      activeSignal.current = false; // Discards outstanding queries on unmount/re-run
+      activeSignal.current = false;
     };
   }, [currentValue, projectId, listPage, fetchListTasks, isMobile]);
 
-  // === Fetch & Infinite Scroll for Mobile View ===
+  // ──────────────────────────────────────── End List View ───────────────────────────────────────────────────
+
+  // ──────────────────────────────────────── Start Mobile View ───────────────────────────────────────────────
   const fetchMobileTasks = useCallback(
     async (currentOffset: number, isInitial = false) => {
+      const fetchKey = `${projectId}-${currentOffset}`;
+      if (fetchingMobileRef.current === fetchKey) return;
+
       try {
-        await Promise.resolve();
+        fetchingMobileRef.current = fetchKey;
         setMobileLoading(true);
         setMobileError(null);
 
@@ -151,7 +175,6 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
 
         setMobileTasks((prev) => {
           const updatedList = isInitial ? json.data : [...prev, ...json.data];
-          // ONLY mark hasMore as true if we received a full page and haven't hit the limit
           const hasMoreAvailable =
             updatedList.length < json.total &&
             json.data.length === LIMIT_MOBILE;
@@ -164,24 +187,26 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
         );
       } finally {
         setMobileLoading(false);
+        if (fetchingMobileRef.current === fetchKey) {
+          fetchingMobileRef.current = null;
+        }
       }
     },
     [projectId],
   );
 
-  // Safe Initial Load: Only triggers once when the project changes
   useEffect(() => {
+    // ONLY run if to be on a mobile layout
     if (isMobile !== true || !projectId) return;
 
     const activeSignal = { current: true };
-
     const init = async () => {
       await Promise.resolve();
       if (!activeSignal.current) return;
 
       setMobileTasks([]);
       setMobileOffset(0);
-      setMobileHasMore(true); // Default to true so we can fetch the initial page
+      setMobileHasMore(true);
       fetchMobileTasks(0, true);
     };
 
@@ -189,28 +214,25 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
 
     return () => {
       activeSignal.current = false;
+      // Reset mobile fetch lock when switching away from mobile
+      if (fetchingMobileRef.current) {
+        fetchingMobileRef.current = null;
+      }
     };
   }, [projectId, isMobile, fetchMobileTasks]);
 
-  // Mobile Intersection Observer Trigger
   useEffect(() => {
     if (isMobile !== true) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         const targetEntry = entries[0];
-
-        // CRITICAL SAFEGUARDS:
-        // 1. Only run if intersecting, not loading, and we are allowed to fetch more.
-        // 2. IMPORTANT: Do not fetch next pages until page 1 (isInitial) has completed!
-        //    (This prevents the observer from rapidly calling offset=10, 20 on mount)
         if (
           targetEntry.isIntersecting &&
           mobileHasMore &&
           !mobileLoading &&
           mobileTasks.length > 0
         ) {
-          // Double-check if we've reached the absolute database limit
           if (mobileTasks.length >= listTotal) {
             setMobileHasMore(false);
             return;
@@ -250,17 +272,91 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
         task.task_id.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [mobileTasks, searchQuery]);
+  // ──────────────────────────────────────── End Mobile View ───────────────────────────────────────────────
 
-  // Prevent flash or hydration mismatch while determining user screen size
+  // ──────────────────────────────────────── Start Drag & Drop ───────────────────────────────────────────────
+  const handleDragStart = (event: DragStartEvent) => {
+    const taskId = event.active.id as string;
+    // Find task configuration data directly from DOM parameters
+    const taskCardElement = document.getElementById(`task-card-${taskId}`);
+    if (taskCardElement) {
+      const taskData = JSON.parse(
+        taskCardElement.getAttribute('data-task') || '{}',
+      );
+      setActiveTask(taskData);
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    setActiveTask(null);
+    const { active, over } = event;
+    if (!over) return;
+
+    const taskId = active.id as string;
+    const newStatus = over.id as string;
+
+    const taskCardElement = document.getElementById(`task-card-${taskId}`);
+    if (!taskCardElement) return;
+    const activeTaskData = JSON.parse(
+      taskCardElement.getAttribute('data-task') || '{}',
+    );
+
+    const originalStatus = activeTaskData.status;
+    if (originalStatus === newStatus) return;
+
+    // Dispatch custom event to notify target column states instantly
+    const dndEvent = new CustomEvent('dnd-task-status-updated', {
+      detail: {
+        taskId,
+        fromStatus: originalStatus,
+        toStatus: newStatus,
+        taskData: activeTaskData,
+      },
+    });
+    window.dispatchEvent(dndEvent);
+
+    try {
+      const res = await fetch(
+        `/api/projects/${projectId}/project-tasks/${activeTaskData.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status: newStatus }),
+        },
+      );
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'API Request Failed');
+
+      toast.success(`Task status updated to ${newStatus.replace(/_/g, ' ')}`);
+    } catch (error) {
+      // Rollback columns custom state if updating fails on database layers
+      const rollbackEvent = new CustomEvent('dnd-task-status-updated', {
+        detail: {
+          taskId,
+          fromStatus: newStatus,
+          toStatus: originalStatus,
+          taskData: activeTaskData,
+        },
+      });
+      window.dispatchEvent(rollbackEvent);
+
+      toast.error('Failed to change status. Reverting change.');
+    }
+  };
+  // ──────────────────────────────────────── End Drag & Drop ───────────────────────────────────────────────
+
   if (isMobile === null) return null;
 
   return (
     <>
-      {/* ▲ ▲ ▲ Desktop Layout ▲ ▲ ▲  h-[calc(100vh-100px)] overflow-hidden*/}
+      {/* Desktop Layout */}
       {!isMobile && (
         <section className="relative w-full flex flex-col">
           <PageHeader
-            href={`/project/${projectId}/tasks/new`}
+            href={`/projects/${projectId}/tasks/new`}
             title="Active Workboard"
             description="Curating Project Alphas production pipeline and milestones."
             projectName={projectData.name}
@@ -271,26 +367,55 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
           />
 
           {currentValue === 'BOARD_VIEW' ? (
-            <div className="mt-6 flex-1 min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden pb-4">
-              <div className="inline-flex gap-6 h-full items-start pr-6">
-                {COLUMNS.map((col) => (
-                  <div
-                    key={col.status}
-                    className="w-[320px] shrink-0 flex flex-col"
-                    style={{ minWidth: '320px' }}
-                  >
-                    <TaskColumn
-                      projectId={projectId}
-                      title={col.title}
-                      status={col.status}
-                      onTaskClick={setSelectedTaskId}
-                    />
-                  </div>
-                ))}
+            <DndContext
+              sensors={sensors}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <div className="mt-6 flex-1 min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden pb-4">
+                <div className="inline-flex gap-6 h-full items-start pr-6">
+                  {COLUMNS.map((col) => (
+                    <div
+                      key={col.status}
+                      className="w-[320px] shrink-0 flex flex-col"
+                      style={{ minWidth: '320px' }}
+                    >
+                      <TaskColumn
+                        projectId={projectId}
+                        title={col.title}
+                        status={col.status}
+                        onTaskClick={setSelectedTaskId}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+
+              <DragOverlay dropAnimation={null}>
+                {activeTask ? (
+                  <div className="w-[288px] opacity-95 shadow-2xl pointer-events-none transform rotate-2">
+                    <div className="flex flex-col gap-4 p-4 bg-white rounded-lg border border-slate-200/80 shadow-md">
+                      <div>
+                        <span className="text-[#43465480] text-[11px]">
+                          {activeTask.task_id}
+                        </span>
+                        <h2 className="text-slate-900 text-[14px] font-semibold">
+                          {activeTask.title}
+                        </h2>
+                      </div>
+                      <div className="flex justify-between items-center text-xs text-slate-500">
+                        <span>
+                          {activeTask.due_date
+                            ? new Date(activeTask.due_date).toLocaleDateString()
+                            : ''}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
           ) : (
-            //  Ensure List View also behaves nicely inside this container limit
             <div className="relative pt-6 pb-5 flex-1 min-h-0 overflow-y-auto">
               <TasksListView
                 tasks={listTasks}
@@ -324,12 +449,11 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
         </section>
       )}
 
-      {/* ▲ ▲ ▲ Mobile Layout ▲ ▲ ▲ */}
+      {/* Mobile Layout mobileError*/}
       {isMobile && (
-        <section className="min-h-screen px-4 py-8 relative flex flex-col gap-4">
+        <section className="min-h-screen py-8 relative flex flex-col gap-4">
           <header className="title-style">Active Workboard</header>
-
-          <div className="px-4 flex flex-col gap-4">
+          <div className="flex flex-col gap-4">
             <InputField
               variant="search"
               placeholder="Search Tasks..."
@@ -351,65 +475,54 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
                 className="flex flex-col gap-6 p-4 bg-white rounded-lg shadow-sm cursor-pointer 
                 active:scale-95 transition-transform"
               >
-                <div className="flex flex-col">
-                  <div className="flex justify-between items-start">
-                    <span className="text-xs font-semibold text-[#43465480]">
+                <div className="flex justify-between">
+                  <div>
+                    <span className="text-[#43465480] text-[11px]">
                       {task.task_id}
                     </span>
-                    <span
-                      className={` ${getStatusStyle(task.status)} p-1 rounded-sm`}
-                    >
-                      {task.status.replace(/_/g, ' ')}
-                    </span>
+                    <h2 className="text-neutral-100 text-[18px]">
+                      {task.title}
+                    </h2>
                   </div>
-                  <h4 className="font-medium text-neutral-100 text-[18px] -mt-2">
-                    {task.title}
-                  </h4>
+
+                  <div
+                    className={`${getMobileTasksStatusStyle(task.status)} h-fit p-1 rounded-md text-[11px] font-bold`}
+                  >
+                    {task.status.replace(/_/g, ' ')}
+                  </div>
                 </div>
 
-                <div className="flex justify-between w-full gap-2 items-center">
-                  <div className="flex gap-2 items-center">
-                    {task.assignee.name && (
-                      <span className="flex justify-center items-center bg-[#DAE2FF] rounded-xl w-7 h-7 font-bold text-[11px]">
-                        {getInitials(task.assignee.name)}
-                      </span>
-                    )}
-                    {formatDate(task.due_date) && (
-                      <span className="flex flex-col gap-2">
-                        <span className="uppercase font-bold text-[11px] text-[#434654B2] leading-1">
-                          due date
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-[#DAE2FF] rounded-xl p-1 flex items-center">
+                      {task.assignee.name && (
+                        <span className="font-bold text-[11px] ">
+                          {getInitials(task.assignee.name)}
                         </span>
-                        <span className="text-[12px] leading-4">
-                          {formatDate(task.due_date)}
-                        </span>
+                      )}
+                    </span>
+                    <p className="flex flex-col">
+                      <span className="text-[#434654B2] text-[11px]">
+                        due date
                       </span>
-                    )}
+                      <span className="text-neutral-100 text-[12px]">
+                        {formatDate(task.due_date, 'US')}
+                      </span>
+                    </p>
                   </div>
-                  <p>
-                    <DotsIcon />
-                  </p>
+                  <DotsIcon />
                 </div>
               </div>
             ))}
-
             {mobileLoading && (
               <p className="text-center text-sm py-4 animate-pulse">
                 Loading mobile tasks...
               </p>
             )}
-            {mobileError && (
-              <p className="text-center text-sm text-red-500 py-4">
-                {mobileError}
-              </p>
-            )}
-            {!mobileLoading &&
-              !mobileError &&
-              filteredMobileTasks.length === 0 && (
-                <p className="text-center text-sm italic text-slate-500 py-4">
-                  No tasks found
-                </p>
-              )}
 
+            {mobileError && (
+              <p className="text-center text-sm py-4 animate-pulse">Error</p>
+            )}
             <div ref={mobileObserverTarget} className="h-4 w-full" />
           </div>
         </section>

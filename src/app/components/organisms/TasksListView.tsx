@@ -2,6 +2,7 @@
 'use client';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
 import { formatDate, getInitials, getStatusStyle } from '@/lib/helpers';
+import TaskListSkeleton from '../loadingSkeletons/TaskListSkeleton';
 
 interface TasksListViewProps {
   tasks: ProjectTask[];
@@ -58,7 +59,7 @@ const TasksListView = ({
                   colSpan={6}
                   className="py-8 text-sm animate-pulse text-center"
                 >
-                  Loading tasks...
+                  <TaskListSkeleton />
                 </td>
               </tr>
             ) : error ? (
@@ -91,7 +92,7 @@ const TasksListView = ({
                   </td>
                   <td className="py-5 px-6 whitespace-nowrap">
                     <span
-                      className={`px-2.5 py-1 rounded-md tracking-wide ${getStatusStyle(task.status)}`}
+                      className={`px-2.5 py-1 rounded-md tracking-wide font-bold ${getStatusStyle(task.status)}`}
                     >
                       {task.status.replace(/_/g, ' ')}
                     </span>

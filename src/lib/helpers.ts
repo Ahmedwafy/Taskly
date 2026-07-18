@@ -43,7 +43,7 @@ export const getStatusStyle = (status: string) => {
   }
 };
 
-export const getTasksStatusStyle = (status: string) => {
+export const getTasksStatusDOTsStyle = (status: string) => {
   switch (status) {
     case 'COMPLETED':
     case 'DONE':
@@ -59,10 +59,55 @@ export const getTasksStatusStyle = (status: string) => {
     case 'IN_REVIEW':
     case 'REOPENED':
     case 'READY_FOR_PRODUCTION':
-      return 'bg-[#CDDDFF]';
+      return 'bg-[#94A3B8]';
 
     default: // TO_DO / BACKLOG
-      return 'bg-[#D7E2FF]';
+      return 'bg-[#94A3B8]';
+  }
+};
+export const getTasksStatusStyle = (status: string) => {
+  switch (status) {
+    case 'COMPLETED':
+    case 'DONE':
+      return 'bg-[#82F9BE]';
+
+    case 'IN_PROGRESS':
+      return 'bg-[#0052CC1A] text-primary'; // #0052CC
+
+    case 'BLOCKED':
+      return 'bg-[#FFDAD6] text-[#93000A]';
+
+    case 'READY_FOR_QA':
+    case 'IN_REVIEW':
+    case 'REOPENED':
+    case 'READY_FOR_PRODUCTION':
+      return 'bg-[#D7E2FF] text-neutral-100';
+
+    default: // TO_DO / BACKLOG
+      return 'bg-[#D7E2FF] text-neutral-100';
+  }
+};
+export const getMobileTasksStatusStyle = (status: string) => {
+  switch (status) {
+    case 'COMPLETED':
+    case 'DONE':
+      return 'bg-[#82F9BE] text-[#002113]';
+
+    case 'IN_PROGRESS':
+      return 'bg-[#CDDDFF] text-[#374763]';
+
+    case 'BLOCKED':
+    case 'URGENT':
+      return 'bg-[#FFDAD6] text-[#93000A]';
+
+    case 'READY_FOR_QA':
+    case 'IN_REVIEW':
+    case 'REOPENED':
+    case 'READY_FOR_PRODUCTION':
+      return 'bg-[#CDDDFF] text-[#51617E]';
+
+    default: // TO_DO / BACKLOG
+      return 'bg-[#D7E2FF] text-[#434654]';
   }
 };
 

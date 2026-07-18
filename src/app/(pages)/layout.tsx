@@ -4,6 +4,7 @@ import MobileInterface from '../components/organisms/MobileInterface';
 import DesktopInterface from '../components/organisms/DesktopInterface';
 import { getAuthCookies } from '@/lib/auth';
 import { fetchUserData } from '@/app/queries/user'; // Clean Import!
+import ResponsiveLayout from '../components/ResponsiveLayout';
 
 export default async function Interface_Layout({
   children,
@@ -30,16 +31,11 @@ export default async function Interface_Layout({
   }
 
   return (
-    <>
-      {/* ========= Desktop View [ Sidebar + Header ] =========*/}
-      <div className="hidden sm:block h-screen">
+    <ResponsiveLayout
+      mobile={<MobileInterface userData={userData}>{children}</MobileInterface>}
+      desktop={
         <DesktopInterface userData={userData}>{children}</DesktopInterface>
-      </div>
-
-      {/* ========= Mobile View  [ Sidebar + Header ] ========= */}
-      <div className="sm:hidden h-screen">
-        <MobileInterface userData={userData}>{children}</MobileInterface>
-      </div>
-    </>
+      }
+    />
   );
 }

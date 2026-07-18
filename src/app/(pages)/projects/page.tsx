@@ -1,4 +1,4 @@
-// src > app > (pages) > projects > page.tsx
+// src > app > (pages) > projects > page.tsx [no layout here]
 import EmptyState from '@/app/components/pages/EmptyState';
 import PageHeader from '@/app/components/molecules/PageHeader';
 import ProjectsGrid from '@/app/components/pages/ProjectsGrid';

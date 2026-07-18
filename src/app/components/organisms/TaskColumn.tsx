@@ -1,4 +1,4 @@
-// src > app > components > organisms > TaskColumn.tsx
+// src > app > component > organisms > TaskColumn.tsx
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
@@ -6,8 +6,9 @@ import AddTaskIcon from '@/../public/svgIcons/AddTaskIcon.svg';
 import AddTaskIcon2 from '@/../public/svgIcons/AddTaskIcon2.svg';
 import TaskCard from '../molecules/TaskCard';
 import Link from 'next/link';
-import { getStatusStyle, getTasksStatusStyle } from '@/lib/helpers';
+import { getTasksStatusDOTsStyle, getTasksStatusStyle } from '@/lib/helpers';
 import TaskCardSkeleton from '../loadingSkeletons/TaskCardSkeleton';
+import { useDroppable } from '@dnd-kit/core';
 
 interface TaskColumnProps {
   projectId: string;
@@ -24,21 +25,64 @@ const TaskColumn = ({
   status,
   onTaskClick,
 }: TaskColumnProps) => {
-  // --- Lazy Loading States ---
   const [hasIntersected, setHasIntersected] = useState<boolean>(false);
-
-  // --- Task Pagination States ---
   const [tasks, setTasks] = useState<ProjectTask[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [offset, setOffset] = useState<number>(0);
   const [hasMore, setMore] = useState<boolean>(true);
 
-  // --- Refs ---
-  const columnRef = useRef<HTMLDivElement | null>(null); // To observe horizontal entry
-  const observerTarget = useRef<HTMLDivElement | null>(null); // To observe vertical scroll (infinite scroll)
+  const columnRef = useRef<HTMLDivElement | null>(null);
+  const observerTarget = useRef<HTMLDivElement | null>(null);
 
-  // 1. HORIZONTAL SCROLL OBSERVER (Lazy load column on scroll)
+  const { setNodeRef: setDroppableNodeRef, isOver } = useDroppable({
+    id: status,
+  });
+
+  const setMergedRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      columnRef.current = node;
+      setDroppableNodeRef(node);
+    },
+    [setDroppableNodeRef],
+  );
+
+  // Sync state when cards move across columns
+  useEffect(() => {
+    const handleTaskMoved = (e: Event) => {
+      const customEvent = e as CustomEvent<{
+        taskId: string;
+        fromStatus: string;
+        toStatus: string;
+        taskData?: ProjectTask;
+      }>;
+      const { taskId, fromStatus, toStatus, taskData } = customEvent.detail;
+
+      if (fromStatus === status && toStatus !== status) {
+        setTasks((prev) => prev.filter((t) => t.id !== taskId));
+      }
+
+      if (toStatus === status && fromStatus !== status) {
+        setTasks((prev) => {
+          if (prev.some((t) => t.id === taskId)) return prev;
+          const updatedTask = taskData
+            ? { ...taskData, status }
+            : ({
+                id: taskId,
+                status,
+                title: 'Loading...',
+              } as unknown as ProjectTask);
+          return [updatedTask, ...prev];
+        });
+      }
+    };
+
+    window.addEventListener('dnd-task-status-updated', handleTaskMoved);
+    return () =>
+      window.removeEventListener('dnd-task-status-updated', handleTaskMoved);
+  }, [status]);
+
+  // Horizontal Observer Setup
   useEffect(() => {
     const currentColumn = columnRef.current;
     if (!currentColumn) return;
@@ -48,33 +92,24 @@ const TaskColumn = ({
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setHasIntersected(true);
-            // Once visible, stop observing this column entirely
             horizontalObserver.unobserve(entry.target);
           }
         });
       },
-      {
-        // Adjust rootMargin horizontally to load columns slightly before they slide into view (e.g., 200px ahead)
-        rootMargin: '0px 200px 0px 200px',
-        threshold: 0.01,
-      },
+      { rootMargin: '0px 200px 0px 200px', threshold: 0.01 },
     );
 
     horizontalObserver.observe(currentColumn);
-
     return () => {
-      if (currentColumn) {
-        horizontalObserver.unobserve(currentColumn);
-      }
+      if (currentColumn) horizontalObserver.unobserve(currentColumn);
     };
   }, []);
+
   const fetchColumnTasks = useCallback(
     async (currentOffset: number, isInitial = false) => {
-      if (!hasIntersected) return;
       if (loading || (!isInitial && !hasMore)) return;
 
       try {
-        await Promise.resolve();
         setLoading(true);
         setError(null);
 
@@ -83,7 +118,6 @@ const TaskColumn = ({
         );
         const json = await res.json();
 
-        // If we catch a 416 or out-of-range error gracefully, treat it as "no more tasks"
         if (
           res.status === 416 ||
           (res.status === 500 && json.error?.includes('range'))
@@ -95,8 +129,6 @@ const TaskColumn = ({
         if (!res.ok) throw new Error(json.error || 'Failed to fetch');
 
         setTasks((prev) => (isInitial ? json.data : [...prev, ...json.data]));
-
-        // Verify if we have actually loaded all items in the database
         const loadedCount = isInitial
           ? json.data.length
           : tasks.length + json.data.length;
@@ -107,27 +139,23 @@ const TaskColumn = ({
         setLoading(false);
       }
     },
-    [projectId, status, loading, hasMore, hasIntersected, tasks.length],
+    [projectId, status, loading, hasMore, tasks.length],
   );
 
-  // Trigger initial fetch ONLY when the column becomes horizontally visible
+  // Run initial call ONLY once when column is horizontally scrolled into view
   useEffect(() => {
     if (hasIntersected) {
-      setTasks([]);
-      setOffset(0);
-      setMore(true);
       fetchColumnTasks(0, true);
     }
-  }, [projectId, status, hasIntersected]);
+  }, [hasIntersected]);
 
-  // 3. VERTICAL INFINITE SCROLL OBSERVER
+  // Vertical Infinite Scroll Setup
   useEffect(() => {
-    // Only set up vertical infinite scroll detector if the column has loaded/intersected
-    if (!hasIntersected) return;
+    if (!hasIntersected || !hasMore || loading) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
+        if (entries[0].isIntersecting) {
           const nextOffset = offset + COLUMN_LIMIT;
           setOffset(nextOffset);
           fetchColumnTasks(nextOffset);
@@ -137,64 +165,53 @@ const TaskColumn = ({
     );
 
     const target = observerTarget.current;
-    if (target) {
-      observer.observe(target);
-    }
+    if (target) observer.observe(target);
 
     return () => {
-      if (target) {
-        observer.unobserve(target);
-      }
+      if (target) observer.unobserve(target);
     };
   }, [hasMore, loading, offset, fetchColumnTasks, hasIntersected]);
 
-  // border border-slate-100 sm:border-l-[6px] sm:border-l-emerald-800
-
   return (
     <div
-      ref={columnRef}
-      className="p-4 flex flex-col h-full bg-slate-50/50 rounded-xl border border-slate-100 transition-opacity duration-300 min-h-100"
-      style={{ opacity: hasIntersected ? 1 : 0.4 }} // Visual feedback showing un-fetched columns are "sleeping"
+      ref={setMergedRef}
+      className={`p-4 flex flex-col h-full rounded-xl border transition-all duration-300 min-h-125 ${
+        isOver
+          ? 'bg-slate-100/90 border-primary/30 border-dashed scale-[1.01]'
+          : 'bg-slate-50/50 border-slate-100'
+      }`}
+      style={{ opacity: hasIntersected ? 1 : 0.4 }}
     >
-      {/* Column Header */}
-      <div className="flex justify-between items-center mb-4 pb-3">
-        <div className="flex items-center gap-2">
+      <div className="flex justify-between items-center pb-3">
+        <div className="flex items-center gap-2 justify-center">
           <span
-            className={`${getTasksStatusStyle(status)} h-2 w-2 rounded-full`}
+            className={`${getTasksStatusDOTsStyle(status)} h-2 w-2 rounded-full`}
           ></span>
           <h3 className="font-semibold text-sm tracking-wide uppercase text-[#64748B]">
             {title}
           </h3>
+
           <span
-            className={`${getTasksStatusStyle(status)} 
-            ${status === 'IN_PROGRESS' && 'text-primary bg-[#E0E8FF]!'} 
-            ${status === 'BLOCKED' && 'text-[#93000A] bg-[#FFDAD6]'} 
-            text-xs px-2 py-0.5 rounded-md font-medium`}
+            className={`${getTasksStatusStyle(status)} font-bold text-[10px] px-1.5 py-1 rounded-sm`}
           >
             {hasIntersected ? tasks.length : '—'}
           </span>
         </div>
-
-        <Link href={`/projects/${projectId}/tasks/new?status=${status}`}>
-          <button
-            className="p-1 rounded-md transition-colors"
-            title={`Add task to ${title}`}
-          >
-            <AddTaskIcon />
-          </button>
+        <Link href={`/projects/${projectId}/tasks/new`}>
+          <AddTaskIcon />
         </Link>
       </div>
 
-      <Link href={`/projects/${projectId}/tasks/new?status=${status}`}>
-        <button className="flex gap-4 border-2 border-dashed border-[#C3C6D64D] w-full rounded-md py-4 mb-4 text-center items-center justify-center text-[#64748B] hover:bg-white transition-colors">
-          <span>
-            <AddTaskIcon2 />
-          </span>
-          <span>ADD NEW TASK</span>
-        </button>
+      <Link href={`/projects/${projectId}/tasks/new`}>
+        <div
+          className="border-2 border-dashed border-[#C3C6D64D] flex justify-center items-center 
+        gap-4 h-13 rounded-md text-[#43465499] font-bold mb-6"
+        >
+          <AddTaskIcon2 />
+          <span className="uppercase tracking-wider text-sm">add new task</span>
+        </div>
       </Link>
 
-      {/* Task List container with internal overflow */}
       <div className="flex-1 overflow-y-auto max-h-[65vh] pr-1 flex flex-col gap-3">
         {!hasIntersected ? (
           <div className="flex flex-col items-center justify-center py-10 text-slate-400 text-xs">
@@ -202,21 +219,23 @@ const TaskColumn = ({
           </div>
         ) : (
           <>
-            <TaskCard
-              loading={loading && tasks.length === 0}
-              error={error}
-              tasks={tasks}
-              onTaskClick={onTaskClick}
-            />
-
-            {/* The Infinite Scroll Detector Element */}
+            {/* Inject data-task into the card elements wrapper so parent handleDragStart can parse details for overlay */}
+            {tasks.map((task) => (
+              <div
+                key={task.id}
+                id={`task-card-${task.id}`}
+                data-task={JSON.stringify(task)}
+              >
+                <TaskCard
+                  loading={false}
+                  error={error}
+                  tasks={[task]}
+                  onTaskClick={onTaskClick}
+                />
+              </div>
+            ))}
             <div ref={observerTarget} className="h-4 w-full shrink-0" />
-
-            {loading && tasks.length > 0 && (
-              <p className="text-center text-xs py-2 text-slate-400 animate-pulse">
-                <TaskCardSkeleton />
-              </p>
-            )}
+            {loading && <TaskCardSkeleton />}
           </>
         )}
       </div>
