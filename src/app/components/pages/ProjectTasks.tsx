@@ -12,7 +12,6 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import TaskDetailsPopUpModal from '../organisms/TaskDetailsPopUpModal';
 import InputField from '../atoms/input';
-import PLUS from '@/../public/svgIcons/Plus.svg';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
 import { toast } from 'sonner';
 import DotsIcon from '@/../public/svgIcons/DotsIcon.svg';
@@ -55,17 +54,25 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // === The View Selector ===
   const currentValue =
     searchParams.get('view') === 'list' ? 'LIST_VIEW' : 'BOARD_VIEW';
 
-  // Track the active task being dragged via DOM attribute lookup
   const [activeTask, setActiveTask] = useState<ProjectTask | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>('');
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
 
-  // === Configure Sensors ===
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -74,7 +81,6 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
     }),
   );
 
-  // === The Screen Size Check ===
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 640);
@@ -137,12 +143,11 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
       }
     },
     [projectId],
-    // [projectId, currentValue],
   );
+
   useEffect(() => {
     const activeSignal = { current: true };
 
-    // ONLY fetch if on desktop layout
     if (isMobile === false && currentValue === 'LIST_VIEW' && projectId) {
       fetchListTasks(listPage, activeSignal);
     }
@@ -151,6 +156,16 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
       activeSignal.current = false;
     };
   }, [currentValue, projectId, listPage, fetchListTasks, isMobile]);
+
+  // Client-side filtering for Desktop List View
+  const filteredListTasks = useMemo(() => {
+    if (!searchQuery.trim()) return listTasks;
+    return listTasks.filter(
+      (task) =>
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.task_id.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+  }, [listTasks, searchQuery]);
 
   // ──────────────────────────────────────── End List View ───────────────────────────────────────────────────
 
@@ -196,7 +211,6 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
   );
 
   useEffect(() => {
-    // ONLY run if to be on a mobile layout
     if (isMobile !== true || !projectId) return;
 
     const activeSignal = { current: true };
@@ -214,7 +228,6 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
 
     return () => {
       activeSignal.current = false;
-      // Reset mobile fetch lock when switching away from mobile
       if (fetchingMobileRef.current) {
         fetchingMobileRef.current = null;
       }
@@ -277,7 +290,6 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
   // ──────────────────────────────────────── Start Drag & Drop ───────────────────────────────────────────────
   const handleDragStart = (event: DragStartEvent) => {
     const taskId = event.active.id as string;
-    // Find task configuration data directly from DOM parameters
     const taskCardElement = document.getElementById(`task-card-${taskId}`);
     if (taskCardElement) {
       const taskData = JSON.parse(
@@ -304,7 +316,6 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
     const originalStatus = activeTaskData.status;
     if (originalStatus === newStatus) return;
 
-    // Dispatch custom event to notify target column states instantly
     const dndEvent = new CustomEvent('dnd-task-status-updated', {
       detail: {
         taskId,
@@ -332,7 +343,6 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
 
       toast.success(`Task status updated to ${newStatus.replace(/_/g, ' ')}`);
     } catch (error) {
-      // Rollback columns custom state if updating fails on database layers
       const rollbackEvent = new CustomEvent('dnd-task-status-updated', {
         detail: {
           taskId,
@@ -364,6 +374,8 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
             buttonName="Create Task"
             currentValue={currentValue}
             handleViewChange={handleViewChange}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
           />
 
           {currentValue === 'BOARD_VIEW' ? (
@@ -380,11 +392,14 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
                       className="w-[320px] shrink-0 flex flex-col"
                       style={{ minWidth: '320px' }}
                     >
+                      {/* Pass search query prop down to columns */}
                       <TaskColumn
                         projectId={projectId}
                         title={col.title}
                         status={col.status}
                         onTaskClick={setSelectedTaskId}
+                        searchQuery={debouncedSearchQuery}
+                        // searchQuery={searchQuery}
                       />
                     </div>
                   ))}
@@ -417,8 +432,9 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
             </DndContext>
           ) : (
             <div className="relative pt-6 pb-5 flex-1 min-h-0 overflow-y-auto">
+              {/* Swapped raw listTasks with filteredListTasks */}
               <TasksListView
-                tasks={listTasks}
+                tasks={filteredListTasks}
                 loading={listLoading}
                 error={listError}
                 total={listTotal}
@@ -449,7 +465,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
         </section>
       )}
 
-      {/* Mobile Layout mobileError*/}
+      {/* Mobile Layout */}
       {isMobile && (
         <section className="min-h-screen py-8 relative flex flex-col gap-4">
           <header className="title-style">Active Workboard</header>
@@ -462,7 +478,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
             />
             <Link href={`/projects/${projectId}/tasks/new`} className="w-full">
               <Button name="Create Task" className="w-full">
-                <PLUS />
+                <Plus />
               </Button>
             </Link>
           </div>

@@ -28,6 +28,8 @@ interface PageHeaderTypes {
   searchValue?: string;
   onSearchChange?: (val: string) => void;
   isSearching?: boolean;
+  searchQuery?: string;
+  setSearchQuery?: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const PageHeader = ({
@@ -44,6 +46,8 @@ const PageHeader = ({
   searchValue,
   onSearchChange,
   isSearching,
+  searchQuery,
+  setSearchQuery,
 }: PageHeaderTypes) => {
   const isProjectEpics = title === 'Project Epics';
   const isProjectTasks = title === 'Active Workboard';
@@ -113,7 +117,6 @@ const PageHeader = ({
   if (isProjectTasks) {
     return (
       <header className={`hidden md:flex justify-between ${className}`}>
-        {/* --- Header --- */}
         <div className="w-1/2 h-fit pt-2 pl-4 flex flex-col gap-2 ">
           <div className="flex gap-4">
             <Breadcrumb projectName={projectName} />
@@ -125,13 +128,19 @@ const PageHeader = ({
         <div className="flex gap-2 items-end justify-end w-full">
           <div className="w-1/2 relative">
             <InputField
-              epicStyle="h-15"
-              placeholder="Search Tasks..."
               variant="search"
+              placeholder="Search Tasks..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery?.(e.target.value)}
             />
+            {isSearching && (
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-400 animate-pulse">
+                Searching...
+              </span>
+            )}
           </div>
 
-          <div className="h-15 relative flex items-center bg-white border border-gray-200 rounded-md shadow-sm  hover:bg-gray-50 transition">
+          <div className="h-15 relative flex items-center bg-white border border-gray-200 rounded-md shadow-sm hover:bg-gray-50 transition">
             <TasksViewSelection
               currentValue={currentValue || ''}
               handleViewChange={handleViewChange ? handleViewChange : () => {}}

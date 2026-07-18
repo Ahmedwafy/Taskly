@@ -65,8 +65,7 @@ const InputField = forwardRef<
     const errorId = error ? 'error' : undefined;
     const maxLen = maxLength ?? 500;
 
-    const displayedValue =
-      value !== undefined && value !== null ? String(value) : internalValue;
+    const displayedValue = String(value ?? internalValue ?? '');
 
     return (
       <div className={className}>

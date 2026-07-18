@@ -1,6 +1,6 @@
 // src > app > component > organisms > TaskColumn.tsx
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
 import AddTaskIcon from '@/../public/svgIcons/AddTaskIcon.svg';
 import AddTaskIcon2 from '@/../public/svgIcons/AddTaskIcon2.svg';
@@ -15,6 +15,7 @@ interface TaskColumnProps {
   title: string;
   status: string;
   onTaskClick: (taskId: string) => void;
+  searchQuery: string;
 }
 
 const COLUMN_LIMIT = 10;
@@ -24,6 +25,7 @@ const TaskColumn = ({
   title,
   status,
   onTaskClick,
+  searchQuery,
 }: TaskColumnProps) => {
   const [hasIntersected, setHasIntersected] = useState<boolean>(false);
   const [tasks, setTasks] = useState<ProjectTask[]>([]);
@@ -46,6 +48,16 @@ const TaskColumn = ({
     },
     [setDroppableNodeRef],
   );
+
+  // Client-side task filtering based on title or task code
+  const filteredTasks = useMemo(() => {
+    if (!searchQuery.trim()) return tasks;
+    return tasks.filter(
+      (task) =>
+        task.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.task_id?.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+  }, [tasks, searchQuery]);
 
   // Sync state when cards move across columns
   useEffect(() => {
@@ -194,7 +206,7 @@ const TaskColumn = ({
           <span
             className={`${getTasksStatusStyle(status)} font-bold text-[10px] px-1.5 py-1 rounded-sm`}
           >
-            {hasIntersected ? tasks.length : '—'}
+            {hasIntersected ? filteredTasks.length : '—'}
           </span>
         </div>
         <Link href={`/projects/${projectId}/tasks/new`}>
@@ -219,8 +231,8 @@ const TaskColumn = ({
           </div>
         ) : (
           <>
-            {/* Inject data-task into the card elements wrapper so parent handleDragStart can parse details for overlay */}
-            {tasks.map((task) => (
+            {/* Map over filteredTasks instead of tasks raw state array */}
+            {filteredTasks.map((task) => (
               <div
                 key={task.id}
                 id={`task-card-${task.id}`}

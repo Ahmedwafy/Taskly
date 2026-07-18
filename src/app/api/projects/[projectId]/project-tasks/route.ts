@@ -1,4 +1,7 @@
 // src > app > api > projects > [projectId] > project-tasks > route.ts
+// --------------------------
+// GET Proiect Tasks Route Handler
+// --------------------------
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthCookies } from '@/lib/auth';
 import { fetchProjectTasks } from '@/app/queries/projects';
@@ -24,12 +27,15 @@ export async function GET(
       ? Number(searchParams.get('offset'))
       : undefined;
 
+    const title = searchParams.get('title') || undefined;
+
     const { data, total } = await fetchProjectTasks({
       projectId,
       taskStatus,
       accessToken,
       limit,
       offset,
+      title,
     });
 
     // Expose both the paginated list and the exact total count
