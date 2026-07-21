@@ -83,7 +83,7 @@ body {
     --text-2-letter-spacing: 0px;
     --text-2-color: #434654;
 
-    /* ================================================================================== */
+    /* ======================================= Desk Top =========================================== */
 
     /* Headline */
     --headline-lg-size: 32px;
@@ -110,6 +110,9 @@ body {
     --list-item-size: 14px;
     --list-item-weight: 500;
     --list-item-line-height: 20px;
+
+    /* ======================================= Mobile ==================================== */
+    --mob-headline-lg-size: 32px;
   }
 }
 
@@ -241,6 +244,12 @@ body {
     line-height: var(--list-item-line-height);
   }
   /* Global Typography Utilities -- End -- */
+
+  .mob-title {
+    font-size: var(--mob-headline-lg-size);
+    font-weight: var(--headline-lg-weight);
+    line-height: var(--headline-lg-line-height);
+  }
 }
 
 /* Hide Edge password reveal icon */

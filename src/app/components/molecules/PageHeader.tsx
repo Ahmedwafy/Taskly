@@ -128,6 +128,7 @@ const PageHeader = ({
         <div className="flex gap-2 items-end justify-end w-full">
           <div className="w-1/2 relative">
             <InputField
+              tasksStyle="h-15"
               variant="search"
               placeholder="Search Tasks..."
               value={searchQuery}

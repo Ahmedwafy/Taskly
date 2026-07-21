@@ -1,4 +1,3 @@
-// src > app > component > organisms > TaskColumn.tsx
 'use client';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
@@ -32,7 +31,12 @@ const TaskColumn = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [offset, setOffset] = useState<number>(0);
-  const [hasMore, setMore] = useState<boolean>(true);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [initialLoaded, setInitialLoaded] = useState<boolean>(false);
+
+  // Refs for tracking async guard states without triggering re-renders
+  const isFetchingRef = useRef<boolean>(false);
+  const hasMoreRef = useRef<boolean>(true);
 
   const columnRef = useRef<HTMLDivElement | null>(null);
   const observerTarget = useRef<HTMLDivElement | null>(null);
@@ -48,6 +52,11 @@ const TaskColumn = ({
     },
     [setDroppableNodeRef],
   );
+
+  // Sync ref with state
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
 
   // Client-side task filtering based on title or task code
   const filteredTasks = useMemo(() => {
@@ -117,60 +126,81 @@ const TaskColumn = ({
     };
   }, []);
 
+  // Stable fetch function guarded with isFetchingRef
   const fetchColumnTasks = useCallback(
     async (currentOffset: number, isInitial = false) => {
-      if (loading || (!isInitial && !hasMore)) return;
+      if (isFetchingRef.current || (!isInitial && !hasMoreRef.current)) return;
 
       try {
+        isFetchingRef.current = true;
         setLoading(true);
         setError(null);
 
         const res = await fetch(
           `/api/projects/${projectId}/project-tasks?status=${status}&limit=${COLUMN_LIMIT}&offset=${currentOffset}`,
         );
-        const json = await res.json();
+
+        const response = await res.json();
 
         if (
-          res.status === 416 ||
-          (res.status === 500 && json.error?.includes('range'))
+          response.status === 416 ||
+          (response.status === 500 && response.error?.includes('range'))
         ) {
-          setMore(false);
+          setHasMore(false);
+          hasMoreRef.current = false;
+          if (isInitial) setInitialLoaded(true);
           return;
         }
 
-        if (!res.ok) throw new Error(json.error || 'Failed to fetch');
+        if (!res.ok) throw new Error(response.error || 'Failed to fetch');
 
-        setTasks((prev) => (isInitial ? json.data : [...prev, ...json.data]));
-        const loadedCount = isInitial
-          ? json.data.length
-          : tasks.length + json.data.length;
-        setMore(loadedCount < json.total && json.data.length === COLUMN_LIMIT);
+        const incomingData = response.data || [];
+        setTasks((prev) =>
+          isInitial ? incomingData : [...prev, ...incomingData],
+        );
+
+        const loadedCount = currentOffset + incomingData.length;
+        const moreAvailable =
+          loadedCount < response.total && incomingData.length === COLUMN_LIMIT;
+
+        setHasMore(moreAvailable);
+        hasMoreRef.current = moreAvailable;
+
+        if (isInitial) setInitialLoaded(true);
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : 'An error occurred');
+        if (isInitial) setInitialLoaded(true);
       } finally {
         setLoading(false);
+        isFetchingRef.current = false;
       }
     },
-    [projectId, status, loading, hasMore, tasks.length],
+    [projectId, status], // 🟢 Dependencies stay clean and stable!
   );
 
-  // Run initial call ONLY once when column is horizontally scrolled into view
+  // Initial horizontal scroll trigger
   useEffect(() => {
     if (hasIntersected) {
       fetchColumnTasks(0, true);
     }
-  }, [hasIntersected]);
+  }, [hasIntersected, fetchColumnTasks]);
 
-  // Vertical Infinite Scroll Setup
+  // Vertical Infinite Scroll Observer
   useEffect(() => {
-    if (!hasIntersected || !hasMore || loading) return;
+    if (!hasIntersected || !initialLoaded || !hasMore) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          const nextOffset = offset + COLUMN_LIMIT;
-          setOffset(nextOffset);
-          fetchColumnTasks(nextOffset);
+        if (
+          entries[0].isIntersecting &&
+          !isFetchingRef.current &&
+          hasMoreRef.current
+        ) {
+          setOffset((prevOffset) => {
+            const nextOffset = prevOffset + COLUMN_LIMIT;
+            fetchColumnTasks(nextOffset);
+            return nextOffset;
+          });
         }
       },
       { threshold: 0.1 },
@@ -182,14 +212,14 @@ const TaskColumn = ({
     return () => {
       if (target) observer.unobserve(target);
     };
-  }, [hasMore, loading, offset, fetchColumnTasks, hasIntersected]);
+  }, [hasIntersected, initialLoaded, hasMore, fetchColumnTasks]);
 
   return (
     <div
       ref={setMergedRef}
-      className={`p-4 flex flex-col h-full rounded-xl border transition-all duration-300 min-h-125 ${
+      className={`p-4 flex flex-col h-full rounded-xl border transition-all duration-300 ${
         isOver
-          ? 'bg-slate-100/90 border-primary/30 border-dashed scale-[1.01]'
+          ? 'bg-slate-100/90 border-primary/30 border-dashed translate-2'
           : 'bg-slate-50/50 border-slate-100'
       }`}
       style={{ opacity: hasIntersected ? 1 : 0.4 }}
@@ -231,7 +261,6 @@ const TaskColumn = ({
           </div>
         ) : (
           <>
-            {/* Map over filteredTasks instead of tasks raw state array */}
             {filteredTasks.map((task) => (
               <div
                 key={task.id}
@@ -246,7 +275,10 @@ const TaskColumn = ({
                 />
               </div>
             ))}
-            <div ref={observerTarget} className="h-4 w-full shrink-0" />
+
+            {hasMore && (
+              <div ref={observerTarget} className="h-4 w-full shrink-0" />
+            )}
             {loading && <TaskCardSkeleton />}
           </>
         )}

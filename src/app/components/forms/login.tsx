@@ -11,12 +11,14 @@ import { loginUser } from '@/features/auth/authSlice';
 import Link from 'next/link';
 import Button from '@/app/components/atoms/Button';
 import InputField from '../atoms/input';
+import { useIsMobile } from '@/app/hooks/useIsMobile';
 
 const LogInForm = () => {
   const router = useRouter();
   const [authError, setAuthError] = useState<string>('');
   const [rememberMe, setRememberMe] = useState(false);
   const dispatch = useAppDispatch();
+  const isMobile = useIsMobile();
 
   const {
     control,
@@ -66,33 +68,39 @@ const LogInForm = () => {
     return true;
   };
 
-  return (
-    <div className="flex flex-col gap-6 max-w-md mx-auto my-auto px-8 py-10 rounded-lg shadow-lg bg-background mt-16">
-      <div className="flex flex-col text-center gap-2 items-center justify-center">
-        <h2 className="headline-lg">Welcome Back</h2>
-        <p className="body-md">
-          Please enter your details to access your workspace
-        </p>
-      </div>
+  if (isMobile === null) return null;
 
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        {/* If will not use <Controller /> ... The input from inside MUST use forwardRef */}
-        {/* This name 'email' comes from >>> interface SignInFormData {...} */}
-        <InputField
-          {...register('email', {
-            required: 'Email is required',
-            pattern: {
-              value: emailRegex,
-              message: 'Enter a valid email address.',
-            },
-          })}
-          label="EMAIL"
-          type="email"
-          placeholder="Enter your Email"
-          error={errors.email?.message}
-        />
-        {/* Or */}
-        {/* <Controller
+  return (
+    <>
+      {/* ●──────────────────────────● Desktop Layout ●──────────────────────────● */}
+      {!isMobile && (
+        <div className="flex flex-col gap-6 max-w-120 h-146.5 mx-auto my-auto px-8 py-10 rounded-lg shadow-lg bg-background mt-16">
+          <div className="flex flex-col text-center gap-2 items-center justify-center">
+            <h2 className="headline-lg">Welcome Back</h2>
+            <p className="body-md">
+              Please enter your details to access your workspace
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit(onSubmit)} noValidate>
+            {/* If will not use <Controller /> ... The input from inside MUST use forwardRef */}
+            {/* This name 'email' comes from >>> interface SignInFormData {...} */}
+            <InputField
+              {...register('email', {
+                required: 'Email is required',
+                pattern: {
+                  value: emailRegex,
+                  message: 'Enter a valid email address.',
+                },
+              })}
+              label="EMAIL"
+              type="email"
+              placeholder="Enter your Email"
+              error={errors.email?.message}
+              loginStyle="pb-6"
+            />
+            {/* Or */}
+            {/* <Controller
           control={control}
           name="email"
           rules={{
@@ -113,19 +121,20 @@ const LogInForm = () => {
           )}
         /> */}
 
-        <InputField
-          {...register('password', {
-            validate: passwordValidator,
-          })}
-          variant="password"
-          label="PASSWORD"
-          type="password"
-          placeholder="Enter your password"
-          description="Must be at least 8 characters long."
-          error={errors.password?.message}
-        />
-        {/* Or */}
-        {/* <Controller
+            <InputField
+              {...register('password', {
+                validate: passwordValidator,
+              })}
+              variant="password"
+              label="PASSWORD"
+              type="password"
+              placeholder="Enter your password"
+              description="Must be at least 8 characters long."
+              error={errors.password?.message}
+              loginStyle="pb-6"
+            />
+            {/* Or */}
+            {/* <Controller
           control={control}
           name="password"
           rules={{ validate: passwordValidator }}
@@ -141,49 +150,146 @@ const LogInForm = () => {
           )}
         /> */}
 
-        {authError ? (
-          <p className="text-sm text-red-500 py-2">{authError}</p>
-        ) : null}
+            {authError ? (
+              <p className="text-sm text-red-500 py-2">{authError}</p>
+            ) : null}
 
-        <div className="flex justify-between py-6">
-          <div>
-            <input
-              type="checkbox"
-              id="rememberMe"
-              name="rememberMe"
-              className="mr-2"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
+            <div className="flex justify-between py-6">
+              <div>
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  name="rememberMe"
+                  className="mr-2"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <label htmlFor="rememberMe" className="text-sm text-[#4F5F7B]">
+                  Remember Me
+                </label>
+              </div>
+              <div>
+                <Link href="/" className="font-smeibold">
+                  <span className="text-(--primary)">Forget Password ?</span>
+                </Link>
+              </div>
+            </div>
+
+            <Button
+              name={isSubmitting ? 'Logging in...' : 'Log In'}
+              type="submit"
+              variant="primary"
             />
-            <label htmlFor="rememberMe" className="text-sm text-[#4F5F7B]">
-              Remember Me
-            </label>
-          </div>
-          <div>
-            <Link href="/" className="font-smeibold">
-              <span className="text-(--primary)">Forget Password ?</span>
-            </Link>
-          </div>
+            <br />
+            <hr className="text-gray-200" />
+
+            <div className="mx-auto w-full flex gap-2 justify-center pt-8 pb-4">
+              <span className="text-neutral-200">
+                Don&apos;t have an account?
+              </span>
+              <a href="/sign-up" className="text-(--primary) hover:underline">
+                <span className="font-semibold">Sign Up</span>
+              </a>
+            </div>
+          </form>
+
+          <DevTool control={control} />
         </div>
+      )}
 
-        <Button
-          name={isSubmitting ? 'Logging in...' : 'Log In'}
-          type="submit"
-          variant="primary"
-        />
-        <br />
-        <hr className="text-gray-200" />
+      {/* ●──────────────────────────● Mobile Layout ●──────────────────────────● */}
+      {isMobile && (
+        <div className="flex flex-col gap-6 max-w-120 mx-auto my-auto px-8 py-10 rounded-lg bg-background mt-16">
+          <div className="flex flex-col text-center gap-2 items-center justify-center">
+            <h2 className="headline-lg">Welcome Back</h2>
+            <p className="body-md">
+              Please enter your details to access your workspace
+            </p>
+          </div>
 
-        <div className="mx-auto w-full flex gap-2 justify-center pt-8 pb-4">
-          <span className="text-neutral-200">Don&apos;t have an account?</span>
-          <a href="/sign-up" className="text-(--primary) hover:underline">
-            <span className="font-semibold">Sign Up</span>
-          </a>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            noValidate
+            className="relative"
+          >
+            {/* If will not use <Controller /> ... The input from inside MUST use forwardRef */}
+            {/* This name 'email' comes from >>> interface SignInFormData {...} */}
+            <InputField
+              {...register('email', {
+                required: 'Email is required',
+                pattern: {
+                  value: emailRegex,
+                  message: 'Enter a valid email address.',
+                },
+              })}
+              label="EMAIL"
+              type="email"
+              placeholder="Enter your Email"
+              error={errors.email?.message}
+              loginStyle="pb-6"
+            />
+
+            <div className="mb-1">
+              <Link href="/" className="font-bold absolute right-0 text-sm">
+                <span className="text-(--primary)">Forget ?</span>
+              </Link>
+            </div>
+
+            <InputField
+              {...register('password', {
+                validate: passwordValidator,
+              })}
+              variant="password"
+              label="PASSWORD"
+              type="password"
+              placeholder="Enter your password"
+              description="Must be at least 8 characters long."
+              error={errors.password?.message}
+              loginStyle="pb-6"
+            />
+
+            {authError ? (
+              <p className="text-sm text-red-500 py-2">{authError}</p>
+            ) : null}
+
+            <div className="flex justify-between py-6">
+              <div>
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  name="rememberMe"
+                  className="mr-2"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <label htmlFor="rememberMe" className="text-sm text-[#4F5F7B]">
+                  Remember Me
+                </label>
+              </div>
+            </div>
+
+            <Button
+              name={isSubmitting ? 'Logging in...' : 'Log In'}
+              type="submit"
+              variant="primary"
+            />
+            <br />
+            <hr className="text-gray-200" />
+
+            <div className="mx-auto w-full flex gap-2 justify-center pt-40 pb-4">
+              <span className="text-neutral-200">
+                Don&apos;t have an account?
+              </span>
+              <a href="/sign-up" className="text-(--primary) hover:underline">
+                <span className="font-semibold">Sign Up</span>
+              </a>
+            </div>
+          </form>
+
+          <DevTool control={control} />
         </div>
-      </form>
-
-      <DevTool control={control} />
-    </div>
+      )}
+    </>
   );
 };
 

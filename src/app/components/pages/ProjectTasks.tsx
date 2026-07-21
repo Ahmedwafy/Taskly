@@ -29,6 +29,10 @@ import {
   getInitials,
   getMobileTasksStatusStyle,
 } from '@/lib/helpers';
+import { useDebounce } from '@/app/hooks/useDebounce';
+import MobileTaskSkeleton from '../loadingSkeletons/MobileTasksSkeleton';
+import { error } from 'console';
+import { useIsMobile } from '@/app/hooks/useIsMobile';
 
 interface ProjectTasksProps {
   projectId: string;
@@ -59,36 +63,12 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
 
   const [activeTask, setActiveTask] = useState<ProjectTask | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  // const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 300);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchQuery]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-  );
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 640);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  // === custom hooks ===
+  const debouncedSearch = useDebounce(searchQuery);
+  const isMobile = useIsMobile();
 
   // === List View State ===
   const [listTasks, setListTasks] = useState<ProjectTask[]>([]);
@@ -112,7 +92,15 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  // ──────────────────────────────────────── Start List View ─────────────────────────────────────────────────
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+  );
+
+  // ●────────────────────────────────────────● Start List View ●─────────────────────────────────────────────────●
   const fetchListTasks = useCallback(
     async (page: number, activeSignal: { current: boolean }) => {
       try {
@@ -120,16 +108,21 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
         setListError(null);
 
         const offset = (page - 1) * LIMIT_LIST;
-        const res = await fetch(
+        const response = await fetch(
           `/api/projects/${projectId}/project-tasks?limit=${LIMIT_LIST}&offset=${offset}`,
         );
-        const json = await res.json();
 
         if (!activeSignal.current) return;
-        if (!res.ok) throw new Error(json.error || 'Failed to fetch tasks');
 
-        setListTasks(json.data);
-        setListTotal(json.total);
+        if (!response.ok) {
+          throw new Error('Failed to fetch tasks');
+        }
+
+        // const results = await response.json();
+        const { data, total } = await response.json();
+
+        setListTasks(data);
+        setListTotal(total);
       } catch (err: unknown) {
         if (activeSignal.current) {
           setListError(
@@ -157,19 +150,18 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
     };
   }, [currentValue, projectId, listPage, fetchListTasks, isMobile]);
 
-  // Client-side filtering for Desktop List View
+  // filtering for Desktop List View
   const filteredListTasks = useMemo(() => {
-    if (!searchQuery.trim()) return listTasks;
+    if (!debouncedSearch.trim()) return listTasks;
     return listTasks.filter(
       (task) =>
-        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        task.task_id.toLowerCase().includes(searchQuery.toLowerCase()),
+        task.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        task.task_id.toLowerCase().includes(debouncedSearch.toLowerCase()),
     );
-  }, [listTasks, searchQuery]);
+  }, [listTasks, debouncedSearch]);
+  // ●────────────────────────────────────────● End List View ●───────────────────────────────────────────────────●
 
-  // ──────────────────────────────────────── End List View ───────────────────────────────────────────────────
-
-  // ──────────────────────────────────────── Start Mobile View ───────────────────────────────────────────────
+  // ●────────────────────────────────────────● Start Mobile View ●───────────────────────────────────────────────●
   const fetchMobileTasks = useCallback(
     async (currentOffset: number, isInitial = false) => {
       const fetchKey = `${projectId}-${currentOffset}`;
@@ -180,19 +172,21 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
         setMobileLoading(true);
         setMobileError(null);
 
-        const res = await fetch(
+        const response = await fetch(
           `/api/projects/${projectId}/project-tasks?limit=${LIMIT_MOBILE}&offset=${currentOffset}`,
         );
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || 'Failed to fetch tasks');
+        // const response = await res.json();
 
-        setListTotal(json.total);
+        if (!response.ok) throw new Error('Failed to fetch tasks');
+
+        const { data, total } = await response.json();
+
+        setListTotal(total);
 
         setMobileTasks((prev) => {
-          const updatedList = isInitial ? json.data : [...prev, ...json.data];
+          const updatedList = isInitial ? data : [...prev, ...data];
           const hasMoreAvailable =
-            updatedList.length < json.total &&
-            json.data.length === LIMIT_MOBILE;
+            updatedList.length < total && data.length === LIMIT_MOBILE;
           setMobileHasMore(hasMoreAvailable);
           return updatedList;
         });
@@ -278,23 +272,20 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
   ]);
 
   const filteredMobileTasks = useMemo(() => {
-    if (!searchQuery.trim()) return mobileTasks;
+    if (!debouncedSearch.trim()) return mobileTasks;
     return mobileTasks.filter(
       (task) =>
-        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        task.task_id.toLowerCase().includes(searchQuery.toLowerCase()),
+        task.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        task.task_id.toLowerCase().includes(debouncedSearch.toLowerCase()),
     );
-  }, [mobileTasks, searchQuery]);
-  // ──────────────────────────────────────── End Mobile View ───────────────────────────────────────────────
+  }, [mobileTasks, debouncedSearch]);
+  // ●────────────────────────────────────────● End Mobile View ●───────────────────────────────────────────────●
 
-  // ──────────────────────────────────────── Start Drag & Drop ───────────────────────────────────────────────
+  // ●────────────────────────────────────────● Start Drag & Drop ●───────────────────────────────────────────────●
   const handleDragStart = (event: DragStartEvent) => {
-    const taskId = event.active.id as string;
-    const taskCardElement = document.getElementById(`task-card-${taskId}`);
-    if (taskCardElement) {
-      const taskData = JSON.parse(
-        taskCardElement.getAttribute('data-task') || '{}',
-      );
+    // Grab the data cleanly from the dnd-kit event context
+    const taskData = event.active.data.current?.task as ProjectTask | undefined;
+    if (taskData) {
       setActiveTask(taskData);
     }
   };
@@ -307,15 +298,14 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
     const taskId = active.id as string;
     const newStatus = over.id as string;
 
-    const taskCardElement = document.getElementById(`task-card-${taskId}`);
-    if (!taskCardElement) return;
-    const activeTaskData = JSON.parse(
-      taskCardElement.getAttribute('data-task') || '{}',
-    );
+    // Extract the task object natively
+    const activeTaskData = active.data.current?.task as ProjectTask | undefined;
+    if (!activeTaskData) return;
 
     const originalStatus = activeTaskData.status;
     if (originalStatus === newStatus) return;
 
+    // Fire your events using the clean object reference
     const dndEvent = new CustomEvent('dnd-task-status-updated', {
       detail: {
         taskId,
@@ -331,9 +321,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
         `/api/projects/${projectId}/project-tasks/${activeTaskData.id}`,
         {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: newStatus }),
         },
       );
@@ -356,13 +344,13 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
       toast.error('Failed to change status. Reverting change.');
     }
   };
-  // ──────────────────────────────────────── End Drag & Drop ───────────────────────────────────────────────
+  // ●────────────────────────────────────────● End Drag & Drop ●───────────────────────────────────────────────●
 
   if (isMobile === null) return null;
 
   return (
     <>
-      {/* Desktop Layout */}
+      {/* ●──────────────────────────● Desktop Layout ●──────────────────────────● */}
       {!isMobile && (
         <section className="relative w-full flex flex-col">
           <PageHeader
@@ -392,20 +380,19 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
                       className="w-[320px] shrink-0 flex flex-col"
                       style={{ minWidth: '320px' }}
                     >
-                      {/* Pass search query prop down to columns */}
                       <TaskColumn
                         projectId={projectId}
                         title={col.title}
                         status={col.status}
                         onTaskClick={setSelectedTaskId}
-                        searchQuery={debouncedSearchQuery}
-                        // searchQuery={searchQuery}
+                        searchQuery={debouncedSearch}
                       />
                     </div>
                   ))}
                 </div>
               </div>
 
+              {/* Floating Clone */}
               <DragOverlay dropAnimation={null}>
                 {activeTask ? (
                   <div className="w-[288px] opacity-95 shadow-2xl pointer-events-none transform rotate-2">
@@ -432,7 +419,6 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
             </DndContext>
           ) : (
             <div className="relative pt-6 pb-5 flex-1 min-h-0 overflow-y-auto">
-              {/* Swapped raw listTasks with filteredListTasks */}
               <TasksListView
                 tasks={filteredListTasks}
                 loading={listLoading}
@@ -465,7 +451,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
         </section>
       )}
 
-      {/* Mobile Layout */}
+      {/* ●──────────────────────────● Mobile Layout ●──────────────────────────● */}
       {isMobile && (
         <section className="min-h-screen py-8 relative flex flex-col gap-4">
           <header className="title-style">Active Workboard</header>
@@ -530,15 +516,13 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
                 </div>
               </div>
             ))}
-            {mobileLoading && (
-              <p className="text-center text-sm py-4 animate-pulse">
-                Loading mobile tasks...
-              </p>
-            )}
+
+            {mobileLoading && <MobileTaskSkeleton />}
 
             {mobileError && (
               <p className="text-center text-sm py-4 animate-pulse">Error</p>
             )}
+
             <div ref={mobileObserverTarget} className="h-4 w-full" />
           </div>
         </section>

@@ -4,6 +4,7 @@ import { forwardRef, useState } from 'react';
 import * as icons from '../../../../public/icons/icons';
 import Image from 'next/image';
 import SearchIcon from '@/../public/svgIcons/SearchIcon.svg';
+import TogglePassIcon from '@/../public/svgIcons/TogglePassIcon.svg';
 
 interface InputProps {
   id?: string;
@@ -23,6 +24,8 @@ interface InputProps {
   disabled?: boolean;
   min?: string | number;
   epicStyle?: string;
+  tasksStyle?: string;
+  loginStyle?: string;
   onChange?: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
@@ -55,6 +58,8 @@ const InputField = forwardRef<
       requiredd,
       disabled,
       epicStyle,
+      tasksStyle,
+      loginStyle,
       min,
     },
     ref,
@@ -124,7 +129,7 @@ const InputField = forwardRef<
           ) : (
             /* ================= STANDARD INPUTS (Text, Password, Search) ================= */
             // <div className="relative w-full border border-red-400 pt-15">
-            <div className="relative w-full">
+            <div className={`relative w-full ${loginStyle}`}>
               <input
                 id={id ?? name}
                 ref={ref as React.Ref<HTMLInputElement>}
@@ -149,7 +154,7 @@ const InputField = forwardRef<
                 aria-invalid={!!error}
                 aria-describedby={errorId}
                 className={`w-full p-3 border-gray-300 rounded-md ${error ? `bg-inputBgError` : `bg-[#D7E2FF]`} 
-                disabled:opacity-60 disabled:cursor-not-allowed ${epicStyle} 
+                disabled:opacity-60 disabled:cursor-not-allowed ${epicStyle} ${tasksStyle} 
                   ${variant === 'search' ? 'pl-12' : ''} 
                   ${variant === 'password' ? 'pr-12' : ''}
                 `}
@@ -170,12 +175,7 @@ const InputField = forwardRef<
                   onClick={() => setShowPassword((prev) => !prev)}
                   className="absolute right-3 top-3.5 hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <Image
-                    src={icons.Eye}
-                    alt="Toggle password visibility"
-                    width={16}
-                    height={16}
-                  />
+                  <TogglePassIcon />
                 </button>
               )}
             </div>

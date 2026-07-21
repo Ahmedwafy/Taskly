@@ -17,7 +17,7 @@ interface TaskCardProps {
 
 const TaskCard = ({ loading, error, tasks, onTaskClick }: TaskCardProps) => {
   return (
-    <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
+    <div className="flex-1 overflow-y-auto flex flex-col justify-center custom-scrollbar w-full">
       {loading && (
         <div className="text-sm animate-pulse text-center mt-4">
           <TaskCardSkeleton />
@@ -53,14 +53,12 @@ interface DraggableTaskCardProps {
 }
 
 const DraggableTaskCard = ({ task, onTaskClick }: DraggableTaskCardProps) => {
-  // const { attributes, listeners, setNodeRef, transform, isDragging } =
-  //   useDraggable({
-  //     id: task.id,
-  //   });
-
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: task.id,
+      data: {
+        task: task, // Pass the whole object here
+      },
     });
 
   // If this specific card instance is being dragged, render the empty dashed slot placeholder
@@ -91,7 +89,7 @@ const DraggableTaskCard = ({ task, onTaskClick }: DraggableTaskCardProps) => {
         e.stopPropagation();
         onTaskClick(task.id);
       }}
-      className={`relative overflow-hidden flex flex-col p-4 gap-6 transition text-sm shadow-sm bg-white rounded-md select-none touch-none
+      className={`relative overflow-hidden flex flex-col p-4 gap-6 transition text-sm shadow-sm bg-white rounded-md select-none touch-none w-full
         ${task.status === 'BLOCKED' && 'bg-[#FFDAD633]! border border-[#BA1A1A1A]!'}
         ${task.status === 'IN_PROGRESS' && 'pl-6'}
         ${isDragging ? 'opacity-40 shadow-lg cursor-grabbing border-primary/40 border-2' : 'cursor-grab hover:shadow-md'}
