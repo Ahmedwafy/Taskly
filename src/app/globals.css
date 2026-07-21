@@ -111,6 +111,11 @@ body {
     --list-item-weight: 500;
     --list-item-line-height: 20px;
 
+    /* Invite Member Pop Up */
+    --popUp-title: 24px;
+    --popUp-weight: 700;
+    --popUp-line-height: 32px;
+
     /* ======================================= Mobile ==================================== */
     --mob-headline-lg-size: 32px;
   }
@@ -244,6 +249,13 @@ body {
     line-height: var(--list-item-line-height);
   }
   /* Global Typography Utilities -- End -- */
+
+  /* Invite Member Pop Up */
+  .pop-up-title {
+    font-size: var(--popUp-title);
+    font-weight: var(--popUp-weight);
+    --popUp-line-height: var(--popUp-line-height);
+  }
 
   .mob-title {
     font-size: var(--mob-headline-lg-size);

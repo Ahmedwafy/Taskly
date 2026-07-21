@@ -1,8 +1,9 @@
 // src > app > (pages) > projects > [projectId] > members > page.tsx
 import { redirect } from 'next/navigation';
-import ProjectMambersPage from '@/app/components/pages/ProjectMambersPage';
+
 import { fetchProjectById } from '@/app/queries/projects';
 import { getAuthCookies } from '@/lib/auth';
+import ProjectMembersPage from '@/app/components/pages/ProjectMembersPage';
 
 interface ProjectMembersPageProps {
   params: Promise<{
@@ -31,7 +32,7 @@ export default async function ProjectMembers({
 
   return (
     <div className="mt-10 sm:mt-0 p-5 sm:p-10 h-full bg-background">
-      <ProjectMambersPage projectName={project.name} />
+      <ProjectMembersPage projectName={project.name} />
     </div>
   );
 }

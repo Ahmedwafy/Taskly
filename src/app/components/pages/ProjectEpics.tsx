@@ -8,9 +8,9 @@ import EpicsEmptyState from './EpicsEmptyState';
 import ProjectEpicsGrid from '../organisms/ProjectEpicsGrid';
 import DesktopPagination from '../molecules/DesktopPagination';
 import { toast } from 'sonner';
-import { useState, useEffect, useTransition } from 'react'; // <-- Added hooks
+import { useState, useEffect, useTransition } from 'react';
 import { useAppSelector, useAppDispatch } from '@/redux/reduxHooks';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'; // <-- Added hook
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { EpicDetails, ProjectEpic, ProjectProps } from '@/types/shared';
 import { updateEpicAction } from '@/app/actions/epics';
 import { clearTasks, fetchEpicTasks } from '@/features/tasks/tasksSlice';
@@ -240,10 +240,9 @@ const ProjectEpics = ({
         icon={icons.Plus}
         className=""
         needSearchIcon="YES"
-        //
         searchValue={localSearch}
         onSearchChange={setLocalSearch}
-        isSearching={isPending} // Transition state sets to True while router updates background data
+        isSearching={isPending}
       />
 
       {/* --- Loader / Empty / Non-Empty Views --- */}

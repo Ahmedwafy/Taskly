@@ -93,11 +93,11 @@ const LogInForm = () => {
                   message: 'Enter a valid email address.',
                 },
               })}
-              label="EMAIL"
+              label="email"
               type="email"
               placeholder="Enter your Email"
               error={errors.email?.message}
-              loginStyle="pb-6"
+              className="mb-6"
             />
             {/* Or */}
             {/* <Controller
@@ -131,7 +131,6 @@ const LogInForm = () => {
               placeholder="Enter your password"
               description="Must be at least 8 characters long."
               error={errors.password?.message}
-              loginStyle="pb-6"
             />
             {/* Or */}
             {/* <Controller
@@ -226,7 +225,6 @@ const LogInForm = () => {
               type="email"
               placeholder="Enter your Email"
               error={errors.email?.message}
-              loginStyle="pb-6"
             />
 
             <div className="mb-1">
@@ -245,7 +243,6 @@ const LogInForm = () => {
               placeholder="Enter your password"
               description="Must be at least 8 characters long."
               error={errors.password?.message}
-              loginStyle="pb-6"
             />
 
             {authError ? (

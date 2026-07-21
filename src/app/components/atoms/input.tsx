@@ -1,10 +1,9 @@
 'use client';
 
 import { forwardRef, useState } from 'react';
-import * as icons from '../../../../public/icons/icons';
-import Image from 'next/image';
 import SearchIcon from '@/../public/svgIcons/SearchIcon.svg';
 import TogglePassIcon from '@/../public/svgIcons/TogglePassIcon.svg';
+import EmaiLicon from '@/../public/svgIcons/EmaiLicon.svg';
 
 interface InputProps {
   id?: string;
@@ -25,7 +24,6 @@ interface InputProps {
   min?: string | number;
   epicStyle?: string;
   tasksStyle?: string;
-  loginStyle?: string;
   onChange?: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
@@ -59,7 +57,6 @@ const InputField = forwardRef<
       disabled,
       epicStyle,
       tasksStyle,
-      loginStyle,
       min,
     },
     ref,
@@ -88,11 +85,11 @@ const InputField = forwardRef<
             ) : (
               <div>
                 {requiredd ? (
-                  <div>
+                  <div className="uppercase">
                     {label} <span className="text-red-500">*</span>
                   </div>
                 ) : (
-                  <div>{label}</div>
+                  <div className="uppercase">{label}</div>
                 )}
               </div>
             )}
@@ -128,8 +125,7 @@ const InputField = forwardRef<
             </div>
           ) : (
             /* ================= STANDARD INPUTS (Text, Password, Search) ================= */
-            // <div className="relative w-full border border-red-400 pt-15">
-            <div className={`relative w-full ${loginStyle}`}>
+            <div className={`relative w-full`}>
               <input
                 id={id ?? name}
                 ref={ref as React.Ref<HTMLInputElement>}
@@ -160,6 +156,15 @@ const InputField = forwardRef<
                 `}
               />
 
+              {(label === 'email address' || label === 'email') && (
+                // <div className="absolute inset-y-0 right-3 flex items-center h-full bg-amber-300">
+                //   <EmaiLicon />
+                // </div>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <EmaiLicon />
+                </div>
+              )}
+
               {/* SEARCH ICON */}
               {variant === 'search' && (
                 <span className="absolute left-4 inset-y-0 flex items-center pointer-events-none">
@@ -173,7 +178,7 @@ const InputField = forwardRef<
                   type="button"
                   disabled={disabled}
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-3.5 hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <TogglePassIcon />
                 </button>

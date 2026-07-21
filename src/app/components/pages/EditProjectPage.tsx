@@ -13,6 +13,7 @@ import { updateProjectAction } from '@/app/actions/projects';
 import PageHeader from '../molecules/PageHeader';
 import { UpdateProjectSchema } from '@/schemas/project.schema';
 import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 interface EditProjectPageProps {
   projects: ProjectProps[];
@@ -40,6 +41,9 @@ const EditProjectPage = ({ projects, projectName }: EditProjectPageProps) => {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<EditProjectFormInputs>({
+    // Connect Zod with Form + Let Zod Handle The Validation
+    // .omit({ projectId: true }) ⇒ Coz projectId Comes From Params & Not From Form Inputs
+    resolver: zodResolver(UpdateProjectSchema.omit({ projectId: true })),
     defaultValues: { name: '', description: '' },
   });
 
@@ -49,10 +53,10 @@ const EditProjectPage = ({ projects, projectName }: EditProjectPageProps) => {
       description: data.description?.trim(),
     };
 
-    if (!dataToSend.name) {
-      toast.error('Name is required');
-      return;
-    }
+    // if (!dataToSend.name) {
+    //   toast.error('Name is required');
+    //   return;
+    // }
 
     try {
       if (!projectId) {

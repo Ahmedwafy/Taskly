@@ -21,7 +21,8 @@ export const CreateTaskSchema = z.object({
   description: nullableString,
   assignee_id: nullableString,
   due_date: nullableString,
-  status: z.string().trim().default('TO_DO'),
+  status: z.string().trim().min(1, 'Please select a status'),
+  // status: z.string().trim().default('TO_DO'),
 });
 
 // Let Zod infer the type automatically here!

@@ -23,7 +23,7 @@ interface PageHeaderTypes {
   SVGicon?: ReactNode;
   currentValue?: string;
   needSearchIcon?: string;
-  handleViewChange?: (newValue: string) => void; // Updated here
+  handleViewChange?: (newValue: string) => void;
   // --- ADDED SEARCH PROPS ---
   searchValue?: string;
   onSearchChange?: (val: string) => void;

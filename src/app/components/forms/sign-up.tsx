@@ -124,7 +124,7 @@ const SignUpForm = () => {
 
             <Input
               id="email"
-              label="EMAIL"
+              label="email"
               type="email"
               placeholder="yourname@company.com"
               error={errors.email?.message?.toString()}

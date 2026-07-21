@@ -82,7 +82,7 @@ const ProjectEpicsGrid = ({ projectEpics, onEpicClick }: ProjectEpicsProps) => {
               </div>
             </div>
 
-            {/*○ ○ ○  Divider ○ ○ ○ */}
+            {/* ○ ○ ○  Divider ○ ○ ○ */}
             <hr className="border-slate-100 hidden sm:block sm:w-[95%] sm:mx-auto" />
 
             {/* ○ ○ ○  Footer Row ○ ○ ○ */}

@@ -37,6 +37,11 @@ type Endpoints = {
     updateTaskStatusDragAndDrop: (taskId: string) => string;
   };
 
+  members: {
+    inviteMember: string;
+    acceptInvitation: string;
+  };
+
   updateProjectById: (projectId: string) => string;
   projectMembers: (projectId: string) => string;
   createNewEpic: string;
@@ -56,8 +61,6 @@ export const endPoints: Endpoints = {
     userInfo: '/auth/v1/user',
     createNewProject: '/rest/v1/projects',
     getAllProjects: '/rest/v1/rpc/get_projects',
-    // getProjectByID: (id) => `/${id}`,
-    // name: (name) => `/users/name/${name}`,
   },
 
   project: {
@@ -80,6 +83,11 @@ export const endPoints: Endpoints = {
     getSingleTaskDetails: (projectId, taskId) =>
       `/rest/v1/project_tasks?project_id=eq.${projectId}&id=eq.${taskId}`,
     updateTaskStatusDragAndDrop: (taskId) => `/rest/v1/tasks?id=eq.${taskId}`,
+  },
+
+  members: {
+    inviteMember: '/rest/v1/rpc/invite_member',
+    acceptInvitation: '/rest/v1/rpc/accept_invitation',
   },
 
   createNewEpic: '/rest/v1/epics',

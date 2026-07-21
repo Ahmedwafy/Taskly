@@ -350,7 +350,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
 
   return (
     <>
-      {/* ●──────────────────────────● Desktop Layout ●──────────────────────────● */}
+      {/* ●──────────────────────────● Desktop View ●──────────────────────────● */}
       {!isMobile && (
         <section className="relative w-full flex flex-col">
           <PageHeader
@@ -451,7 +451,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
         </section>
       )}
 
-      {/* ●──────────────────────────● Mobile Layout ●──────────────────────────● */}
+      {/* ●──────────────────────────● Mobile View ●──────────────────────────● */}
       {isMobile && (
         <section className="min-h-screen py-8 relative flex flex-col gap-4">
           <header className="title-style">Active Workboard</header>

@@ -61,7 +61,6 @@ export default async function ProjectEpicsPage({
         totalCount={totalCount}
         currentPage={currentPage}
         limit={currentLimit}
-        //
         searchTerm={searchTerm}
         hasError={hasError}
       />

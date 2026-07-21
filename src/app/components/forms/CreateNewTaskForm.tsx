@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { CreateTaskSchema } from '@/schemas/createNewTask.schema';
 import Plus from '@/../public/svgIcons/Plus.svg';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 interface CreateNewTaskProps {
   projectId: string;
@@ -50,6 +51,9 @@ const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<TaskFormInputs>({
+    // Connect Zod with Form + Let Zod Handle The Validation
+    // .omit({ projectId: true }) ⇒ Coz projectId Comes From Params & Not From Form Inputs
+    resolver: zodResolver(CreateTaskSchema.omit({ project_id: true })),
     defaultValues: {
       title: '',
       status: taskStatus,

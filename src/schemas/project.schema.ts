@@ -14,7 +14,6 @@ export const ProjectSchema = z.object({
 
 export const ProjectsSchema = z.array(ProjectSchema);
 
-// Inferred entity types
 export type Project = z.infer<typeof ProjectSchema>;
 
 // ==============================================================

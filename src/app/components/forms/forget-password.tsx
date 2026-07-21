@@ -92,8 +92,7 @@ const ForgotPasswordForm = () => {
               },
             })}
             name="email"
-            label="EMAIL ADDRESS"
-            type="email"
+            label="email address"
             placeholder="Enter your email"
             error={errors.email?.message}
           />
