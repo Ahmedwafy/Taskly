@@ -350,7 +350,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
     <>
       {/* ●──────────────────────────● Desktop View ●──────────────────────────● */}
       {!isMobile && (
-        <section className="relative w-full flex flex-col h-screen">
+        <section className="relative w-full flex flex-col h-full">
           <PageHeader
             href={`/projects/${projectId}/tasks/new`}
             title="Active Workboard"
@@ -370,8 +370,8 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
-              <div className="mt-6 flex-1 min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden pb-4 bg-green-200">
-                <div className="inline-flex gap-6 h-full items-start pr-6 bg-red-400">
+              <div className="mt-6 flex-1 min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden pb-4">
+                <div className="inline-flex gap-6 h-full items-start pr-6">
                   {COLUMNS.map((col) => (
                     <div
                       key={col.status}

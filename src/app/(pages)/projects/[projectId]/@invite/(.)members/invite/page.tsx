@@ -35,7 +35,7 @@ export default function InviteModal() {
     resolver: zodResolver(InviteFormSchema),
     defaultValues: { p_email: '' },
   });
-  // p_base_url: baseURL ?? '',
+
   const onSubmit = async (data: InviteFormData) => {
     const dataToSend = {
       p_email: data.p_email,
