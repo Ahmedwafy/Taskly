@@ -7,6 +7,8 @@ import Link from '@/../public/svgIcons/Link.svg';
 import TaskDetailSkeleton from '../loadingSkeletons/TaskDetailsPopUpLoadingSkeleton';
 import StackIcon from '@/../public/svgIcons/StackIcon.svg';
 
+// TODO: Copy Link
+
 interface TaskDetailsPopUpModalProps {
   taskId: string;
   projectId: string;
@@ -89,7 +91,10 @@ const TaskDetailsPopUpModal = ({
               <span className="flex gap-2 items-center">
                 <Link /> Copy Link
               </span>
-              <button className="bg-[#D7E2FF] py-2 px-4 rounded-md">
+              <button
+                className="bg-[#D7E2FF] py-2 px-4 rounded-md cursor-pointer"
+                onClick={onClose}
+              >
                 Close
               </button>
             </div>

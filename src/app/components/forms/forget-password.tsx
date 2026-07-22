@@ -9,6 +9,7 @@ import { ForgotPasswordFormTypes } from '@/types/shared';
 import InputField from '../atoms/input';
 import { forgotPasswordAction } from '@/app/actions/auth';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/app/hooks/useIsMobile';
 
 const ForgotPasswordForm = () => {
   const {
@@ -24,6 +25,7 @@ const ForgotPasswordForm = () => {
 
   const [countdown, setCountdown] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (countdown === 0) return;
@@ -58,7 +60,7 @@ const ForgotPasswordForm = () => {
 
     if (result.error) {
       console.error('Error submitting data:', result.error);
-      toast.error(result.error); // Show error to the user
+      toast.error(result.error);
       setIsSubmitted(false);
       return; // Halt execution
     }
@@ -69,79 +71,162 @@ const ForgotPasswordForm = () => {
     toast.success('Reset link sent! Please check your inbox.');
   };
 
+  if (isMobile === null) return null;
+
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="bg-background w-md py-4 px-4 rounded-2xl mx-auto mt-14 shadow-md"
-    >
-      <div className="w-91.5 flex flex-col justify-center mx-auto py-8">
-        <div className="flex flex-col gap-2">
-          <h1 className="headline-lg">Forgot password?</h1>
-          <p className="body-md">
-            No worries, we&apos;ll send you reset instructions.
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-4 mt-6">
-          <InputField
-            {...register('email', {
-              required: 'Email is required.',
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Enter a valid email address.',
-              },
-            })}
-            name="email"
-            label="email address"
-            placeholder="Enter your email"
-            error={errors.email?.message}
-          />
-
-          <Button
-            name="Send Reset Link"
-            variant="primary"
-            type="submit"
-            isSubmitting={isSubmitting}
-            disabled={isSubmitting}
-          />
-        </div>
-
-        <Link
-          href="/login"
-          className="flex items-center gap-2 justify-center py-6"
+    <>
+      {/* ●──────────────────────────● Desktop Layout ●──────────────────────────● */}
+      {!isMobile && (
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="bg-background w-md py-4 px-4 rounded-2xl mx-auto mt-14 shadow-md"
         >
-          <Image src={icons.Arrow} alt="arrow" width={16} height={16} />
-          <p className="text-[#003D9B]">Back to log in</p>
-        </Link>
+          <div className="w-91.5 flex flex-col justify-center mx-auto py-8">
+            <div className="flex flex-col gap-2">
+              <h1 className="headline-lg">Forgot password?</h1>
+              <p className="body-md">
+                No worries, we&apos;ll send you reset instructions.
+              </p>
+            </div>
 
-        <div>
-          {isSubmitted && (
-            <p className="flex justify-center py-4 my-4 bg-success text-[#005235] gap-2 rounded-md">
-              <Image src={icons.Success} alt="Success" />
-              <span>Your request has been sent successfully</span>
+            <div className="flex flex-col gap-4 mt-6">
+              <InputField
+                {...register('email', {
+                  required: 'Email is required.',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Enter a valid email address.',
+                  },
+                })}
+                name="email"
+                label="email address"
+                placeholder="Enter your email"
+                error={errors.email?.message}
+              />
+
+              <Button
+                name="Send Reset Link"
+                variant="primary"
+                type="submit"
+                isSubmitting={isSubmitting}
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <Link
+              href="/login"
+              className="flex items-center gap-2 justify-center py-6"
+            >
+              <Image src={icons.Arrow} alt="arrow" width={16} height={16} />
+              <p className="text-[#003D9B]">Back to log in</p>
+            </Link>
+
+            <div>
+              {isSubmitted && (
+                <p className="flex justify-center py-4 my-4 bg-success text-[#005235] gap-2 rounded-md">
+                  <Image src={icons.Success} alt="Success" />
+                  <span>Your request has been sent successfully</span>
+                </p>
+              )}
+            </div>
+
+            <p className="label-sm flex justify-center text-[#434654]">
+              DIDN&apos;T RECEIVE THE EMAIL?
             </p>
-          )}
-        </div>
 
-        <p className="label-sm flex justify-center text-[#434654]">
-          DIDN&apos;T RECEIVE THE EMAIL?
-        </p>
+            <button
+              onClick={handleResend}
+              disabled={countdown > 0}
+              className="disabled:opacity-50 w-full mb-2 mt-4"
+              type="button"
+            >
+              <strong className="flex gap-2 justify-center bg-surface-highest rounded-sm py-4 text-[#737685]">
+                <Image src={icons.Timer} alt="timer" />
+                {countdown > 0
+                  ? `Resend in ${formatCountdown(countdown)}`
+                  : 'Resend'}
+              </strong>
+            </button>
+          </div>
+        </form>
+      )}
 
-        <button
-          onClick={handleResend}
-          disabled={countdown > 0}
-          className="disabled:opacity-50 w-full mb-2 mt-4"
-          type="button"
+      {/* ●──────────────────────────● Mobile Layout ●──────────────────────────● */}
+      {isMobile && (
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="bg-background py-4 rounded-2xl mx-auto mt-10 shadow-md"
         >
-          <strong className="flex gap-2 justify-center bg-surface-highest rounded-sm py-4 text-[#737685]">
-            <Image src={icons.Timer} alt="timer" />
-            {countdown > 0
-              ? `Resend in ${formatCountdown(countdown)}`
-              : 'Resend'}
-          </strong>
-        </button>
-      </div>
-    </form>
+          <div className="w-91.5 flex flex-col justify-center mx-auto py-8">
+            <div className="flex flex-col gap-2">
+              <h1 className="headline-lg">Forgot password?</h1>
+              <p className="body-md">
+                No worries, we&apos;ll send you reset instructions.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-4 mt-6">
+              <InputField
+                {...register('email', {
+                  required: 'Email is required.',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Enter a valid email address.',
+                  },
+                })}
+                name="email"
+                label="email address"
+                placeholder="Enter your email"
+                error={errors.email?.message}
+              />
+
+              <Button
+                name="Send Reset Link"
+                variant="primary"
+                type="submit"
+                isSubmitting={isSubmitting}
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <Link
+              href="/login"
+              className="flex items-center gap-2 justify-center py-6"
+            >
+              <Image src={icons.Arrow} alt="arrow" width={16} height={16} />
+              <p className="text-[#003D9B]">Back to log in</p>
+            </Link>
+
+            <div>
+              {isSubmitted && (
+                <p className="flex justify-center py-4 my-4 bg-success text-[#005235] gap-2 rounded-md">
+                  <Image src={icons.Success} alt="Success" />
+                  <span>Your request has been sent successfully</span>
+                </p>
+              )}
+            </div>
+
+            <p className="label-sm flex justify-center text-[#434654]">
+              DIDN&apos;T RECEIVE THE EMAIL?
+            </p>
+
+            <button
+              onClick={handleResend}
+              disabled={countdown > 0}
+              className="disabled:opacity-50 w-full mb-2 mt-4"
+              type="button"
+            >
+              <strong className="flex gap-2 justify-center bg-surface-highest rounded-sm py-4 text-[#737685]">
+                <Image src={icons.Timer} alt="timer" />
+                {countdown > 0
+                  ? `Resend in ${formatCountdown(countdown)}`
+                  : 'Resend'}
+              </strong>
+            </button>
+          </div>
+        </form>
+      )}
+    </>
   );
 };
 

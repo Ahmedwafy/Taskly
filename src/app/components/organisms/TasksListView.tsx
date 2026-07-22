@@ -3,6 +3,7 @@
 import { ProjectTask } from '@/features/tasks/tasksSlice';
 import { formatDate, getInitials, getStatusStyle } from '@/lib/helpers';
 import TaskListSkeleton from '../loadingSkeletons/TaskListSkeleton';
+import { useRouter } from 'next/navigation';
 
 interface TasksListViewProps {
   tasks: ProjectTask[];
@@ -11,8 +12,8 @@ interface TasksListViewProps {
   total: number;
   page: number;
   limit: number;
+  projectId: string;
   onPageChange: (newPage: number) => void;
-  onTaskClick: (taskId: string) => void;
 }
 
 const TasksListView = ({
@@ -23,9 +24,10 @@ const TasksListView = ({
   page,
   limit,
   onPageChange,
-  onTaskClick,
+  projectId,
 }: TasksListViewProps) => {
   const totalPages = Math.max(Math.ceil(total / limit), 1);
+  const router = useRouter();
 
   return (
     <div className="w-full max-w-7xl mx-auto bg-white rounded-md shadow-sm border border-slate-100 font-sans">
@@ -80,9 +82,13 @@ const TasksListView = ({
             ) : (
               tasks.map((task) => (
                 <tr
+                  className="hover:bg-slate-50/50 transition-colors cursor-pointer w-full "
+                  onClick={() =>
+                    router.push(
+                      `/projects/${projectId}/tasks/${task.id}?view=list`,
+                    )
+                  }
                   key={task.id}
-                  onClick={() => onTaskClick(task.id)}
-                  className="hover:bg-slate-50/50 transition-colors cursor-pointer"
                 >
                   <td className="py-5 px-6 text-[12px] text-primary whitespace-nowrap">
                     {task.task_id}

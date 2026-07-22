@@ -4,9 +4,9 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { EpicDetails, ProjectMember } from '@/types/shared';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
-import TaskDetailsPopUpModal from './TaskDetailsPopUpModal';
 import EpicSkeletonPopup from '../loadingSkeletons/EpicDetailsPopUpLoadingSkeleton';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 // 1. Import React Select
 import Select, { SingleValue } from 'react-select';
 import { getInitials } from '@/lib/helpers';
@@ -46,7 +46,7 @@ const EpicDetailsPopUpModal = ({
 }: EpicDetailsPopUpModalProps) => {
   const [localTitle, setLocalTitle] = useState(selectedEpic?.title || '');
   const [localDesc, setLocalDesc] = useState(selectedEpic?.description || '');
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleBlurSave = (
     field: 'title' | 'description',
@@ -397,7 +397,9 @@ const EpicDetailsPopUpModal = ({
                     {epicTasks.map((task) => (
                       <div
                         key={task.id}
-                        onClick={() => setSelectedTaskId(task.id)}
+                        onClick={() =>
+                          router.push(`/projects/${projectId}/tasks/${task.id}`)
+                        }
                         className="flex items-center gap-3 py-2 px-4 border border-slate-100 rounded-lg bg-white hover:bg-slate-50 transition cursor-pointer"
                       >
                         <div className="flex justify-between w-full items-center">
@@ -435,15 +437,6 @@ const EpicDetailsPopUpModal = ({
           )}
         </div>
       </div>
-
-      {/* ====== TASK DETAILS MODAL POPUP ====== */}
-      {selectedTaskId && (
-        <TaskDetailsPopUpModal
-          taskId={selectedTaskId}
-          projectId={projectId}
-          onClose={() => setSelectedTaskId(null)}
-        />
-      )}
     </div>
   );
 };

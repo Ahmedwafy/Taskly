@@ -13,7 +13,6 @@ interface TaskColumnProps {
   projectId: string;
   title: string;
   status: string;
-  onTaskClick: (taskId: string) => void;
   searchQuery: string;
 }
 
@@ -23,14 +22,13 @@ const TaskColumn = ({
   projectId,
   title,
   status,
-  onTaskClick,
   searchQuery,
 }: TaskColumnProps) => {
   const [hasIntersected, setHasIntersected] = useState<boolean>(false);
   const [tasks, setTasks] = useState<ProjectTask[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [offset, setOffset] = useState<number>(0);
+  const [, setOffset] = useState<number>(0);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [initialLoaded, setInitialLoaded] = useState<boolean>(false);
 
@@ -103,7 +101,7 @@ const TaskColumn = ({
       window.removeEventListener('dnd-task-status-updated', handleTaskMoved);
   }, [status]);
 
-  // Horizontal Observer Setup
+  // --- Horizontal Observer Setup ---
   useEffect(() => {
     const currentColumn = columnRef.current;
     if (!currentColumn) return;
@@ -271,7 +269,7 @@ const TaskColumn = ({
                   loading={false}
                   error={error}
                   tasks={[task]}
-                  onTaskClick={onTaskClick}
+                  projectId={projectId}
                 />
               </div>
             ))}

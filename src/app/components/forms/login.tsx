@@ -172,7 +172,7 @@ const LogInForm = () => {
                 </label>
               </div>
               <div>
-                <Link href="/" className="font-smeibold">
+                <Link href="/forgot-password" className="font-smeibold">
                   <span className="text-(--primary)">Forget Password ?</span>
                 </Link>
               </div>
@@ -215,44 +215,46 @@ const LogInForm = () => {
             noValidate
             className="relative"
           >
-            {/* If will not use <Controller /> ... The input from inside MUST use forwardRef */}
-            {/* This name 'email' comes from >>> interface SignInFormData {...} */}
-            <InputField
-              {...register('email', {
-                required: 'Email is required',
-                pattern: {
-                  value: emailRegex,
-                  message: 'Enter a valid email address.',
-                },
-              })}
-              label="EMAIL"
-              type="email"
-              placeholder="Enter your Email"
-              error={errors.email?.message}
-            />
+            <div className="flex flex-col gap-6">
+              <InputField
+                {...register('email', {
+                  required: 'Email is required',
+                  pattern: {
+                    value: emailRegex,
+                    message: 'Enter a valid email address.',
+                  },
+                })}
+                label="EMAIL"
+                type="email"
+                placeholder="Enter your Email"
+                error={errors.email?.message}
+              />
 
-            <div className="mb-1">
-              <Link href="/" className="font-bold absolute right-0 text-sm">
+              <Link
+                href="/forgot-password"
+                className="font-bold absolute right-0 top-22 text-sm mb-1"
+              >
                 <span className="text-(--primary)">Forget ?</span>
               </Link>
-            </div>
 
-            <InputField
-              {...register('password', {
-                validate: passwordValidator,
-              })}
-              variant="password"
-              label="PASSWORD"
-              type="password"
-              placeholder="Enter your password"
-              description="Must be at least 8 characters long."
-              error={errors.password?.message}
-            />
+              <InputField
+                {...register('password', {
+                  validate: passwordValidator,
+                })}
+                variant="password"
+                label="PASSWORD"
+                type="password"
+                placeholder="Enter your password"
+                description="Must be at least 8 characters long."
+                error={errors.password?.message}
+              />
+            </div>
 
             {authError ? (
               <p className="text-sm text-red-500 py-2">{authError}</p>
             ) : null}
 
+            {/* === Remember Me === */}
             <div className="flex justify-between py-6">
               <div>
                 <input
@@ -274,10 +276,11 @@ const LogInForm = () => {
               type="submit"
               variant="primary"
             />
+
             <br />
             <hr className="text-gray-200" />
 
-            <div className="mx-auto w-full flex gap-2 justify-center pt-40 pb-4">
+            <div className="mx-auto w-full flex gap-2 justify-center pt-10 pb-4">
               <span className="text-neutral-200">
                 Don&apos;t have an account?
               </span>

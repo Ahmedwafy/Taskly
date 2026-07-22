@@ -4,18 +4,17 @@ import { formatDate, getInitials } from '@/lib/helpers';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
 import TaskCardSkeleton from '../loadingSkeletons/TaskCardSkeleton';
 import DateIcon from '@/../public/svgIcons/Date.svg';
-
-// 1. Import useDraggable from dnd-kit
+import { useRouter } from 'next/navigation';
 import { useDraggable } from '@dnd-kit/core';
 
 interface TaskCardProps {
   loading: boolean;
   error: string | null;
   tasks: ProjectTask[];
-  onTaskClick: (taskId: string) => void;
+  projectId: string;
 }
 
-const TaskCard = ({ loading, error, tasks, onTaskClick }: TaskCardProps) => {
+const TaskCard = ({ loading, error, tasks, projectId }: TaskCardProps) => {
   return (
     <div className="flex-1 overflow-y-auto flex flex-col justify-center custom-scrollbar w-full">
       {loading && (
@@ -36,23 +35,18 @@ const TaskCard = ({ loading, error, tasks, onTaskClick }: TaskCardProps) => {
       {!loading &&
         !error &&
         tasks.map((task) => (
-          <DraggableTaskCard
-            key={task.id}
-            task={task}
-            onTaskClick={onTaskClick}
-          />
+          <DraggableTaskCard key={task.id} task={task} projectId={projectId} />
         ))}
     </div>
   );
 };
 
-// 2. Create the Draggable wrapper for individual task items
 interface DraggableTaskCardProps {
   task: ProjectTask;
-  onTaskClick: (taskId: string) => void;
+  projectId: string;
 }
 
-const DraggableTaskCard = ({ task, onTaskClick }: DraggableTaskCardProps) => {
+const DraggableTaskCard = ({ task, projectId }: DraggableTaskCardProps) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: task.id,
@@ -60,13 +54,13 @@ const DraggableTaskCard = ({ task, onTaskClick }: DraggableTaskCardProps) => {
         task: task, // Pass the whole object here
       },
     });
-
+  const router = useRouter();
   // If this specific card instance is being dragged, render the empty dashed slot placeholder
   if (isDragging) {
     return (
       <div
         ref={setNodeRef}
-        className="w-full h-[96px] border-2 border-dashed border-slate-300 bg-slate-50/50 rounded-lg"
+        className="w-full h-24 border-2 border-dashed border-slate-300 bg-slate-50/50 rounded-lg"
       />
     );
   }
@@ -87,7 +81,7 @@ const DraggableTaskCard = ({ task, onTaskClick }: DraggableTaskCardProps) => {
       onClick={(e) => {
         // Prevent trigger drag events on click action
         e.stopPropagation();
-        onTaskClick(task.id);
+        router.push(`/projects/${projectId}/tasks/${task.id}`);
       }}
       className={`relative overflow-hidden flex flex-col p-4 gap-6 transition text-sm shadow-sm bg-white rounded-md select-none touch-none w-full
         ${task.status === 'BLOCKED' && 'bg-[#FFDAD633]! border border-[#BA1A1A1A]!'}
@@ -96,7 +90,7 @@ const DraggableTaskCard = ({ task, onTaskClick }: DraggableTaskCardProps) => {
       `}
     >
       {task.status === 'IN_PROGRESS' && (
-        <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-primary" />
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
       )}
 
       <span>{task.title}</span>

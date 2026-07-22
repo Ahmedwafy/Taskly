@@ -10,7 +10,6 @@ import TaskColumn from '../organisms/TaskColumn';
 import { ProjectProps } from '@/types/shared';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import TaskDetailsPopUpModal from '../organisms/TaskDetailsPopUpModal';
 import InputField from '../atoms/input';
 import { ProjectTask } from '@/features/tasks/tasksSlice';
 import { toast } from 'sonner';
@@ -31,7 +30,6 @@ import {
 } from '@/lib/helpers';
 import { useDebounce } from '@/app/hooks/useDebounce';
 import MobileTaskSkeleton from '../loadingSkeletons/MobileTasksSkeleton';
-import { error } from 'console';
 import { useIsMobile } from '@/app/hooks/useIsMobile';
 
 interface ProjectTasksProps {
@@ -62,7 +60,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
     searchParams.get('view') === 'list' ? 'LIST_VIEW' : 'BOARD_VIEW';
 
   const [activeTask, setActiveTask] = useState<ProjectTask | null>(null);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  // const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   // const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -352,7 +350,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
     <>
       {/* ●──────────────────────────● Desktop View ●──────────────────────────● */}
       {!isMobile && (
-        <section className="relative w-full flex flex-col">
+        <section className="relative w-full flex flex-col h-screen">
           <PageHeader
             href={`/projects/${projectId}/tasks/new`}
             title="Active Workboard"
@@ -372,8 +370,8 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
-              <div className="mt-6 flex-1 min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden pb-4">
-                <div className="inline-flex gap-6 h-full items-start pr-6">
+              <div className="mt-6 flex-1 min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden pb-4 bg-green-200">
+                <div className="inline-flex gap-6 h-full items-start pr-6 bg-red-400">
                   {COLUMNS.map((col) => (
                     <div
                       key={col.status}
@@ -384,7 +382,6 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
                         projectId={projectId}
                         title={col.title}
                         status={col.status}
-                        onTaskClick={setSelectedTaskId}
                         searchQuery={debouncedSearch}
                       />
                     </div>
@@ -427,7 +424,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
                 page={listPage}
                 limit={LIMIT_LIST}
                 onPageChange={setListPage}
-                onTaskClick={setSelectedTaskId}
+                projectId={projectId}
               />
 
               <Link
@@ -439,14 +436,6 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
                 </Button>
               </Link>
             </div>
-          )}
-
-          {selectedTaskId && (
-            <TaskDetailsPopUpModal
-              taskId={selectedTaskId}
-              projectId={projectId}
-              onClose={() => setSelectedTaskId(null)}
-            />
           )}
         </section>
       )}
@@ -473,7 +462,9 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
             {filteredMobileTasks.map((task) => (
               <div
                 key={task.id}
-                onClick={() => setSelectedTaskId(task.id)}
+                onClick={() =>
+                  router.push(`/projects/${projectId}/tasks/${task.id}`)
+                }
                 className="flex flex-col gap-6 p-4 bg-white rounded-lg shadow-sm cursor-pointer 
                 active:scale-95 transition-transform"
               >

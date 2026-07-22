@@ -248,7 +248,7 @@ const SignUpForm = () => {
       {isMobile && (
         <div className="flex flex-col gap-4 justify-center items-center mx-auto h-full py-8 px-5 -mt-8 rounded-lg shadow-md bg-background">
           <div className="flex flex-col gap-2">
-            <h2 className="mob-title">Create your workspace</h2>
+            <h2 className="mob-title  tracking-tight">Create your workspace</h2>
             <p className="body-md">
               Join the editorial approach to task management.
             </p>
