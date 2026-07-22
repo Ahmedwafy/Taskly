@@ -12,6 +12,7 @@ import Link from 'next/link';
 import Button from '@/app/components/atoms/Button';
 import InputField from '../atoms/input';
 import { useIsMobile } from '@/app/hooks/useIsMobile';
+import { useSearchParams } from 'next/navigation';
 
 const LogInForm = () => {
   const router = useRouter();
@@ -19,6 +20,9 @@ const LogInForm = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const dispatch = useAppDispatch();
   const isMobile = useIsMobile();
+  const searchParams = useSearchParams();
+
+  const redirectTo = searchParams.get('redirectTo'); // for accepting invitation if user 401 Unauthorized ( need to login )
 
   const {
     control,
@@ -42,7 +46,7 @@ const LogInForm = () => {
       ).unwrap();
 
       toast.success('Welcome back!');
-      router.push('/projects');
+      router.push(redirectTo || '/projects');
     } catch (error) {
       const message =
         typeof error === 'string' ? error : 'Something went wrong';

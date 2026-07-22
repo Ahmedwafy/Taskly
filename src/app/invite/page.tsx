@@ -29,9 +29,10 @@ function AcceptInviteContent() {
     try {
       const result = await acceptInvitationRequest({ p_token: token });
 
+      // Handle ( invalid tokens / expired tokens / Forbidden 403 / Network/API Errors )
       if (result.error) {
+        // Handle 401 Unauthorized
         // - If NOT authenticated → redirect to login page and return back to invite page after login.
-        // - If authenticated → allow accepting invitation.
         if (result.status === 401) {
           toast.error('Please log in to accept this invitation.');
           const returnUrl = `/invite?token=${encodeURIComponent(token)}`;
@@ -103,3 +104,16 @@ export default function AcceptInvitePage() {
     </div>
   );
 }
+/* 
+    if (result.status === 401) {
+      toast.error('Please log in to accept this invitation.');
+      const returnUrl = `/invite?token=${encodeURIComponent(token)}`;
+      router.push(`/login?redirectTo=${encodeURIComponent(returnUrl)}`);
+      return;
+    }
+
+if user is 401 Unauthorized → redirect user → `/login?redirectTo=${encodeURIComponent(returnUrl)}`
+
+now in login page → have a query param → redirectTo = /invite?token=abc123
+
+*/

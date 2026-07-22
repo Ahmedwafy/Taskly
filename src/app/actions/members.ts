@@ -113,6 +113,7 @@ export async function acceptInvitationRequest(
     // Validate Token Payload → p_token get it from url query params
     const parsed = AcceptInviteSchema.safeParse(payload);
 
+    // if Invalid Token
     if (!parsed.success) {
       return {
         error: parsed.error.issues[0]?.message || 'Invalid invitation token.',
@@ -150,8 +151,9 @@ export async function acceptInvitationRequest(
         };
       }
 
-      // Handle common PostgREST database errors (invalid/expired tokens)
+      // Handle (invalid/expired tokens)
       const message = errorData.message || errorData.msg || '';
+
       if (message.toLowerCase().includes('expired')) {
         return { error: 'This invitation link has expired.' };
       }

@@ -8,7 +8,7 @@ import InviteMemberIcon from '@/../public/svgIcons/InviteMemberPOP.svg';
 import CloseIcon from '@/../public/svgIcons/CloseIcon.svg';
 import Button from '@/app/components/atoms/Button';
 import InputField from '@/app/components/atoms/input';
-import { baseURL } from '@/lib/supabase';
+
 import { inviteMemberRequest } from '@/app/actions/members';
 import {
   InviteFormSchema,

@@ -1,3 +1,4 @@
+// src > app > (pages) > projects > [projectId] > members > layout.tsx
 export default function MembersLayout({
   children,
   invite,
@@ -7,7 +8,10 @@ export default function MembersLayout({
 }) {
   return (
     <>
+      {/* members > page.tsx Content */}
       {children}
+
+      {/* Content inside @invite */}
       {invite}
     </>
   );
