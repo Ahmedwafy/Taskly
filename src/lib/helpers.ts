@@ -42,7 +42,37 @@ export const getStatusStyle = (status: string) => {
       return 'bg-[#D7E2FF] text-[#434654] font-bold text-[11px]';
   }
 };
+export const getStatusColors = (status: string) => {
+  switch (status) {
+    case 'COMPLETED':
+    case 'DONE':
+      return {
+        bg: '#82F9BE',
+        text: '#002113',
+      };
 
+    case 'BLOCKED':
+      return {
+        bg: '#FFDAD6',
+        text: '#93000A',
+      };
+
+    case 'READY_FOR_QA':
+    case 'IN_REVIEW':
+    case 'REOPENED':
+    case 'READY_FOR_PRODUCTION':
+      return {
+        bg: '#CDDDFF',
+        text: '#51617E',
+      };
+
+    default:
+      return {
+        bg: '#D7E2FF',
+        text: '#434654',
+      };
+  }
+};
 export const getTasksStatusDOTsStyle = (status: string) => {
   switch (status) {
     case 'COMPLETED':

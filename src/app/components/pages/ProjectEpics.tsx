@@ -98,9 +98,11 @@ const ProjectEpics = ({
   const members = useAppSelector((state) => state.members.list);
 
   // === Epic Details Modal State ===
-  const selectedEpic = useAppSelector((state) => state.epics.selectedEpic);
-  const isLoadingEpicDetails = useAppSelector((state) => state.epics.loading);
-  const epicsErrorMsg = useAppSelector((state) => state.epics.error);
+  const selectedEpic = useAppSelector((state) => state.singleEpic.selectedEpic);
+  const isLoadingEpicDetails = useAppSelector(
+    (state) => state.singleEpic.loading,
+  );
+  const epicsErrorMsg = useAppSelector((state) => state.singleEpic.error);
 
   // === Epic's Tasks State ===
   const {

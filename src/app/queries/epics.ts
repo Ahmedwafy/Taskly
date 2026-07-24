@@ -1,17 +1,11 @@
 // src → app → queries → epics.ts
 import { baseURL, supabaseKey } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
+import { FetchProjectEpicsParams } from '@/types/shared';
 
 // ========================================
 // 1 ::: GET Project's Epics ::: Keep it Query Coz of the Pagination :::
 // ========================================
-interface FetchProjectEpicsParams {
-  projectId: string;
-  limit: number;
-  offset: number;
-  accessToken: string;
-  searchTerm?: string;
-}
 
 export async function fetchProjectEpics({
   projectId,

@@ -4,12 +4,14 @@ import authReducer from '../features/auth/authSlice';
 import membersReducer from '../features/members/membersSlice';
 import epicsReducer from '@/features/epics/epicsSlice';
 import tasksReducer from '@/features/tasks/tasksSlice';
+import projectEpicsSlice from '../features/epics/projectEpicsSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     members: membersReducer,
-    epics: epicsReducer,
+    singleEpic: epicsReducer,
+    projectEpics: projectEpicsSlice,
     tasks: tasksReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware(),

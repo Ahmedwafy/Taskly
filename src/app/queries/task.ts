@@ -2,7 +2,9 @@
 import { baseURL, supabaseKey } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
 
+// ==============================================
 // === GET: Fetch Single Task Details ===
+// ==============================================
 interface fetchSingleTaskDetaisProps {
   projectId: string;
   taskId: string;
@@ -37,37 +39,75 @@ export async function fetchSingleTaskDetais({
   return Array.isArray(data) ? data[0] : data;
 }
 
-// === PATCH: Update Task Status [ Drag & Drop ] ===
-interface UpdateTaskStatusProps {
+// src > app > queries > task.ts
+// ============================================================
+// === PATCH: Task Update (Status, Title, Assignee, etc.)
+// ============================================================
+interface UpdateTaskDetailsParams {
   taskId: string;
-  status: string;
+  payload: Record<string, unknown>;
   accessToken: string;
 }
-export async function updateTaskStatus({
+
+export async function updateTaskDetails({
   taskId,
-  status,
+  payload,
   accessToken,
-}: UpdateTaskStatusProps) {
-  const url = `${baseURL}${endPoints.task.updateTaskStatusDragAndDrop(taskId)}`;
+}: UpdateTaskDetailsParams) {
+  // const url = `${baseURL}/rest/v1/tasks?id=eq.${taskId}`;
+  const url = `${baseURL}${endPoints.task.updateTaskInfo(taskId)}`;
 
   const response = await fetch(url, {
     method: 'PATCH',
     headers: {
-      'Content-Type': 'application/json',
       apikey: supabaseKey,
       Authorization: `Bearer ${accessToken}`,
-      Prefer: 'return=representation',
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation', // Returns updated row
     },
-    body: JSON.stringify({ status }),
+    body: JSON.stringify(payload),
   });
 
+  const data = await response.json();
+
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
     throw new Error(
-      errorData?.message || errorData?.error || 'Failed to update task status',
+      data?.message || data?.error || data?.hint || 'Failed to update task',
     );
   }
 
-  const data = await response.json();
   return Array.isArray(data) ? data[0] : data;
 }
+// interface UpdateTaskStatusProps {
+//   taskId: string;
+//   status: string;
+//   accessToken: string;
+// }
+// export async function updateTaskStatus({
+//   taskId,
+//   status,
+//   accessToken,
+// }: UpdateTaskStatusProps) {
+//   const url = `${baseURL}${endPoints.task.updateTaskDetails(taskId)}`;
+
+//   const response = await fetch(url, {
+//     method: 'PATCH',
+//     headers: {
+//       'Content-Type': 'application/json',
+//       apikey: supabaseKey,
+//       Authorization: `Bearer ${accessToken}`,
+//       Prefer: 'return=representation',
+//     },
+//     body: JSON.stringify({ status }),
+//   });
+
+//   if (!response.ok) {
+//     const errorData = await response.json().catch(() => ({}));
+//     throw new Error(
+//       errorData?.message || errorData?.error || 'Failed to update task status',
+//     );
+//   }
+
+//   const data = await response.json();
+//   return Array.isArray(data) ? data[0] : data;
+// }

@@ -2,9 +2,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthCookies } from '@/lib/auth';
-import { fetchSingleTaskDetais, updateTaskStatus } from '@/app/queries/task';
+import { fetchSingleTaskDetais, updateTaskDetails } from '@/app/queries/task';
+// import { updateTaskDetails } from '@/app/queries/tasks';
 
-// === GET: Fetch Single Task Details ===
+// ===================================================
+//  GET: Fetch Single Task Details
+// ===================================================
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string; taskId: string }> },
@@ -34,7 +38,9 @@ export async function GET(
 }
 
 // src > app > api > projects > [projectId] > project-tasks > [taskId] > route.ts
-// === PATCH: Update Task Status ===
+// ===================================================
+//  PATCH: General Dynamic Task Update (Status, Title, Assignee, etc.)
+// ===================================================
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string; taskId: string }> },
@@ -47,17 +53,19 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { status } = await req.json();
-    if (!status) {
+    const payload = await req.json();
+
+    // Ensure there is at least one field provided to update
+    if (!payload || Object.keys(payload).length === 0) {
       return NextResponse.json(
-        { error: 'Status is required' },
+        { error: 'No update payload provided' },
         { status: 400 },
       );
     }
 
-    const updatedTask = await updateTaskStatus({
+    const updatedTask = await updateTaskDetails({
       taskId,
-      status,
+      payload,
       accessToken,
     });
 
@@ -71,3 +79,40 @@ export async function PATCH(
     );
   }
 }
+
+// export async function PATCH(
+//   req: NextRequest,
+//   { params }: { params: Promise<{ projectId: string; taskId: string }> },
+// ) {
+//   try {
+//     const { taskId } = await params;
+//     const { accessToken } = await getAuthCookies();
+
+//     if (!accessToken) {
+//       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+//     }
+
+//     const { status } = await req.json();
+//     if (!status) {
+//       return NextResponse.json(
+//         { error: 'Status is required' },
+//         { status: 400 },
+//       );
+//     }
+
+//     const updatedTask = await updateTaskStatus({
+//       taskId,
+//       status,
+//       accessToken,
+//     });
+
+//     return NextResponse.json({ data: updatedTask });
+//   } catch (error) {
+//     return NextResponse.json(
+//       {
+//         error: error instanceof Error ? error.message : 'Unknown error',
+//       },
+//       { status: 500 },
+//     );
+//   }
+// }

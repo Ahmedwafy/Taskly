@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from '@/redux/reduxHooks';
 import { fetchProjectMembers } from '@/features/members/membersSlice';
-import { ProjectEpic } from '@/types/shared';
 import InputField from '../atoms/input';
 import SelectField from '../atoms/SelectField';
 import Button from '../atoms/Button';
@@ -17,10 +16,12 @@ import { z } from 'zod';
 import { CreateTaskSchema } from '@/schemas/createNewTask.schema';
 import Plus from '@/../public/svgIcons/Plus.svg';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { getProjectEpics } from '@/features/epics/projectEpicsSlice';
 
 interface CreateNewTaskProps {
   projectId: string;
-  initialEpics: ProjectEpic[];
+  accessToken: string;
+  // initialEpics: ProjectEpic[];
 }
 
 // Define the type for the form inputs based on the Zod schema instead of :
@@ -30,21 +31,28 @@ interface CreateNewTaskProps {
 // Add 'project_id' to remove it from the form inputs, since it's already provided via props and not user input.
 type TaskFormInputs = Omit<z.input<typeof CreateTaskSchema>, 'project_id'>;
 
-const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
+const CreateNewTaskForm = ({ projectId, accessToken }: CreateNewTaskProps) => {
+  // const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
-  const [epicsList] = useState<ProjectEpic[]>(initialEpics);
+  // const [epicsList] = useState<ProjectEpic[]>(initialEpics);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const epicIdFromUrl = searchParams.get('epicId') || '';
   const taskStatus = searchParams.get('status') || '';
 
+  // 1. Members state from Redux
   const {
     list: membersData,
     loading: isMembersLoading,
     isFetched,
   } = useAppSelector((state) => state.members);
+
+  // 2. Epics state from Redux
+  const { projectEpics, loading: isEpicsLoading } = useAppSelector(
+    (state) => state.projectEpics,
+  );
 
   const {
     register,
@@ -64,16 +72,36 @@ const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
     },
   });
 
+  // Fetch Members & Epics on Mount
   useEffect(() => {
     if (!projectId) return;
 
+    // Fetch Members
     const isDifferentProject =
       membersData.length > 0 && membersData[0].project_id !== projectId;
 
     if ((!isFetched && !isMembersLoading) || isDifferentProject) {
       dispatch(fetchProjectMembers(projectId));
     }
-  }, [projectId, dispatch, isFetched, isMembersLoading, membersData]);
+
+    // Fetch Epics via Redux
+    dispatch(
+      getProjectEpics({
+        projectId,
+        limit: 10, // First 10 epics for select dropdown
+        offset: 0,
+        // accessToken,
+      }),
+    );
+  }, [
+    projectId,
+    accessToken,
+    dispatch,
+    isFetched,
+    isMembersLoading,
+    membersData,
+  ]);
+  // [projectId, dispatch, isFetched, isMembersLoading, membersData]
 
   const onSubmit = async (data: TaskFormInputs) => {
     try {
@@ -156,7 +184,7 @@ const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
         label="EPIC"
         placeholder="Select Epic Link..."
         error={errors.epic_id?.message}
-        options={epicsList.map((epic) => ({
+        options={projectEpics.map((epic) => ({
           value: epic.id,
           label: `${epic.epic_id}`,
         }))}

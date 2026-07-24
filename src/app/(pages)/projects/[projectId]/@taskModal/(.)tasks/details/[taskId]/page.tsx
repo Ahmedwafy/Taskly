@@ -14,6 +14,8 @@ export default function InterceptedTaskModal({
   const router = useRouter();
   const { projectId, taskId } = use(params);
 
+  console.log(`taskId`, taskId); // taskId new
+
   return (
     <TaskDetailsPopUpModal
       taskId={taskId}

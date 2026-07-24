@@ -86,3 +86,20 @@ export interface ProjectMember {
     avatar_url?: string;
   };
 }
+//====================================================
+// export interface FetchProjectEpicsParams {
+//   projectId: string;
+//   limit: number;
+//   offset: number;
+//   searchTerm?: string;
+//   accessToken: string;
+// }
+export interface GetProjectEpicsParams {
+  projectId: string;
+  limit: number;
+  offset: number;
+  searchTerm?: string;
+}
+export interface FetchProjectEpicsParams extends GetProjectEpicsParams {
+  accessToken: string;
+}

@@ -1,4 +1,7 @@
 // src → features → epics → epicsSlice.ts
+
+// 1 epic details
+
 import { EpicDetails } from '@/types/shared';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
@@ -48,12 +51,13 @@ export const fetchEpicDetails = createAsyncThunk(
       );
     }
   },
+
   {
     // Cache Guard: Prevent refetching if this exact epic is already loaded
     condition: ({ epicId }, { getState }) => {
-      const { epics } = getState() as { epics: EpicsState };
+      const { singleEpic } = getState() as { singleEpic: EpicsState };
 
-      if (epics.loading || epics.selectedEpic?.id === epicId) {
+      if (singleEpic.loading || singleEpic.selectedEpic?.id === epicId) {
         return false;
       }
     },
