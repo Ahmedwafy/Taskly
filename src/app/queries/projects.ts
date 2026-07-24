@@ -73,7 +73,7 @@ export const fetchAllProjects = cache(
     return parsed.data;
   },
 );
-
+// src > app > queries > projects.ts
 // ==============================================================
 // ::: Get Project's Tasks :::
 // ==============================================================

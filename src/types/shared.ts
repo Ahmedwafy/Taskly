@@ -103,3 +103,35 @@ export interface GetProjectEpicsParams {
 export interface FetchProjectEpicsParams extends GetProjectEpicsParams {
   accessToken: string;
 }
+// ============================================
+interface Assignee {
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+}
+interface Epic {
+  id: string;
+  title: string;
+  epic_id: string;
+}
+interface Created_By {
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+}
+export interface ProjectTask {
+  id: string;
+  project_id: string;
+  epic_id: string;
+  title: string;
+  description: string;
+  status: string; // "TO_DO", "IN_PROGRESS" ...
+  created_at: string;
+  due_date: string;
+  task_id: string;
+  assignee: Assignee;
+  epic: Epic;
+  created_by: Created_By;
+}

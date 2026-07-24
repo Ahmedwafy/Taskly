@@ -1,13 +1,10 @@
 // src > app > component > organisms > TaskDetailsPopUpModal.tsx
 'use client';
-import { ProjectTask } from '@/features/tasks/tasksSlice';
-import { formatDate, getInitials, getStatusColors } from '@/lib/helpers';
+import { useIsMobile } from '@/app/hooks/useIsMobile';
 import { useEffect, useState } from 'react';
-import Link from '@/../public/svgIcons/Link.svg';
-import TaskDetailSkeleton from '../loadingSkeletons/TaskDetailsPopUpLoadingSkeleton';
-import StackIcon from '@/../public/svgIcons/StackIcon.svg';
 import { useAppDispatch, useAppSelector } from '@/redux/reduxHooks';
-import { toast } from 'sonner';
+import { formatDate, getInitials, getStatusColors } from '@/lib/helpers';
+import TaskDetailSkeleton from '../loadingSkeletons/TaskDetailsPopUpLoadingSkeleton';
 import { fetchProjectMembers } from '@/features/members/membersSlice';
 import { getProjectEpics } from '@/features/epics/projectEpicsSlice';
 import Select, {
@@ -16,9 +13,13 @@ import Select, {
   OptionProps,
 } from 'react-select';
 import { STATUS_OPTIONS } from '@/lib/enums';
-import { useIsMobile } from '@/app/hooks/useIsMobile';
+import Link from '@/../public/svgIcons/Link.svg';
+import StackIcon from '@/../public/svgIcons/StackIcon.svg';
 import DoneTaskIcon from '@/../public/svgIcons/doneTaskOnMobile.svg';
 import Close from '@/../public/svgIcons/CloseIcon.svg';
+import { toast } from 'sonner';
+import { ProjectTask } from '@/types/shared';
+import { setProjectTaskUpdate } from '@/features/projectTasks/ProjectTasksSlice';
 
 // ----------------------------------------------------------------------
 // Types & Custom Components for React Select
@@ -93,7 +94,6 @@ const TaskDetailsPopUpModal = ({
   // Local Form Buffers for input • onBlur handling •
   const [titleInput, setTitleInput] = useState('');
   const [descInput, setDescInput] = useState('');
-
   // Redux Selectors • get list of members •
   const {
     list: membersData,
@@ -152,24 +152,23 @@ const TaskDetailsPopUpModal = ({
   const statusColors = getStatusColors(task.status);
 
   // • • Centralized Optimistic PATCH Handler • •
+
+  // Make handlePatchTask return whether it succeeded
   const handlePatchTask = async (
     fieldKey: string,
     dbPayload: Record<string, unknown>,
     optimisticPatch: Partial<ProjectTask>,
     toastMessage: string,
-  ) => {
-    if (!task) return;
+  ): Promise<boolean> => {
+    if (!task) return false;
 
-    // Snapshot state before mutation for quick rollback - if update fails -
     const previousTaskState = { ...task };
 
-    // 1. Immediate Optimistic UI Update
     const updated = { ...task, ...optimisticPatch };
     setTask(updated);
     if (onTaskUpdated) onTaskUpdated(updated);
 
-    // 2. Lock field state
-    setUpdatingFields((prev) => ({ ...prev, [fieldKey]: true })); // this input field is pending or loading ( during pending request )
+    setUpdatingFields((prev) => ({ ...prev, [fieldKey]: true }));
 
     try {
       const response = await fetch(
@@ -182,26 +181,74 @@ const TaskDetailsPopUpModal = ({
       );
 
       const resData = await response.json();
-
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(resData.error || 'Failed to update task');
-      }
+
+      dispatch(setProjectTaskUpdate({ id: task.id, ...optimisticPatch }));
       toast.success(toastMessage);
+      return true;
     } catch (err: unknown) {
-      // 3. Rollback UI on network/server failure
       setTask(previousTaskState);
       if (onTaskUpdated) onTaskUpdated(previousTaskState);
-
-      // Revert input field buffers
       setTitleInput(previousTaskState.title || '');
       setDescInput(previousTaskState.description || '');
-
       toast.error('Failed to update task. Please try again.');
+      return false;
     } finally {
-      setUpdatingFields((prev) => ({ ...prev, [fieldKey]: false })); // this input field is not pending or loading
+      setUpdatingFields((prev) => ({ ...prev, [fieldKey]: false }));
     }
   };
 
+  // Status change now moves the card between Board columns too
+  const handleStatusChange = async (newStatus: string) => {
+    if (!task || newStatus === task.status) return;
+    const originalStatus = task.status;
+
+    const success = await handlePatchTask(
+      'status',
+      { status: newStatus },
+      { status: newStatus },
+      'status sccessfuly updated',
+    );
+
+    if (success) {
+      window.dispatchEvent(
+        new CustomEvent('dnd-task-status-updated', {
+          detail: {
+            taskId: task.id,
+            fromStatus: originalStatus,
+            toStatus: newStatus,
+            taskData: { ...task, status: newStatus },
+          },
+        }),
+      );
+    }
+  };
+  // Status change now moves the card between Board columns too
+  // const handleStatusChange = async (newStatus: string) => {
+  //   if (!task || newStatus === task.status) return;
+  //   const originalStatus = task.status;
+
+  //   const success = await handlePatchTask(
+  //     'status',
+  //     { status: newStatus },
+  //     { status: newStatus },
+  //     'status sccessfuly updated',
+  //   );
+
+  //   if (success) {
+  //     window.dispatchEvent(
+  //       new CustomEvent('dnd-task-status-updated', {
+  //         detail: {
+  //           taskId: task.id,
+  //           fromStatus: originalStatus,
+  //           toStatus: newStatus,
+  //           taskData: { ...task, status: newStatus },
+  //         },
+  //       }),
+  //     );
+  //   }
+  // };
   // --- Handlers for Specific Fields ---
   const handleTitleBlur = () => {
     if (!task) return;
@@ -286,16 +333,16 @@ const TaskDetailsPopUpModal = ({
     );
   };
 
-  const handleStatusChange = (newStatus: string) => {
-    if (!task || newStatus === task.status) return;
+  // const handleStatusChange = (newStatus: string) => {
+  //   if (!task || newStatus === task.status) return;
 
-    handlePatchTask(
-      'status',
-      { status: newStatus },
-      { status: newStatus },
-      'status sccessfuly updated',
-    );
-  };
+  //   handlePatchTask(
+  //     'status',
+  //     { status: newStatus },
+  //     { status: newStatus },
+  //     'status sccessfuly updated',
+  //   );
+  // };
 
   const handleDueDateChange = (dateString: string) => {
     if (!task) return;

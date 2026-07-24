@@ -78,36 +78,3 @@ export async function updateTaskDetails({
 
   return Array.isArray(data) ? data[0] : data;
 }
-// interface UpdateTaskStatusProps {
-//   taskId: string;
-//   status: string;
-//   accessToken: string;
-// }
-// export async function updateTaskStatus({
-//   taskId,
-//   status,
-//   accessToken,
-// }: UpdateTaskStatusProps) {
-//   const url = `${baseURL}${endPoints.task.updateTaskDetails(taskId)}`;
-
-//   const response = await fetch(url, {
-//     method: 'PATCH',
-//     headers: {
-//       'Content-Type': 'application/json',
-//       apikey: supabaseKey,
-//       Authorization: `Bearer ${accessToken}`,
-//       Prefer: 'return=representation',
-//     },
-//     body: JSON.stringify({ status }),
-//   });
-
-//   if (!response.ok) {
-//     const errorData = await response.json().catch(() => ({}));
-//     throw new Error(
-//       errorData?.message || errorData?.error || 'Failed to update task status',
-//     );
-//   }
-
-//   const data = await response.json();
-//   return Array.isArray(data) ? data[0] : data;
-// }

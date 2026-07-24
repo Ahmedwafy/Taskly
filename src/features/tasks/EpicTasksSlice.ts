@@ -1,38 +1,7 @@
-// src → features → tasks → tasksSlice.ts
+// src → features → tasks → EpicTasksSlice.ts
+import { ProjectTask } from '@/types/shared';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-interface Assignee {
-  id: string;
-  name: string;
-  email: string;
-  department: string;
-}
-interface Epic {
-  id: string;
-  title: string;
-  epic_id: string;
-}
-interface Created_By {
-  id: string;
-  name: string;
-  email: string;
-  department: string;
-}
-export interface ProjectTask {
-  id: string;
-  project_id: string;
-  epic_id: string;
-  title: string;
-  description: string;
-  status: string; // "TO_DO", "IN_PROGRESS" ...
-  created_at: string;
-  due_date: string;
-  task_id: string;
-  assignee: Assignee;
-  epic: Epic;
-  created_by: Created_By;
-}
-// ------------------------------------------------------
 interface TasksState {
   list: ProjectTask[];
   loading: boolean;
@@ -102,7 +71,22 @@ const tasksSlice = createSlice({
       state.fetchedEpicId = null;
       state.error = null;
     },
+
+    // After Successful PATCH ( Update ) for task details → Update ALL UI State
+    updateTaskInStore(state, action) {
+      const updatedTask = action.payload;
+
+      const index = state.list.findIndex((task) => task.id === updatedTask.id);
+
+      if (index !== -1) {
+        state.list[index] = {
+          ...state.list[index],
+          ...updatedTask,
+        };
+      }
+    },
   },
+
   extraReducers: (builder) => {
     builder
       .addCase(fetchEpicTasks.pending, (state) => {
@@ -121,5 +105,6 @@ const tasksSlice = createSlice({
   },
 });
 
-export const { clearTasks } = tasksSlice.actions;
+// export const { clearTasks } = tasksSlice.actions;
+export const { clearTasks, updateTaskInStore } = tasksSlice.actions;
 export default tasksSlice.reducer;

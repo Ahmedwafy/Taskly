@@ -1,11 +1,11 @@
 // src > app > components > pages > TaskCard.tsx
 'use client';
 import { formatDate, getInitials } from '@/lib/helpers';
-import { ProjectTask } from '@/features/tasks/tasksSlice';
 import TaskCardSkeleton from '../loadingSkeletons/TaskCardSkeleton';
 import DateIcon from '@/../public/svgIcons/Date.svg';
 import { useRouter } from 'next/navigation';
 import { useDraggable } from '@dnd-kit/core';
+import { ProjectTask } from '@/types/shared';
 
 interface TaskCardProps {
   loading: boolean;
@@ -81,7 +81,7 @@ const DraggableTaskCard = ({ task, projectId }: DraggableTaskCardProps) => {
       onClick={(e) => {
         // Prevent trigger drag events on click action
         e.stopPropagation();
-        router.push(`/projects/${projectId}/tasks/${task.id}`);
+        router.push(`/projects/${projectId}/tasks/details/${task.id}`);
       }}
       className={`relative overflow-hidden flex flex-col p-4 gap-6 transition text-sm shadow-sm bg-white rounded-md select-none touch-none w-full
         ${task.status === 'BLOCKED' && 'bg-[#FFDAD633]! border border-[#BA1A1A1A]!'}

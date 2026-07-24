@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { ProjectTask } from '@/features/tasks/tasksSlice';
 import AddTaskIcon from '@/../public/svgIcons/AddTaskIcon.svg';
 import AddTaskIcon2 from '@/../public/svgIcons/AddTaskIcon2.svg';
 import TaskCard from '../molecules/TaskCard';
@@ -8,6 +7,9 @@ import Link from 'next/link';
 import { getTasksStatusDOTsStyle, getTasksStatusStyle } from '@/lib/helpers';
 import TaskCardSkeleton from '../loadingSkeletons/TaskCardSkeleton';
 import { useDroppable } from '@dnd-kit/core';
+import { ProjectTask } from '@/types/shared';
+import { useAppSelector } from '@/redux/reduxHooks';
+// import { updateTaskInStore } from '@/features/tasks/EpicTasksSlice';
 
 interface TaskColumnProps {
   projectId: string;
@@ -43,6 +45,11 @@ const TaskColumn = ({
     id: status,
   });
 
+  // get last updated task details from redux
+  const optimisticUpdates = useAppSelector(
+    (state) => state.projectTasks.updates,
+  );
+
   const setMergedRef = useCallback(
     (node: HTMLDivElement | null) => {
       columnRef.current = node;
@@ -56,15 +63,25 @@ const TaskColumn = ({
     hasMoreRef.current = hasMore;
   }, [hasMore]);
 
+  // Any locally updated fields (status, title, assignee, etc.)
+  // override the original task data without requiring a re-fetch. ( Optimistic Update )
+  const mergedTasks = useMemo(() => {
+    return tasks.map((task) => ({
+      ...task,
+      ...(optimisticUpdates[task.id] || {}),
+    }));
+  }, [tasks, optimisticUpdates]);
+
   // Client-side task filtering based on title or task code
   const filteredTasks = useMemo(() => {
-    if (!searchQuery.trim()) return tasks;
-    return tasks.filter(
+    if (!searchQuery.trim()) return mergedTasks;
+
+    return mergedTasks.filter(
       (task) =>
         task.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.task_id?.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-  }, [tasks, searchQuery]);
+  }, [mergedTasks, searchQuery]);
 
   // Sync state when cards move across columns
   useEffect(() => {
@@ -269,6 +286,7 @@ const TaskColumn = ({
                   loading={false}
                   error={error}
                   tasks={[task]}
+                  // task={task}
                   projectId={projectId}
                 />
               </div>

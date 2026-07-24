@@ -2,8 +2,7 @@
 import * as icons from '@/../public/icons/icons';
 import { useState } from 'react';
 import Image from 'next/image';
-import { EpicDetails, ProjectMember } from '@/types/shared';
-import { ProjectTask } from '@/features/tasks/tasksSlice';
+import { EpicDetails, ProjectMember, ProjectTask } from '@/types/shared';
 import EpicSkeletonPopup from '../loadingSkeletons/EpicDetailsPopUpLoadingSkeleton';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -401,7 +400,8 @@ const EpicDetailsPopUpModal = ({
                           key={task.id}
                           onClick={() =>
                             router.push(
-                              `/projects/${projectId}/tasks/${task.id}`,
+                              // `/projects/${projectId}/tasks/${task.id}`,
+                              `/projects/${projectId}/tasks/details/${task.id}`,
                             )
                           }
                           className="flex items-center gap-3 py-2 px-4 border border-slate-100 rounded-lg bg-white hover:bg-slate-50 transition cursor-pointer"

@@ -1,9 +1,9 @@
 // src > app > components > organisms > TaskListView.tsx
 'use client';
-import { ProjectTask } from '@/features/tasks/tasksSlice';
 import { formatDate, getInitials, getStatusStyle } from '@/lib/helpers';
 import TaskListSkeleton from '../loadingSkeletons/TaskListSkeleton';
 import { useRouter } from 'next/navigation';
+import { ProjectTask } from '@/types/shared';
 
 interface TasksListViewProps {
   tasks: ProjectTask[];
@@ -85,7 +85,7 @@ const TasksListView = ({
                   className="hover:bg-slate-50/50 transition-colors cursor-pointer w-full "
                   onClick={() =>
                     router.push(
-                      `/projects/${projectId}/tasks/${task.id}?view=list`,
+                      `/projects/${projectId}/tasks/details/${task.id}?view=list`,
                     )
                   }
                   key={task.id}

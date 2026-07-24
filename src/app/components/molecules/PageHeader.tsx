@@ -13,10 +13,10 @@ import { TASKS_VIEW_OPTIONS } from '@/lib/enums';
 import { ReactNode } from 'react';
 
 interface PageHeaderTypes {
-  href: string;
+  href?: string;
   title: string;
   description?: string;
-  buttonName: string;
+  buttonName?: string;
   icon?: StaticImageData;
   projectName?: string;
   className?: string;
@@ -53,6 +53,7 @@ const PageHeader = ({
   const isProjectTasks = title === 'Active Workboard';
   const isProjectMembers = title === 'Project Members';
   const isEditProjects = title === 'Edit Projects';
+  const isMyStatistics = title === 'Weekly Planner';
 
   if (isProjectEpics) {
     return (
@@ -84,14 +85,15 @@ const PageHeader = ({
                 </span>
               )}
             </div>
-
-            <Link href={href}>
-              <Button name={buttonName} className="w-55! mt-10 h-15">
-                <div className="my-auto">
-                  {icon && <Image src={icon} alt="Member" />}
-                </div>
-              </Button>
-            </Link>
+            {href && (
+              <Link href={href}>
+                <Button name={buttonName} className="w-55! mt-10 h-15">
+                  <div className="my-auto">
+                    {icon && <Image src={icon} alt="Member" />}
+                  </div>
+                </Button>
+              </Link>
+            )}
           </div>
         </header>
 
@@ -171,12 +173,13 @@ const PageHeader = ({
           <h1 className="title-style">{title}</h1>
           {description && <p className="text-gray-500">{description}</p>}
         </div>
-
-        <Link href={href}>
-          <Button name={buttonName} className="w-60! mt-10 h-15">
-            <InviteMember className="scale-120" />
-          </Button>
-        </Link>
+        {href && (
+          <Link href={href}>
+            <Button name={buttonName} className="w-60! mt-10 h-15">
+              <InviteMember className="scale-120" />
+            </Button>
+          </Link>
+        )}
       </header>
     );
   }
@@ -196,6 +199,20 @@ const PageHeader = ({
     );
   }
 
+  if (isMyStatistics) {
+    return (
+      <header className={`hidden md:flex justify-between w-full ${className}`}>
+        <div className="w-full h-fit pt-2 pl-4 flex flex-col gap-2">
+          {/* <div className="flex gap-4">
+            <Breadcrumb projectName={projectName} />
+          </div> */}
+          <h1 className="title-style">{title}</h1>
+          {description && <p className="text-gray-500">{description}</p>}
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header className={`hidden md:flex justify-between w-full ${className}`}>
       {/* --- Header --- */}
@@ -206,12 +223,13 @@ const PageHeader = ({
         <h1 className="title-style">{title}</h1>
         {description && <p className="text-gray-500">{description}</p>}
       </div>
-
-      <Link href={href}>
-        <Button name={buttonName} className="w-60! mt-10 h-15">
-          {SVGicon && SVGicon}
-        </Button>
-      </Link>
+      {href && (
+        <Link href={href}>
+          <Button name={buttonName} className="w-60! mt-10 h-15">
+            {SVGicon && SVGicon}
+          </Button>
+        </Link>
+      )}
     </header>
   );
 };

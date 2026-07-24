@@ -1,7 +1,5 @@
 // src → app → components → organisms → Side-Bar.tsx
 'use client';
-import Image from 'next/image';
-import * as icons from '../../../../public/icons/icons';
 import { useState } from 'react';
 import { StaticImageData } from 'next/image';
 import Link from 'next/link';
@@ -9,10 +7,17 @@ import { usePathname } from 'next/navigation';
 import LOGO from '@/../public/svgIcons/LOGO.svg';
 import CollapseIcon from '@/../public/svgIcons/Collapse.svg';
 import LogoutIcon from '@/../public/svgIcons/Logout.svg';
+import ProjectsIcon from '@/../public/svgIcons/Projects.svg';
+import StatisticsIcon from '@/../public/svgIcons/Statistics.svg';
+import EpicsIcon from '@/../public/svgIcons/Epics.svg';
+import TasksIcon from '@/../public/svgIcons/Tasks.svg';
+import MembersIcon from '@/../public/svgIcons/Members.svg';
+import DetailsIcon from '@/../public/svgIcons/Details.svg';
 
 interface SideBarProps {
   isCollapsed?: boolean;
   mobileIcon?: StaticImageData;
+
   onItemClick?: () => void;
   handleLogout?: () => void;
   onToggleCollapse?: () => void;
@@ -32,13 +37,18 @@ const SideBar = ({
       : internalCollapsed;
 
   const pathname = usePathname(); // Ex: '/projects/123/epics'
+
   const isProjectDetailsPage = /^\/projects\/[^/]+/.test(pathname);
+  // but :
+  // When navigating directly to /my-statistics, pathname.split('/')[2] will be undefined.
+  // If a user clicks a project link like /projects/undefined/epics, it will break.
+
   const projectId = pathname.split('/')[2]; // Ex: ['', 'projects', '123', 'epics']
 
   const navItems = [
     {
       label: 'Projects',
-      icon: icons.Collapsed_Projects,
+      Icon: ProjectsIcon,
       alt: 'Projects',
       href: '/projects',
     },
@@ -46,26 +56,32 @@ const SideBar = ({
     ...(isProjectDetailsPage
       ? [
           {
+            label: 'My Statistics',
+            Icon: StatisticsIcon,
+            alt: 'My Statistics',
+            href: `/my-statistics`,
+          },
+          {
             label: 'Project Epics',
-            icon: icons.Epics,
+            Icon: EpicsIcon,
             alt: 'Project Epics',
             href: `/projects/${projectId}/epics`,
           },
           {
             label: 'Project Tasks',
-            icon: icons.Tasks,
+            Icon: TasksIcon,
             alt: 'Project Tasks',
             href: `/projects/${projectId}/tasks?view=board`,
           },
           {
             label: 'Project Members',
-            icon: icons.Members,
+            Icon: MembersIcon,
             alt: 'Project Members',
             href: `/projects/${projectId}/members`,
           },
           {
             label: 'Project Edit',
-            icon: icons.Details,
+            Icon: DetailsIcon,
             alt: 'Project Edit',
             href: `/projects/${projectId}/edit`,
           },
@@ -118,6 +134,8 @@ const SideBar = ({
         {/* ○ ○ ○  Navigation ○ ○ ○  */}
         <div className="flex flex-col gap-1 pl-6 py-6">
           {navItems.map((item) => {
+            const Icon = item.Icon;
+
             return (
               <Link
                 key={item.label}
@@ -125,9 +143,8 @@ const SideBar = ({
                 onClick={() => onItemClick?.()}
                 className="group list-unit flex items-center gap-3 overflow-hidden rounded-sm py-4 transition-all duration-500 ease-in-out min-w-[90%] mx-auto hover:bg-white hover:shadow-sm hover:text-neutral-100 cursor-pointer hover:pl-4 whitespace-nowrap"
               >
-                {/* Wrapper to keep image layout stable */}
-                <div className="shrink-0">
-                  <Image src={item.icon} alt={item.alt} />
+                <div className="shrink-0 flex items-center justify-center">
+                  <Icon className="w-5 h-5" />
                 </div>
 
                 <span

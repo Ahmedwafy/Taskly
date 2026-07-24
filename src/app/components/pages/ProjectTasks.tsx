@@ -7,11 +7,10 @@ import Plus from '@/../public/svgIcons/Plus.svg';
 import Link from 'next/link';
 import PageHeader from '../molecules/PageHeader';
 import TaskColumn from '../organisms/TaskColumn';
-import { ProjectProps } from '@/types/shared';
+import { ProjectProps, ProjectTask } from '@/types/shared';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import InputField from '../atoms/input';
-import { ProjectTask } from '@/features/tasks/tasksSlice';
 import { toast } from 'sonner';
 import DotsIcon from '@/../public/svgIcons/DotsIcon.svg';
 import {
@@ -31,6 +30,7 @@ import {
 import { useDebounce } from '@/app/hooks/useDebounce';
 import MobileTaskSkeleton from '../loadingSkeletons/MobileTasksSkeleton';
 import { useIsMobile } from '@/app/hooks/useIsMobile';
+import { useAppSelector } from '@/redux/reduxHooks';
 
 interface ProjectTasksProps {
   projectId: string;
@@ -60,13 +60,14 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
     searchParams.get('view') === 'list' ? 'LIST_VIEW' : 'BOARD_VIEW';
 
   const [activeTask, setActiveTask] = useState<ProjectTask | null>(null);
-  // const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  // const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // === custom hooks ===
   const debouncedSearch = useDebounce(searchQuery);
   const isMobile = useIsMobile();
+
+  // === Redux: latest optimistic field updates (title/desc/status/assignee/epic/due_date) ===
+  const taskUpdates = useAppSelector((state) => state.projectTasks.updates);
 
   // === List View State ===
   const [listTasks, setListTasks] = useState<ProjectTask[]>([]);
@@ -116,7 +117,6 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
           throw new Error('Failed to fetch tasks');
         }
 
-        // const results = await response.json();
         const { data, total } = await response.json();
 
         setListTasks(data);
@@ -148,15 +148,23 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
     };
   }, [currentValue, projectId, listPage, fetchListTasks, isMobile]);
 
+  // Merge in latest Redux-cached field updates (from TaskDetailsPopUpModal PATCHes)
+  const mergedListTasks = useMemo(() => {
+    return listTasks.map((task) => ({
+      ...task,
+      ...(taskUpdates[task.id] || {}),
+    }));
+  }, [listTasks, taskUpdates]);
+
   // filtering for Desktop List View
   const filteredListTasks = useMemo(() => {
-    if (!debouncedSearch.trim()) return listTasks;
-    return listTasks.filter(
+    if (!debouncedSearch.trim()) return mergedListTasks;
+    return mergedListTasks.filter(
       (task) =>
         task.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         task.task_id.toLowerCase().includes(debouncedSearch.toLowerCase()),
     );
-  }, [listTasks, debouncedSearch]);
+  }, [mergedListTasks, debouncedSearch]);
   // ●────────────────────────────────────────● End List View ●───────────────────────────────────────────────────●
 
   // ●────────────────────────────────────────● Start Mobile View ●───────────────────────────────────────────────●
@@ -173,7 +181,6 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
         const response = await fetch(
           `/api/projects/${projectId}/project-tasks?limit=${LIMIT_MOBILE}&offset=${currentOffset}`,
         );
-        // const response = await res.json();
 
         if (!response.ok) throw new Error('Failed to fetch tasks');
 
@@ -269,19 +276,26 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
     isMobile,
   ]);
 
+  // Merge in latest Redux-cached field updates (from TaskDetailsPopUpModal PATCHes)
+  const mergedMobileTasks = useMemo(() => {
+    return mobileTasks.map((task) => ({
+      ...task,
+      ...(taskUpdates[task.id] || {}),
+    }));
+  }, [mobileTasks, taskUpdates]);
+
   const filteredMobileTasks = useMemo(() => {
-    if (!debouncedSearch.trim()) return mobileTasks;
-    return mobileTasks.filter(
+    if (!debouncedSearch.trim()) return mergedMobileTasks;
+    return mergedMobileTasks.filter(
       (task) =>
         task.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         task.task_id.toLowerCase().includes(debouncedSearch.toLowerCase()),
     );
-  }, [mobileTasks, debouncedSearch]);
+  }, [mergedMobileTasks, debouncedSearch]);
   // ●────────────────────────────────────────● End Mobile View ●───────────────────────────────────────────────●
 
   // ●────────────────────────────────────────● Start Drag & Drop ●───────────────────────────────────────────────●
   const handleDragStart = (event: DragStartEvent) => {
-    // Grab the data cleanly from the dnd-kit event context
     const taskData = event.active.data.current?.task as ProjectTask | undefined;
     if (taskData) {
       setActiveTask(taskData);
@@ -296,14 +310,12 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
     const taskId = active.id as string;
     const newStatus = over.id as string;
 
-    // Extract the task object natively
     const activeTaskData = active.data.current?.task as ProjectTask | undefined;
     if (!activeTaskData) return;
 
     const originalStatus = activeTaskData.status;
     if (originalStatus === newStatus) return;
 
-    // Fire your events using the clean object reference
     const dndEvent = new CustomEvent('dnd-task-status-updated', {
       detail: {
         taskId,
@@ -463,7 +475,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
               <div
                 key={task.id}
                 onClick={() =>
-                  router.push(`/projects/${projectId}/tasks/${task.id}`)
+                  router.push(`/projects/${projectId}/tasks/details/${task.id}`)
                 }
                 className="flex flex-col gap-6 p-4 bg-white rounded-lg shadow-sm cursor-pointer 
                 active:scale-95 transition-transform"

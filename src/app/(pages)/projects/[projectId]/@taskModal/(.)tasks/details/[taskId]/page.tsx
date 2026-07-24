@@ -1,6 +1,6 @@
-// intercepts navigations to /projects/[projectId]/tasks/[taskId]
+// intercepts navigations to /projects/[projectId]/tasks/details/[taskId]
 
-// src > app > (pages) > projects > [projectId] > @taskModal > (.)tasks > [taskId] > page.tsx
+// src > app > (pages) > projects > [projectId] > @taskModal > (.)tasks > details > [taskId] > page.tsx
 'use client';
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
@@ -24,3 +24,6 @@ export default function InterceptedTaskModal({
     />
   );
 }
+/* 
+    this page will show as a pop up when click on the task card
+*/
