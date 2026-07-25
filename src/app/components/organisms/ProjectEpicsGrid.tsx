@@ -1,10 +1,10 @@
 // src > app > components > organisms > ProjectEpicsGrid.tsx
 
 import { ProjectEpic } from '@/types/shared';
-import { getInitials } from '@/lib/helpers';
 import DateIcon from '@/../public/svgIcons/Date.svg';
 import DotsIcon from '@/../public/svgIcons/DotsIcon.svg';
 import CreatedByIcon from '@/../public/svgIcons/CreatedByIcon.svg';
+import { getInitials } from '@/lib/helpers/user';
 
 interface ProjectEpicsProps {
   projectEpics: ProjectEpic[];

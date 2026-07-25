@@ -8,7 +8,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 // 1. Import React Select
 import Select, { SingleValue } from 'react-select';
-import { getInitials } from '@/lib/helpers';
+import { getInitials } from '@/lib/helpers/user';
+import { useRef } from 'react';
 
 interface EpicDetailsPopUpModalProps {
   selectedEpic: EpicDetails | null;
@@ -46,6 +47,7 @@ const EpicDetailsPopUpModal = ({
   const [localTitle, setLocalTitle] = useState(selectedEpic?.title || '');
   const [localDesc, setLocalDesc] = useState(selectedEpic?.description || '');
   const router = useRouter();
+  const dateInputRef = useRef<HTMLInputElement>(null);
 
   const handleBlurSave = (
     field: 'title' | 'description',
@@ -99,7 +101,7 @@ const EpicDetailsPopUpModal = ({
   return (
     <>
       {/* ●──────────────────────────● Desktop View ●─────────────────────────● */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#041B3C66] p-4 backdrop-blur-xs animate-fadeIn">
+      <div className="hidden md:flex fixed inset-0 z-50 items-center justify-center bg-[#041B3C66] p-4 backdrop-blur-xs animate-fadeIn">
         <div className="absolute inset-0" onClick={closeModal} />
 
         <div className="relative w-full max-w-3xl bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] z-10 text-[#1e293b]">
@@ -272,7 +274,6 @@ const EpicDetailsPopUpModal = ({
                             borderColor: '#94a3b8',
                           },
                         }),
-                        // CRITICAL FIX: Forces the container holding the text/avatar to stay inline and layout correctly
                         valueContainer: (baseStyles) => ({
                           ...baseStyles,
                           display: 'flex',
@@ -280,7 +281,6 @@ const EpicDetailsPopUpModal = ({
                           padding: '2px 8px',
                           gap: '4px',
                         }),
-                        // CRITICAL FIX: Destroys react-select's absolute positioning defaults on the text value
                         singleValue: (baseStyles) => ({
                           ...baseStyles,
                           position: 'static',
@@ -319,9 +319,13 @@ const EpicDetailsPopUpModal = ({
                     <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">
                       Deadline
                     </span>
-                    <div className="relative flex items-center gap-2 text-slate-700 hover:bg-slate-50 px-2 py-1 rounded-lg transition border border-transparent hover:border-slate-200">
+                    <div
+                      onClick={() => dateInputRef.current?.showPicker()}
+                      className="relative flex items-center gap-2 text-slate-700 hover:bg-slate-50 px-2 py-1 rounded-lg transition border border-transparent hover:border-slate-200 cursor-pointer"
+                    >
                       <Image src={icons.Date} alt="deadline" />
                       <input
+                        ref={dateInputRef}
                         type="date"
                         value={
                           selectedEpic.deadline
@@ -335,8 +339,9 @@ const EpicDetailsPopUpModal = ({
                               : null,
                           });
                         }}
-                        className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                        className="absolute opacity-0 pointer-events-none"
                       />
+
                       <span className="text-sm font-medium">
                         {selectedEpic.deadline
                           ? formatDate(selectedEpic.deadline)
@@ -400,7 +405,6 @@ const EpicDetailsPopUpModal = ({
                           key={task.id}
                           onClick={() =>
                             router.push(
-                              // `/projects/${projectId}/tasks/${task.id}`,
                               `/projects/${projectId}/tasks/details/${task.id}`,
                             )
                           }
@@ -444,6 +448,318 @@ const EpicDetailsPopUpModal = ({
       </div>
 
       {/* ●──────────────────────────● Mobile View ●─────────────────────────● */}
+      <div className="md:hidden fixed inset-0 z-50 flex items-center justify-center bg-[#041B3C66] p-4 font-sans text-[#1e293b]">
+        <div className="absolute inset-0" onClick={closeModal} />
+
+        <div className="relative w-full max-w-97.5 bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[92vh] z-10">
+          {/* Header Box (Light Blue Header) */}
+          <div className="bg-[#f7f8fe] p-5 border-b border-[#eef0f8]">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-[#3b5998] tracking-wider uppercase">
+                {selectedEpic?.epic_id || 'EPIC-201'}
+              </span>
+              <button
+                onClick={closeModal}
+                className="text-[#64748b] hover:text-[#1e293b] p-1 rounded-md transition"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="bg-white border border-[#e2e8f0] rounded-xl px-4 py-3 shadow-2xs">
+              <input
+                type="text"
+                value={localTitle}
+                onChange={(e) => setLocalTitle(e.target.value)}
+                onBlur={() => handleBlurSave('title', localTitle)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') e.currentTarget.blur();
+                }}
+                className="text-[17px] font-bold text-[#0f172a] w-full bg-transparent outline-none"
+                placeholder="Epic Title"
+              />
+            </div>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="p-5 overflow-y-auto space-y-6 flex-1 text-slate-700">
+            {isLoadingDetails && <EpicSkeletonPopup />}
+
+            {errorMsg && (
+              <div className="p-3 bg-red-50 text-red-600 rounded-lg text-xs font-medium">
+                {errorMsg}
+              </div>
+            )}
+
+            {!isLoadingDetails && !errorMsg && selectedEpic && (
+              <>
+                {/* Description Box */}
+                <div>
+                  <label className="block text-[11px] font-bold text-[#5c6b89] tracking-wider uppercase mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={localDesc}
+                    onChange={(e) => setLocalDesc(e.target.value)}
+                    onBlur={() => handleBlurSave('description', localDesc)}
+                    rows={4}
+                    placeholder="No description provided"
+                    className="w-full border border-[#e2e8f0] rounded-xl p-3 text-[14px] text-[#475569] placeholder-[#94a3b8] focus:outline-none focus:border-[#4f46e5] transition resize-none"
+                  />
+                </div>
+
+                {/* Grid Section 1: Created By & Assignee */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="block text-[11px] font-bold text-[#5c6b89] tracking-wider uppercase mb-2.5">
+                      Created By
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {selectedEpic.created_by?.avatar_url ? (
+                        <Image
+                          src={selectedEpic.created_by.avatar_url}
+                          alt="Creator Avatar"
+                          width={28}
+                          height={28}
+                          className="w-7 h-7 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-7 h-7 rounded-full bg-[#dbe2f9] text-[#2b4c80] flex items-center justify-center text-[11px] font-bold">
+                          {selectedEpic.created_by?.name
+                            ? getInitials(selectedEpic.created_by.name)
+                            : 'EL'}
+                        </div>
+                      )}
+                      <span className="text-[13px] font-semibold text-[#1e293b] truncate">
+                        {selectedEpic.created_by?.name || 'Elena Lopez'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="block text-[11px] font-bold text-[#5c6b89] tracking-wider uppercase mb-2.5">
+                      Assignee
+                    </span>
+                    <Select<MemberOption>
+                      value={currentOption}
+                      options={memberOptions}
+                      onChange={handleAssigneeChange}
+                      isSearchable={false}
+                      styles={{
+                        control: (baseStyles) => ({
+                          ...baseStyles,
+                          minHeight: '36px',
+                          borderRadius: '0.625rem',
+                          borderColor: '#e2e8f0',
+                          backgroundColor: '#ffffff',
+                          boxShadow: 'none',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          paddingLeft: '2px',
+                        }),
+                        valueContainer: (baseStyles) => ({
+                          ...baseStyles,
+                          padding: '0 6px',
+                        }),
+                        singleValue: (baseStyles) => ({
+                          ...baseStyles,
+                          color: '#334155',
+                        }),
+                        indicatorSeparator: () => ({ display: 'none' }),
+                        dropdownIndicator: (baseStyles) => ({
+                          ...baseStyles,
+                          padding: '4px',
+                          color: '#64748b',
+                        }),
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <hr className="border-t border-[#f1f5f9]" />
+
+                {/* Grid Section 2: Deadline & Created At */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="block text-[11px] font-bold text-[#5c6b89] tracking-wider uppercase mb-2">
+                      Deadline
+                    </span>
+                    <div className="relative flex items-center justify-between border border-[#e2e8f0] rounded-xl px-3 py-2 bg-white">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <svg
+                          className="w-4 h-4 text-[#004dc7] shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <span className="text-[13px] font-medium text-[#1e293b] truncate">
+                          {selectedEpic.deadline
+                            ? formatDate(selectedEpic.deadline, 'US')
+                            : 'Set Date'}
+                        </span>
+                      </div>
+                      <svg
+                        className="w-3.5 h-3.5 text-[#64748b] shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                      <input
+                        type="date"
+                        value={
+                          selectedEpic.deadline
+                            ? selectedEpic.deadline.split('T')[0]
+                            : ''
+                        }
+                        onChange={(e) => {
+                          handleUpdateEpicField(selectedEpic.id, {
+                            deadline: e.target.value
+                              ? new Date(e.target.value).toISOString()
+                              : null,
+                          });
+                        }}
+                        className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="block text-[11px] font-bold text-[#5c6b89] tracking-wider uppercase mb-2">
+                      Created At
+                    </span>
+                    <div className="flex items-center gap-2 py-2">
+                      <svg
+                        className="w-4 h-4 text-[#004dc7] shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <span className="text-[13px] font-semibold text-[#1e293b]">
+                        {selectedEpic.created_at
+                          ? formatDate(selectedEpic.created_at, 'US')
+                          : 'Dec 01, 2025'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tasks Header & Counter */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-bold text-[#5c6b89] tracking-wider uppercase">
+                      Tasks
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-[#eaf0fb] text-[#3b5998] px-2.5 py-1 rounded-full">
+                      {epicTasks?.length || 0} Tasks
+                    </span>
+                  </div>
+
+                  {/* Tasks Container / Empty State */}
+                  {!epicTasks || epicTasks.length === 0 ? (
+                    <div className="border-2 border-dashed border-[#e2e8f0] rounded-2xl p-6 flex flex-col items-center justify-center bg-[#f8fafd]">
+                      <div className="w-12 h-12 bg-[#e8eefc] text-[#004dc7] rounded-xl flex items-center justify-center mb-3">
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                          />
+                        </svg>
+                      </div>
+                      <p className="text-[13px] text-[#475569] font-medium text-center mb-4 max-w-50">
+                        No tasks have been added to this epic yet
+                      </p>
+                      <Link
+                        href={`/projects/${projectId}/tasks/new?epicId=${selectedEpic.id}&epic_id=${selectedEpic.epic_id}`}
+                        className="w-full flex justify-center"
+                      >
+                        <button className="px-4 py-2 bg-[#004dc7] hover:bg-[#003da1] text-white font-semibold text-[13px] rounded-lg transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer">
+                          <span>+</span> Add Task
+                        </button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {epicTasks.map((task) => (
+                        <div
+                          key={task.id}
+                          onClick={() =>
+                            router.push(
+                              `/projects/${projectId}/tasks/details/${task.id}`,
+                            )
+                          }
+                          className="flex items-center justify-between py-2.5 px-3.5 border border-[#e2e8f0] rounded-xl bg-white hover:bg-slate-50 transition cursor-pointer"
+                        >
+                          <div className="flex flex-col gap-1 overflow-hidden pr-2">
+                            <span className="font-semibold text-[13px] text-[#0f172a] truncate">
+                              {task.title}
+                            </span>
+                            <div className="flex gap-1.5 items-center">
+                              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#004dc7] text-[9px] font-bold text-white shrink-0">
+                                {task.assignee?.name
+                                  ? getInitials(task.assignee.name)
+                                  : 'U'}
+                              </span>
+                              <span className="text-[12px] text-[#64748b] truncate">
+                                {task.assignee?.name || 'Unassigned'}
+                              </span>
+                            </div>
+                          </div>
+
+                          <span className="text-[12px] font-medium text-[#94a3b8] shrink-0">
+                            {task.due_date
+                              ? formatDate(task.due_date, 'US')
+                              : 'No due date'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
     </>
   );
 };

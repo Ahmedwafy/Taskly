@@ -1,6 +1,6 @@
 // src/app/(pages)/projects/[projectId]/edit/page.tsx
 import { redirect } from 'next/navigation';
-import { fetchProjectById, fetchAllProjects } from '@/app/queries/projects'; // ✅ Import your clean queries
+import { fetchProjectById, fetchAllProjects } from '@/app/queries/projects';
 import EditProjectPage from '@/app/components/pages/EditProjectPage';
 import { getAuthCookies } from '@/lib/auth';
 
@@ -18,7 +18,7 @@ export default async function EditProject({ params }: EditProjectPageProps) {
     redirect('/login');
   }
 
-  const [currentProject, allProjectsData] = await Promise.all([
+  const [currentProject, allProjectsData] = await Promise.allSettled([
     fetchProjectById({ projectId, accessToken }),
     fetchAllProjects({ accessToken }),
   ]);
@@ -27,11 +27,17 @@ export default async function EditProject({ params }: EditProjectPageProps) {
     throw new Error('Project not found.');
   }
 
+  const ProjectsData =
+    allProjectsData.status === 'fulfilled' ? allProjectsData.value : [];
+
+  const currentProjectData =
+    currentProject.status === 'fulfilled' ? currentProject.value : null;
+
   return (
     <div className="mt-10 sm:mt-0 p-0 sm:p-10 h-full">
       <EditProjectPage
-        projects={allProjectsData}
-        projectName={currentProject.name}
+        projects={ProjectsData}
+        projectName={currentProjectData.name}
       />
     </div>
   );

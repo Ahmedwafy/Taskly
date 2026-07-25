@@ -3,7 +3,7 @@
 import { useIsMobile } from '@/app/hooks/useIsMobile';
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/reduxHooks';
-import { formatDate, getInitials, getStatusColors } from '@/lib/helpers';
+// import { formatDate, getInitials, getStatusColors } from '@/lib/helpers';
 import TaskDetailSkeleton from '../loadingSkeletons/TaskDetailsPopUpLoadingSkeleton';
 import { fetchProjectMembers } from '@/features/members/membersSlice';
 import { getProjectEpics } from '@/features/epics/projectEpicsSlice';
@@ -20,6 +20,9 @@ import Close from '@/../public/svgIcons/CloseIcon.svg';
 import { toast } from 'sonner';
 import { ProjectTask } from '@/types/shared';
 import { setProjectTaskUpdate } from '@/features/projectTasks/ProjectTasksSlice';
+import { getStatusColors } from '@/lib/helpers/status';
+import { getInitials } from '@/lib/helpers/user';
+import { formatDate } from '@/lib/helpers/date';
 
 // ----------------------------------------------------------------------
 // Types & Custom Components for React Select
@@ -33,6 +36,7 @@ interface AssigneeOption {
   label: string;
   initials?: string;
 }
+
 // Custom Single Value component for Assignee (displays Avatar + Name in the input control)
 const CustomAssigneeSingleValue = (props: SingleValueProps<AssigneeOption>) => {
   const { data } = props;
@@ -146,7 +150,7 @@ const TaskDetailsPopUpModal = ({
         offset: 0,
       }),
     );
-  }, []);
+  }, [dispatch, projectId, isFetched, isMembersLoading]);
 
   if (!task) return null;
   const statusColors = getStatusColors(task.status);
@@ -224,31 +228,7 @@ const TaskDetailsPopUpModal = ({
       );
     }
   };
-  // Status change now moves the card between Board columns too
-  // const handleStatusChange = async (newStatus: string) => {
-  //   if (!task || newStatus === task.status) return;
-  //   const originalStatus = task.status;
 
-  //   const success = await handlePatchTask(
-  //     'status',
-  //     { status: newStatus },
-  //     { status: newStatus },
-  //     'status sccessfuly updated',
-  //   );
-
-  //   if (success) {
-  //     window.dispatchEvent(
-  //       new CustomEvent('dnd-task-status-updated', {
-  //         detail: {
-  //           taskId: task.id,
-  //           fromStatus: originalStatus,
-  //           toStatus: newStatus,
-  //           taskData: { ...task, status: newStatus },
-  //         },
-  //       }),
-  //     );
-  //   }
-  // };
   // --- Handlers for Specific Fields ---
   const handleTitleBlur = () => {
     if (!task) return;
@@ -292,20 +272,29 @@ const TaskDetailsPopUpModal = ({
 
     if (assignee_id === (task.assignee?.id || null)) return;
 
-    const selectedMember = membersData.find((m: any) => m.id === memberId);
+    // const selectedMember = membersData.find((m: any) => m.id === memberId);
+    const selectedMember = membersData.find(
+      (member) => member.member_id === memberId,
+    );
 
-    const newAssignee = selectedMember
+    const newAssignee: ProjectTask['assignee'] = selectedMember
       ? {
           id: selectedMember.user_id,
           name: selectedMember.metadata.name,
-          department: selectedMember.metadata.department,
+          email: selectedMember.metadata.email,
+          department: selectedMember.metadata.department || '',
         }
-      : { id: '', name: 'Unassigned', department: '' };
+      : {
+          id: '',
+          name: 'Unassigned',
+          email: '',
+          department: '',
+        };
 
     handlePatchTask(
       'assignee_id',
       { assignee_id },
-      { assignee: newAssignee as any },
+      { assignee: newAssignee },
       'assignee sccessfuly updated',
     );
   };
@@ -316,7 +305,8 @@ const TaskDetailsPopUpModal = ({
 
     if (epic_id === (task.epic?.id || null)) return;
 
-    const selectedEpic = projectEpics.find((e: any) => e.id === epicId);
+    // const selectedEpic = projectEpics.find((e: any) => e.id === epicId);
+    const selectedEpic = projectEpics.find((epic) => epic.id === epicId);
     handlePatchTask(
       'epic_id',
       { epic_id },
@@ -332,17 +322,6 @@ const TaskDetailsPopUpModal = ({
       'epic sccessfuly updated',
     );
   };
-
-  // const handleStatusChange = (newStatus: string) => {
-  //   if (!task || newStatus === task.status) return;
-
-  //   handlePatchTask(
-  //     'status',
-  //     { status: newStatus },
-  //     { status: newStatus },
-  //     'status sccessfuly updated',
-  //   );
-  // };
 
   const handleDueDateChange = (dateString: string) => {
     if (!task) return;
@@ -367,7 +346,9 @@ const TaskDetailsPopUpModal = ({
 
   // Prevents selecting past dates
   const todayDateString = new Date().toISOString().split('T')[0];
+
   if (isMobile === null) return null;
+
   return (
     <>
       {/* ●──────────────────────────● Desktop View ●─────────────────────────● */}

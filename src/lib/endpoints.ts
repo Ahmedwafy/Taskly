@@ -35,6 +35,8 @@ type Endpoints = {
   task: {
     getSingleTaskDetails: (projectId: string, taskId: string) => string;
     updateTaskInfo: (taskId: string) => string;
+    getCalendarStats: string;
+    getTasksPerProject: string;
   };
 
   members: {
@@ -68,8 +70,6 @@ export const endPoints: Endpoints = {
       `/rest/v1/project_epics?project_id=eq.${projectId}&limit=${limit}&offset=${offset}`,
     epicDetails: (projectId, epicId) =>
       `/rest/v1/project_epics?project_id=eq.${projectId}&id=eq.${epicId}`,
-    // getProjectTasks: (projectId, taskStatus) =>
-    //   `/rest/v1/project_tasks?project_id=eq.${projectId}&status=eq.${taskStatus}`,
     getProjectTasks: `/rest/v1/project_tasks`,
     createNewTask: `/rest/v1/tasks`,
   },
@@ -83,6 +83,8 @@ export const endPoints: Endpoints = {
     getSingleTaskDetails: (projectId, taskId) =>
       `/rest/v1/project_tasks?project_id=eq.${projectId}&id=eq.${taskId}`,
     updateTaskInfo: (taskId) => `/rest/v1/tasks?id=eq.${taskId}`,
+    getCalendarStats: '/rest/v1/rpc/get_tasks_calendar_stats',
+    getTasksPerProject: '/rest/v1/rpc/get_tasks_count_per_project',
   },
 
   members: {

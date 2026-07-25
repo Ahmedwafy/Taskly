@@ -4,12 +4,14 @@ import AddTaskIcon from '@/../public/svgIcons/AddTaskIcon.svg';
 import AddTaskIcon2 from '@/../public/svgIcons/AddTaskIcon2.svg';
 import TaskCard from '../molecules/TaskCard';
 import Link from 'next/link';
-import { getTasksStatusDOTsStyle, getTasksStatusStyle } from '@/lib/helpers';
 import TaskCardSkeleton from '../loadingSkeletons/TaskCardSkeleton';
 import { useDroppable } from '@dnd-kit/core';
 import { ProjectTask } from '@/types/shared';
 import { useAppSelector } from '@/redux/reduxHooks';
-// import { updateTaskInStore } from '@/features/tasks/EpicTasksSlice';
+import {
+  getTasksStatusDOTsStyle,
+  getTasksStatusStyle,
+} from '@/lib/helpers/status';
 
 interface TaskColumnProps {
   projectId: string;

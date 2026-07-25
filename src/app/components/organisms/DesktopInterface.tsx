@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/redux/reduxHooks';
 import { clearUser, setUser } from '@/features/auth/authSlice';
 import { signOutAction } from '@/app/actions/auth';
-import { getInitials } from '@/lib/helpers';
+import { getInitials } from '@/lib/helpers/user';
 
 interface DesktopInterfaceProps {
   userData: {
@@ -55,7 +55,7 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
           handleLogout={handleLogout}
         />
       </div>
-      <div className="flex flex-1 flex-col min-w-0 w-full transition-all duration-300 ease-in-out bg-white">
+      <div className="flex flex-1 flex-col min-w-0 w-full transition-all duration-300 ease-in-out bg-background">
         <Desktop_Header
           fullName={fullName}
           department={department}
@@ -71,39 +71,6 @@ const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
       </div>
     </div>
   );
-
-  // return (
-  //   <div className="flex h-screen">
-  //     <div className="hidden md:block">
-  //       <SideBar
-  //         isCollapsed={isCollapsed}
-  //         onToggleCollapse={() => setIsCollapsed((v) => !v)}
-  //         handleLogout={handleLogout}
-  //       />
-  //     </div>
-
-  //     <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out">
-  //       <Desktop_Header
-  //         fullName={fullName}
-  //         department={department}
-  //         avatarText={fullName
-  //           .trim()
-  //           .split(/\s+/)
-  //           .map((w) => w[0])
-  //           .slice(0, 2)
-  //           .join('')
-  //           .toUpperCase()}
-  //         isCollapsed={isCollapsed}
-  //         onToggleCollapse={() => setIsCollapsed((v) => !v)}
-  //         handleLogout={handleLogout}
-  //       />
-
-  //       <main className={`flex-1 overflow-auto transition-all duration-300`}>
-  //         {children}
-  //       </main>
-  //     </div>
-  //   </div>
-  // );
 };
 
 export default DesktopInterface;

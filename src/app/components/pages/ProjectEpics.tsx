@@ -14,7 +14,6 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { EpicDetails, ProjectEpic, ProjectProps } from '@/types/shared';
 import { updateEpicAction } from '@/app/actions/epics';
 import { clearTasks, fetchEpicTasks } from '@/features/tasks/EpicTasksSlice';
-import { formatDate } from '@/lib/helpers';
 import EpicDetailsPopUpModal from '../organisms/EpicDetailsPopUpModal';
 import {
   fetchEpicDetails,
@@ -25,6 +24,7 @@ import {
 import Link from 'next/link';
 import Button from '../atoms/Button';
 import Plus from '@/../public/svgIcons/Plus.svg';
+import { formatDate } from '@/lib/helpers/date';
 
 interface ProjectEpicsProps {
   projectData: ProjectProps;

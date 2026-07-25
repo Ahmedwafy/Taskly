@@ -11,6 +11,7 @@ interface FetchProjectByIdParams {
   projectId: string;
   accessToken: string;
 }
+
 // Wrapping with React's cache guarantees per-request deduplication across multiple components
 export const fetchProjectById = cache(
   async ({ projectId, accessToken }: FetchProjectByIdParams) => {
@@ -43,6 +44,7 @@ interface FetchAllProjectsParams {
   limit?: number;
   offset?: number;
 }
+
 export const fetchAllProjects = cache(
   async ({ accessToken, limit = 1000, offset = 0 }: FetchAllProjectsParams) => {
     const response = await fetch(
@@ -73,7 +75,7 @@ export const fetchAllProjects = cache(
     return parsed.data;
   },
 );
-// src > app > queries > projects.ts
+
 // ==============================================================
 // ::: Get Project's Tasks :::
 // ==============================================================

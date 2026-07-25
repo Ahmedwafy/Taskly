@@ -1,11 +1,13 @@
 // src > app > components > pages > TaskCard.tsx
 'use client';
-import { formatDate, getInitials } from '@/lib/helpers';
+// import { formatDate, getInitials } from '@/lib/helpers';
 import TaskCardSkeleton from '../loadingSkeletons/TaskCardSkeleton';
 import DateIcon from '@/../public/svgIcons/Date.svg';
 import { useRouter } from 'next/navigation';
 import { useDraggable } from '@dnd-kit/core';
 import { ProjectTask } from '@/types/shared';
+import { formatDate } from '@/lib/helpers/date';
+import { getInitials } from '@/lib/helpers/user';
 
 interface TaskCardProps {
   loading: boolean;

@@ -3,17 +3,17 @@
 
 import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link'; // Added for the Mobile FAB routing
+import Link from 'next/link';
 import * as icons from '@/../public/icons/icons';
 import PageHeader from '../molecules/PageHeader';
 import MambersLoadingSkeleton from '@/app/(pages)/projects/[projectId]/members/MambersLoadingSkeleton';
 import { fetchProjectMembers } from '@/features/members/membersSlice';
 import { useAppSelector, useAppDispatch } from '@/redux/reduxHooks';
 import Button from '../atoms/Button';
-import { getInitials } from '@/lib/helpers';
 import BlackDots from '@/../public/svgIcons/BlackDots.svg';
 import AddMember from '@/../public/svgIcons/Member.svg';
 import { useIsMobile } from '@/app/hooks/useIsMobile';
+import { getInitials } from '@/lib/helpers/user';
 
 interface ProjectMembersPageProps {
   projectName: string;

@@ -22,15 +22,13 @@ import {
   DragStartEvent,
   DragOverlay,
 } from '@dnd-kit/core';
-import {
-  formatDate,
-  getInitials,
-  getMobileTasksStatusStyle,
-} from '@/lib/helpers';
 import { useDebounce } from '@/app/hooks/useDebounce';
 import MobileTaskSkeleton from '../loadingSkeletons/MobileTasksSkeleton';
 import { useIsMobile } from '@/app/hooks/useIsMobile';
 import { useAppSelector } from '@/redux/reduxHooks';
+import { getMobileTasksStatusStyle } from '@/lib/helpers/status';
+import { getInitials } from '@/lib/helpers/user';
+import { formatDate } from '@/lib/helpers/date';
 
 interface ProjectTasksProps {
   projectId: string;

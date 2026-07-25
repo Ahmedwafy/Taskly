@@ -1,9 +1,11 @@
 // src > app > components > organisms > TaskListView.tsx
 'use client';
-import { formatDate, getInitials, getStatusStyle } from '@/lib/helpers';
 import TaskListSkeleton from '../loadingSkeletons/TaskListSkeleton';
 import { useRouter } from 'next/navigation';
 import { ProjectTask } from '@/types/shared';
+import { formatDate } from '@/lib/helpers/date';
+import { getInitials } from '@/lib/helpers/user';
+import { getStatusStyle } from '@/lib/helpers/status';
 
 interface TasksListViewProps {
   tasks: ProjectTask[];

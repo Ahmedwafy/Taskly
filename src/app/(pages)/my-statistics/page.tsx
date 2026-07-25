@@ -1,12 +1,22 @@
-import PageHeader from '@/app/components/molecules/PageHeader';
+// src > app > (pages) > my-statistics > page.tsx
 
-export default function My_Statistics() {
+import MyStatisticsPage from '@/app/components/pages/MyStatistics';
+import { fetchAllProjects } from '@/app/queries/projects';
+import { getAuthCookies } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+
+export default async function My_Statistics() {
+  const { accessToken } = await getAuthCookies();
+
+  if (!accessToken) {
+    redirect('/login');
+  }
+
+  const projects = await fetchAllProjects({ accessToken });
+
   return (
-    <div className="px-4 py-6">
-      <PageHeader
-        title="Weekly Planner"
-        description="Manage your deadlines and track team velocity."
-      />
+    <div className="bg-background h-full">
+      <MyStatisticsPage projects={projects} />
     </div>
   );
 }
