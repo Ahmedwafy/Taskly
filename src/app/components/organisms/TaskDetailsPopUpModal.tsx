@@ -12,7 +12,7 @@ import Select, {
   SingleValueProps,
   OptionProps,
 } from 'react-select';
-import { STATUS_OPTIONS } from '@/lib/enums';
+import { STATUS_OPTIONS, TaskStatus } from '@/lib/enums';
 import Link from '@/../public/svgIcons/Link.svg';
 import StackIcon from '@/../public/svgIcons/StackIcon.svg';
 import DoneTaskIcon from '@/../public/svgIcons/doneTaskOnMobile.svg';
@@ -20,7 +20,7 @@ import Close from '@/../public/svgIcons/CloseIcon.svg';
 import { toast } from 'sonner';
 import { ProjectTask } from '@/types/shared';
 import { setProjectTaskUpdate } from '@/features/projectTasks/ProjectTasksSlice';
-import { getStatusColors } from '@/lib/helpers/status';
+import { getStatusColorsStyle } from '@/lib/helpers/status';
 import { getInitials } from '@/lib/helpers/user';
 import { formatDate } from '@/lib/helpers/date';
 
@@ -28,7 +28,7 @@ import { formatDate } from '@/lib/helpers/date';
 // Types & Custom Components for React Select
 // ----------------------------------------------------------------------
 interface StatusOption {
-  value: string;
+  value: TaskStatus;
   label: string;
 }
 interface AssigneeOption {
@@ -153,7 +153,7 @@ const TaskDetailsPopUpModal = ({
   }, [dispatch, projectId, isFetched, isMembersLoading]);
 
   if (!task) return null;
-  const statusColors = getStatusColors(task.status);
+  const statusColors = getStatusColorsStyle(task.status);
 
   // • • Centralized Optimistic PATCH Handler • •
 
@@ -204,7 +204,7 @@ const TaskDetailsPopUpModal = ({
   };
 
   // Status change now moves the card between Board columns too
-  const handleStatusChange = async (newStatus: string) => {
+  const handleStatusChange = async (newStatus: TaskStatus) => {
     if (!task || newStatus === task.status) return;
     const originalStatus = task.status;
 

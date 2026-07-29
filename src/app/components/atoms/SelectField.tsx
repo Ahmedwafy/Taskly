@@ -2,6 +2,7 @@
 import * as icons from '@/../public/icons/icons';
 import Image from 'next/image';
 import { forwardRef } from 'react';
+import ArrowDown from '@/../public/svgIcons/ArrowDown.svg';
 
 interface SelectOption {
   value: string | number;
@@ -102,7 +103,7 @@ const SelectField = forwardRef<HTMLSelectElement, SelectProps>(
 
           {/* Custom Chevron Arrow Icon overlay since appearance-none hides the native one */}
           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-            <Image src={icons.dropDownArrow} alt="Drop Down" />
+            <ArrowDown />
           </div>
         </div>
 

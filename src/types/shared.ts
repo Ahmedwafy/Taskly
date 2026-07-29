@@ -1,5 +1,7 @@
 // used in more than 1 place
 
+import { TaskStatus } from '@/lib/enums';
+
 export interface SignUpFormData {
   name: string;
   email: string;
@@ -127,7 +129,8 @@ export interface ProjectTask {
   epic_id: string;
   title: string;
   description: string;
-  status: string; // "TO_DO", "IN_PROGRESS" ...
+  // status: string; // "TO_DO", "IN_PROGRESS" ...
+  status: TaskStatus; // "TO_DO", "IN_PROGRESS" ...
   created_at: string;
   due_date: string;
   task_id: string;

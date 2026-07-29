@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ProjectTask } from '@/types/shared';
 import { formatDate } from '@/lib/helpers/date';
 import { getInitials } from '@/lib/helpers/user';
-import { getStatusStyle } from '@/lib/helpers/status';
+import { getTaskStatusBadgeStyle } from '@/lib/helpers/status';
 
 interface TasksListViewProps {
   tasks: ProjectTask[];
@@ -100,7 +100,7 @@ const TasksListView = ({
                   </td>
                   <td className="py-5 px-6 whitespace-nowrap">
                     <span
-                      className={`px-2.5 py-1 rounded-md tracking-wide font-bold ${getStatusStyle(task.status)}`}
+                      className={`px-2.5 py-1 rounded-md tracking-wide font-bold ${getTaskStatusBadgeStyle(task.status)}`}
                     >
                       {task.status.replace(/_/g, ' ')}
                     </span>

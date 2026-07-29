@@ -1,11 +1,8 @@
 // src/app/projects/error.tsx
-
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
-import * as images from '../../../../public/images/images';
-import Button from '@/app/components/atoms/Button';
+import ErrorPage from '@/../public/svgIcons/ErrorPage.svg';
 
 export default function Error({
   error,
@@ -18,12 +15,7 @@ export default function Error({
   return (
     <div className="min-h-screen flex flex-col items-center justify-center text-center gap-6">
       <div>
-        <Image
-          src={images.Error}
-          alt="Error occurred"
-          // width={160}
-          // height={140}
-        />
+        <ErrorPage />
       </div>
       <h2 className="text-2xl font-semibold text-gray-800">
         Something went wrong

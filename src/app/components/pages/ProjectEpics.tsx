@@ -1,8 +1,17 @@
 // src > app > components > page > ProjectEpics.tsx
 'use client';
 import * as icons from '@/../public/icons/icons';
+import HierarchyDesign from '@/../public/svgIcons/HierarchyDesign.svg';
+import Stars from '@/../public/svgIcons/Stars.svg';
+import TrackVelocity from '@/../public/svgIcons/TrackVelocity.svg';
+import ThunderIcon from '@/../public/svgIcons/ThnderIcon.svg';
+
+import Rocket from '@/../public/svgIcons/Rocket.svg';
+import DrawingCompass from '@/../public/svgIcons/DrawingCompass.svg';
+import Squares from '@/../public/svgIcons/Squares.svg';
+import Pluss from '@/../public/svgIcons/Pluss.svg';
+
 import * as images from '../../../../public/images/images';
-import Image from 'next/image';
 import PageHeader from '../molecules/PageHeader';
 import EpicsEmptyState from './EpicsEmptyState';
 import ProjectEpicsGrid from '../organisms/ProjectEpicsGrid';
@@ -69,18 +78,18 @@ const ProjectEpics = ({
 
     const delayDebounceFn = setTimeout(() => {
       startTransition(() => {
-        const params = new URLSearchParams(searchParams.toString());
+        const params = new URLSearchParams(searchParams.toString()); // get all searchParams from URL
 
-        // Reset page configuration when search parameters change
-        params.set('page', '1');
+        // Reset to page 1 → when search parameters change
+        params.set('page', '1'); // → ?page=1
 
         if (localSearch.trim() !== '') {
-          params.set('search', localSearch); // searchParam →  ?search='...'
+          params.set('search', localSearch); // searchParam →  ?search='localSearch'
         } else {
-          params.delete('search');
+          params.delete('search'); // if user deleted the search term → localSearch = "" → delete search=... from URL
         }
 
-        router.push(`${pathname}?${params.toString()}`);
+        router.push(`${pathname}?${params.toString()}`); // Update URL
       });
     }, 400);
 
@@ -160,40 +169,19 @@ const ProjectEpics = ({
 
   const epicValueProps = [
     {
-      icon: (
-        <Image
-          src={icons.Stars || icons.Epic}
-          alt="High-Level Goals"
-          width={20}
-          height={20}
-        />
-      ),
+      icon: <Stars />,
       title: 'High-Level Goals',
       description:
         'Define the broad objectives that span across multiple cycles.',
     },
     {
-      icon: (
-        <Image
-          src={icons.Tree || icons.Epic}
-          alt="Hierarchy Design"
-          width={20}
-          height={20}
-        />
-      ),
+      icon: <HierarchyDesign />,
       title: 'Hierarchy Design',
       description:
         'Link individual tasks to parent epics for a consolidated view.',
     },
     {
-      icon: (
-        <Image
-          src={icons.Chart || icons.Epic}
-          alt="Track Velocity"
-          width={20}
-          height={20}
-        />
-      ),
+      icon: <TrackVelocity />,
       title: 'Track Velocity',
       description: 'Visualize percentage completion at a macro project level.',
     },
@@ -256,18 +244,18 @@ const ProjectEpics = ({
       ) : hasNoEpicsAtAll ? (
         <EpicsEmptyState
           imageSrc={images.Empty_State}
-          title="No epics found for this project"
-          description="Break down your large project into manageable epics to track progress better and maintain architectural clarity."
+          title="No epics found for this project yet"
+          description="Break down your large project into manageable
+          epics to track progress better and maintain
+          architectural clarity."
           buttonText="Create First Epic"
           buttonHref={`/projects/${id}/epics/new`}
-          buttonIcon={
-            <Image
-              src={icons.Plus}
-              alt="plus"
-              className="invert brightness-0 h-4 w-4"
-            />
-          }
+          buttonIcon={<ThunderIcon />}
           features={epicValueProps}
+          rocketIcon={Rocket}
+          drawingCompassIcon={DrawingCompass}
+          squaresIcon={Squares}
+          plusIcon={Pluss}
         />
       ) : hasNoSearchMatches ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">

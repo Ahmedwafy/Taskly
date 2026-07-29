@@ -26,16 +26,17 @@ import { useDebounce } from '@/app/hooks/useDebounce';
 import MobileTaskSkeleton from '../loadingSkeletons/MobileTasksSkeleton';
 import { useIsMobile } from '@/app/hooks/useIsMobile';
 import { useAppSelector } from '@/redux/reduxHooks';
-import { getMobileTasksStatusStyle } from '@/lib/helpers/status';
+import { getTaskStatusMobileStyle } from '@/lib/helpers/status';
 import { getInitials } from '@/lib/helpers/user';
 import { formatDate } from '@/lib/helpers/date';
+import { TaskStatus } from '@/lib/enums';
 
 interface ProjectTasksProps {
   projectId: string;
   projectData: ProjectProps;
 }
 
-const COLUMNS: { title: string; status: string }[] = [
+const COLUMNS: { title: string; status: TaskStatus }[] = [
   { title: 'TO DO', status: 'TO_DO' },
   { title: 'IN PROGRESS', status: 'IN_PROGRESS' },
   { title: 'BLOCKED', status: 'BLOCKED' },
@@ -489,7 +490,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
                   </div>
 
                   <div
-                    className={`${getMobileTasksStatusStyle(task.status)} h-fit p-1 rounded-md text-[11px] font-bold`}
+                    className={`${getTaskStatusMobileStyle(task.status)} h-fit p-1 rounded-md text-[11px] font-bold`}
                   >
                     {task.status.replace(/_/g, ' ')}
                   </div>

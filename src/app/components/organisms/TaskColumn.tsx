@@ -9,14 +9,15 @@ import { useDroppable } from '@dnd-kit/core';
 import { ProjectTask } from '@/types/shared';
 import { useAppSelector } from '@/redux/reduxHooks';
 import {
-  getTasksStatusDOTsStyle,
-  getTasksStatusStyle,
+  getColumnTasksCounterStatusStyle,
+  getTaskStatusDotStyle,
 } from '@/lib/helpers/status';
+import { TaskStatus } from '@/lib/enums';
 
 interface TaskColumnProps {
   projectId: string;
   title: string;
-  status: string;
+  status: TaskStatus;
   searchQuery: string;
 }
 
@@ -244,14 +245,14 @@ const TaskColumn = ({
       <div className="flex justify-between items-center pb-3">
         <div className="flex items-center gap-2 justify-center">
           <span
-            className={`${getTasksStatusDOTsStyle(status)} h-2 w-2 rounded-full`}
+            className={`${getTaskStatusDotStyle(status)} h-2 w-2 rounded-full`}
           ></span>
           <h3 className="font-semibold text-sm tracking-wide uppercase text-[#64748B]">
             {title}
           </h3>
 
           <span
-            className={`${getTasksStatusStyle(status)} font-bold text-[10px] px-1.5 py-1 rounded-sm`}
+            className={`${getColumnTasksCounterStatusStyle(status)} font-bold text-[10px] px-1.5 py-1 rounded-sm`}
           >
             {hasIntersected ? filteredTasks.length : '—'}
           </span>

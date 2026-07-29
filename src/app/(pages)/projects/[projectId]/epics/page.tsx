@@ -66,7 +66,6 @@ export default async function ProjectEpicsPage({
     }
   }
 
-  console.log(`epicsResult`, epicsResult);
   return (
     <div className="mt-10 sm:mt-0 p-5 sm:p-10">
       <ProjectEpics

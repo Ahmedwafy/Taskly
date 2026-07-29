@@ -1,5 +1,4 @@
-import Image from 'next/image';
-import * as icons from '@/../public/icons/icons';
+import AddOItem from '@/../public/svgIcons/AddOItem.svg';
 
 interface CardHeaderProps {
   title: string;
@@ -9,8 +8,8 @@ interface CardHeaderProps {
 const CardHeader = ({ title, description }: CardHeaderProps) => {
   return (
     <div className="flex gap-4 items-center border-b border-gray-200 pb-10">
-      <div className="hidden lg:block bg-surface-highest p-3 rounded-md">
-        <Image src={icons.Add_Project} alt="Member" width={22} height={11} />
+      <div className="hidden lg:block bg-[#0052CC1A] p-3 rounded-md w-11.5 h-11">
+        <AddOItem className="w-5.5 h-5" />
       </div>
       <div>
         <h1 className="headline-lg">{title}</h1>

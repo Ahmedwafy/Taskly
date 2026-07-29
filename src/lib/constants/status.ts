@@ -1,105 +1,108 @@
-export const STATUS_CONFIG = {
-  DONE: {
-    badge: 'bg-[#82F9BE] text-[#002113] font-bold text-[11px]',
-    dot: 'bg-[#82F9BE]',
-    task: 'bg-[#82F9BE]',
-    mobile: 'bg-[#82F9BE] text-[#002113]',
-    colors: {
-      bg: '#82F9BE',
-      text: '#002113',
-    },
-  },
+import { StylesConfig } from 'react-select';
+import { TaskStatus } from '../enums';
 
-  COMPLETED: {
-    badge: 'bg-[#82F9BE] text-[#002113] font-bold text-[11px]',
-    dot: 'bg-[#82F9BE]',
-    task: 'bg-[#82F9BE]',
-    mobile: 'bg-[#82F9BE] text-[#002113]',
-    colors: {
-      bg: '#82F9BE',
-      text: '#002113',
-    },
+type StatusConfig = {
+  badge: string;
+  dot: string;
+  statusbar: string;
+  task: string;
+  mobile: string;
+  colors: {
+    bg: string;
+    text: string;
+  };
+  chart: {
+    color: string;
+  };
+};
+
+// TO DO
+export const DEFAULT_STATUS: StatusConfig = {
+  badge: 'bg-[#D7E2FF] text-[#434654] font-bold text-[11px]',
+  dot: 'bg-[#94A3B8]',
+  statusbar: 'bg-[#D7E2FF]',
+  task: 'bg-[#D7E2FF] text-neutral-100',
+  mobile: 'bg-[#D7E2FF] text-[#434654]',
+  colors: {
+    bg: '#D7E2FF',
+    text: '#434654',
   },
+  chart: {
+    color: '#E8EDFF',
+  },
+};
+
+export const DONE_STATUS: StatusConfig = {
+  badge: 'bg-[#82F9BE] text-[#002113] font-bold text-[11px]',
+  dot: 'bg-[#004E32]',
+  statusbar: 'bg-[#82F9BE]',
+  task: 'bg-[#82F9BE]',
+  mobile: 'bg-[#82F9BE] text-[#002113]',
+  colors: {
+    bg: '#82F9BE',
+    text: '#002113',
+  },
+  chart: {
+    color: '#82F9BE',
+  },
+};
+
+export const BLUE_STATUS: StatusConfig = {
+  badge: 'bg-[#CDDDFF] text-[#51617E] font-bold text-[11px]',
+  dot: 'bg-[#94A3B8]',
+  statusbar: 'bg-[#F7E49B]',
+  task: 'bg-[#D7E2FF] text-neutral-100',
+  mobile: 'bg-[#CDDDFF] text-[#51617E]',
+  colors: {
+    bg: '#CDDDFF',
+    text: '#51617E',
+  },
+  chart: {
+    color: '#F7E49B',
+  },
+};
+
+export const STATUS_CONFIG: Record<TaskStatus, StatusConfig> = {
+  TO_DO: DEFAULT_STATUS,
 
   IN_PROGRESS: {
     badge: 'bg-[#CDDDFF] text-[#51617E] font-bold text-[11px]',
     dot: 'bg-primary',
+    statusbar: 'bg-[#003D9B]',
     task: 'bg-[#0052CC1A] text-primary',
     mobile: 'bg-[#CDDDFF] text-[#374763]',
     colors: {
       bg: '#CDDDFF',
       text: '#51617E',
     },
+    chart: {
+      color: '#003D9B',
+    },
   },
 
   BLOCKED: {
     badge: 'bg-[#FFDAD6] text-[#93000A] font-bold text-[11px]',
     dot: 'bg-[#BA1A1A]',
+    statusbar: 'bg-[#BA1A1A]',
     task: 'bg-[#FFDAD6] text-[#93000A]',
     mobile: 'bg-[#FFDAD6] text-[#93000A]',
     colors: {
       bg: '#FFDAD6',
       text: '#93000A',
     },
-  },
-
-  READY_FOR_QA: {
-    badge: 'bg-[#CDDDFF] text-[#51617E] font-bold text-[11px]',
-    dot: 'bg-[#94A3B8]',
-    task: 'bg-[#D7E2FF] text-neutral-100',
-    mobile: 'bg-[#CDDDFF] text-[#51617E]',
-    colors: {
-      bg: '#CDDDFF',
-      text: '#51617E',
+    chart: {
+      color: '#BA1A1A',
     },
   },
 
-  IN_REVIEW: {
-    badge: 'bg-[#CDDDFF] text-[#51617E] font-bold text-[11px]',
-    dot: 'bg-[#94A3B8]',
-    task: 'bg-[#D7E2FF] text-neutral-100',
-    mobile: 'bg-[#CDDDFF] text-[#51617E]',
-    colors: {
-      bg: '#CDDDFF',
-      text: '#51617E',
-    },
-  },
+  DONE: DONE_STATUS,
+  COMPLETED: DONE_STATUS,
 
-  REOPENED: {
-    badge: 'bg-[#CDDDFF] text-[#51617E] font-bold text-[11px]',
-    dot: 'bg-[#94A3B8]',
-    task: 'bg-[#D7E2FF] text-neutral-100',
-    mobile: 'bg-[#CDDDFF] text-[#51617E]',
-    colors: {
-      bg: '#CDDDFF',
-      text: '#51617E',
-    },
-  },
-
-  READY_FOR_PRODUCTION: {
-    badge: 'bg-[#CDDDFF] text-[#51617E] font-bold text-[11px]',
-    dot: 'bg-[#94A3B8]',
-    task: 'bg-[#D7E2FF] text-neutral-100',
-    mobile: 'bg-[#CDDDFF] text-[#51617E]',
-    colors: {
-      bg: '#CDDDFF',
-      text: '#51617E',
-    },
-  },
-
-  DEFAULT: {
-    badge: 'bg-[#D7E2FF] text-[#434654] font-bold text-[11px]',
-    dot: 'bg-[#94A3B8]',
-    task: 'bg-[#D7E2FF] text-neutral-100',
-    mobile: 'bg-[#D7E2FF] text-[#434654]',
-    colors: {
-      bg: '#D7E2FF',
-      text: '#434654',
-    },
-  },
+  READY_FOR_QA: BLUE_STATUS,
+  IN_REVIEW: BLUE_STATUS,
+  REOPENED: BLUE_STATUS,
+  READY_FOR_PRODUCTION: BLUE_STATUS,
 } as const;
-
-import { StylesConfig } from 'react-select';
 
 export type SelectOption = {
   value: string;

@@ -18,11 +18,6 @@ export interface TasksCalendarStatsResponse {
   total_tasks: number;
   done_tasks: number;
   overdue_tasks: number;
-  // daily_stats?: {
-  //   [dateIsoString: string]: {
-  //     [statusKey: string]: number;
-  //   };
-  // };
 }
 
 // ---------------------------------------------------

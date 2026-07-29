@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import Input from '@/app/components/atoms/input';
 import { signUpAction } from '@/app/actions/auth';
 import { useIsMobile } from '@/app/hooks/useIsMobile';
+import Link from 'next/link';
 
 const SignUpForm = () => {
   const router = useRouter();
@@ -233,12 +234,12 @@ const SignUpForm = () => {
 
             <p className="text-[#4F5F7B] body-md text-center py-4">
               Already have an account?
-              <a
+              <Link
                 href="/login"
                 className="text-[#003D9B] hover:underline ml-2 font-bold"
               >
                 Log in
-              </a>
+              </Link>
             </p>
           </form>
         </div>
@@ -387,12 +388,12 @@ const SignUpForm = () => {
 
             <p className="text-[#4F5F7B] body-md text-center py-4">
               Already have an account?
-              <a
+              <Link
                 href="/login"
                 className="text-[#003D9B] hover:underline ml-2 font-bold"
               >
                 Log in
-              </a>
+              </Link>
             </p>
           </form>
         </div>

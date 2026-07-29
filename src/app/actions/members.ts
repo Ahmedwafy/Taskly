@@ -8,7 +8,7 @@ import { baseURL, supabaseKey } from '@/lib/supabase';
 import { z } from 'zod';
 
 // ==============================================================
-// ● ● ● Invite Member Action ● ● ●
+// ::: Invite Member Action :::
 // ==============================================================
 export async function inviteMemberRequest(
   payload: Omit<z.input<typeof InviteMemberSchema>, 'p_base_url'>,
@@ -87,7 +87,7 @@ export async function inviteMemberRequest(
 }
 
 // ==============================================================
-// ● ● ● Accept Invitation Action ● ● ●
+// ::: Accept Invitation Action :::
 // ==============================================================
 import { AcceptInviteSchema } from '@/schemas/acceptInvitation.schema';
 

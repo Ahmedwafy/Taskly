@@ -4,9 +4,8 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import PageHeader from '@/app/components/molecules/PageHeader';
 import Previous from '@/../public/svgIcons/Previous.svg';
 import Next from '@/../public/svgIcons/Next.svg';
-import ArrowDown from '@/../public/svgIcons/ArrowDown.svg';
 import { ProjectProps } from '@/types/shared';
-import { STATUS_OPTIONS } from '@/lib/enums';
+import { STATUS_OPTIONS, TaskStatus } from '@/lib/enums';
 import {
   TasksCalendarStatsResponse,
   TasksPerProjectItem,
@@ -15,7 +14,10 @@ import TotalTasksIcon from '@/../public/svgIcons/TotalTasksIcon.svg';
 import CompletedTasksIcon from '@/../public/svgIcons/CompletedTasksIcon.svg';
 import OverDueIcon from '@/../public/svgIcons/OverDueIcon.svg';
 import Select from 'react-select';
-import { StylesConfig } from 'react-select';
+import { getTaskStatusBadgeStyle } from '@/lib/helpers/status';
+import { selectStyles, STATUS_CONFIG } from '@/lib/constants/status';
+import { DayPicker, DateRange } from 'react-day-picker';
+import 'react-day-picker/style.css'; // base styles — you'll override via classNames below
 
 type ProjectOption = {
   value: string;
@@ -27,20 +29,10 @@ type StatusOption = {
   label: string;
 };
 
-type SelectOption = {
-  value: string;
-  label: string;
-};
-// Helper utilities
-const DAYS_OF_WEEK = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
-
 const formatDateShort = (date: Date) =>
   date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
 const formatYear = (date: Date) => date.getFullYear();
-
-const formatMonthYear = (date: Date) =>
-  date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const formatDateISO = (date: Date) => {
   const year = date.getFullYear();
@@ -71,55 +63,20 @@ const getDaysInRange = (startDate: Date, endDate: Date): Date[] => {
   return days;
 };
 
-const STATUS_PILL_STYLES: Record<string, string> = {
-  TO_DO: 'bg-slate-100 text-slate-700',
-  IN_PROGRESS: 'bg-blue-100 text-blue-700 font-semibold',
-  ACTIVE: 'bg-blue-50 text-blue-600',
-  DONE: 'bg-emerald-100 text-emerald-700',
-  BLOCKED: 'bg-red-50 text-red-600',
-};
-
-// Colors matching the screenshot design
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; color: string; borderClass: string; bgClass: string }
-> = {
-  IN_PROGRESS: {
-    label: 'In Progress',
-    color: '#0043a8',
-    borderClass: 'border-[#0043a8]',
-    bgClass: 'bg-[#0043a8]',
-  },
-  DONE: {
-    label: 'Done',
-    color: '#005930',
-    borderClass: 'border-[#005930]',
-    bgClass: 'bg-[#005930]',
-  },
-  BLOCKED: {
-    label: 'Blocked',
-    color: '#ba1a1a',
-    borderClass: 'border-[#ba1a1a]',
-    bgClass: 'bg-[#ba1a1a]',
-  },
-  TO_DO: {
-    label: 'To Do',
-    color: '#e2e8f0',
-    borderClass: 'border-slate-300',
-    bgClass: 'bg-slate-300',
-  },
-};
-
+// (used only to build the project-filter dropdown options). Everything else — dates, filters, fetched data — lives in local useState.
 interface MyStatisticsPageProps {
   projects: ProjectProps[];
 }
 
 export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
-  // Filters
+  // --- Filters ---
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
   const [status, setStatus] = useState<string | null>(null);
 
-  // Active Date Range
+  console.log(`selectedProjectId`, selectedProjectId);
+  console.log(`status`, status);
+
+  // --- Active Date Range --- defaults to the current week via getStartOfWeek()
   const [appliedStart, setAppliedStart] = useState<Date>(() =>
     getStartOfWeek(new Date()),
   );
@@ -130,22 +87,24 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
     return end;
   });
 
-  // API State
+  // --- API State ---
   const [stats, setStats] = useState<TasksCalendarStatsResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [projectStats, setProjectStats] = useState<TasksPerProjectItem[]>([]);
 
-  // Picker Popover State
+  // --- Picker Popover State ---
   const [isOpen, setIsOpen] = useState(false);
-  const [viewDate, setViewDate] = useState<Date>(new Date(appliedStart));
-  const [tempStart, setTempStart] = useState<Date | null>(appliedStart);
-  const [tempEnd, setTempEnd] = useState<Date | null>(appliedEnd);
+  const [tempRange, setTempRange] = useState<DateRange | undefined>({
+    from: appliedStart,
+    to: appliedEnd,
+  });
   const [pickerError, setPickerError] = useState<string | null>(null);
 
   const popoverRef = useRef<HTMLDivElement>(null);
-  const [projectStats, setProjectStats] = useState<TasksPerProjectItem[]>([]);
 
-  // Execution
+  // --- Execution ---
+  // This is the single source of truth feeding both the calendar grid and both bottom cards.
   const fetchStatistics = useCallback(async () => {
     setIsLoading(true);
     setApiError(null);
@@ -221,13 +180,12 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
   }, []);
 
   const handleOpenPicker = () => {
-    setTempStart(appliedStart);
-    setTempEnd(appliedEnd);
-    setViewDate(new Date(appliedStart));
+    setTempRange({ from: appliedStart, to: appliedEnd });
     setPickerError(null);
     setIsOpen(true);
   };
 
+  // shift appliedStart / appliedEnd by ±7 days directly — no popover involved.
   const handleWeekShift = (direction: 'prev' | 'next') => {
     const shift = direction === 'next' ? 7 : -7;
     const newStart = new Date(appliedStart);
@@ -239,51 +197,17 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
     setAppliedEnd(newEnd);
   };
 
-  const handleDateClick = (date: Date) => {
-    setPickerError(null);
-
-    if (!tempStart || (tempStart && tempEnd)) {
-      setTempStart(date);
-      setTempEnd(null);
-      return;
-    }
-
-    if (tempStart && !tempEnd) {
-      if (date < tempStart) {
-        setTempStart(date);
-        setTempEnd(null);
-      } else {
-        const diffTime = date.getTime() - tempStart.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-        if (diffDays > 7) {
-          setPickerError('Maximum range is 7 days');
-          return;
-        }
-
-        setTempEnd(date);
-      }
-    }
-  };
-
-  const isSelected = (date: Date) => {
-    if (tempStart && isSameDay(date, tempStart)) return true;
-    if (tempEnd && isSameDay(date, tempEnd)) return true;
-    if (tempStart && tempEnd && date > tempStart && date < tempEnd) return true;
-    return false;
-  };
-
   const handleApply = () => {
-    if (!tempStart) return;
+    if (!tempRange?.from) return;
 
-    const finalStart = tempStart;
-    const finalEnd = tempEnd || tempStart;
+    const finalStart = tempRange.from;
+    const finalEnd = tempRange.to || tempRange.from;
 
-    const diffTime = finalEnd.getTime() - finalStart.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    const diffDays =
+      Math.ceil((finalEnd.getTime() - finalStart.getTime()) / 86400000) + 1;
 
-    if (diffDays > 7) {
-      setPickerError('Maximum range is 7 days');
+    if (diffDays > MAX_RANGE_DAYS) {
+      setPickerError(`Maximum range is ${MAX_RANGE_DAYS} days`);
       return;
     }
 
@@ -292,34 +216,46 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
     setIsOpen(false);
   };
 
-  const renderCalendarDays = () => {
-    const year = viewDate.getFullYear();
-    const month = viewDate.getMonth();
+  const MAX_RANGE_DAYS = 7;
 
-    const firstDayOfMonth = new Date(year, month, 1);
-    const lastDayOfMonth = new Date(year, month + 1, 0);
+  const handleRangeSelect = (range: DateRange | undefined) => {
+    setPickerError(null);
 
-    let startingDay = firstDayOfMonth.getDay() - 1;
-    if (startingDay === -1) startingDay = 6;
-
-    const days = [];
-    const prevMonthLastDay = new Date(year, month, 0).getDate();
-
-    for (let i = startingDay - 1; i >= 0; i--) {
-      const prevDate = new Date(year, month - 1, prevMonthLastDay - i);
-      days.push({ date: prevDate, isCurrentMonth: false });
+    // Cleared selection (e.g. clicking the same day twice)
+    if (!range?.from) {
+      setTempRange(undefined);
+      return;
     }
 
-    for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
-      days.push({ date: new Date(year, month, i), isCurrentMonth: true });
+    // Only the start date is picked so far — always valid, nothing to check yet
+    if (!range.to) {
+      setTempRange(range);
+      return;
     }
 
-    const remainingSlots = 42 - days.length;
-    for (let i = 1; i <= remainingSlots; i++) {
-      days.push({ date: new Date(year, month + 1, i), isCurrentMonth: false });
+    const diffDays =
+      Math.ceil(
+        (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24),
+      ) + 1;
+
+    if (diffDays > MAX_RANGE_DAYS) {
+      setPickerError(`Maximum range is ${MAX_RANGE_DAYS} days`);
+      // Restart the selection from the newly clicked date instead of
+      // silently truncating — mirrors your original handleDateClick UX
+      setTempRange({ from: range.from, to: undefined });
+      return;
     }
 
-    return days;
+    setTempRange(range);
+  };
+
+  const isDayOutOfRange = (day: Date) => {
+    if (!tempRange?.from || tempRange.to) return false;
+    const diffDays =
+      Math.ceil(
+        (day.getTime() - tempRange.from.getTime()) / (1000 * 60 * 60 * 24),
+      ) + 1;
+    return diffDays > MAX_RANGE_DAYS; // only restricts forward clicks past the cap
   };
 
   const formattedRangeText = `${formatDateShort(appliedStart)} - ${formatDateShort(appliedEnd)}, ${formatYear(appliedEnd)}`;
@@ -338,7 +274,6 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
     );
   }, [stats]);
 
-  // Donut chart calculations
   const donutData = useMemo(() => {
     const totals = stats?.totals || {};
     const totalCount =
@@ -368,25 +303,26 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
       if (count <= 0) return;
       const pct = (count / totalCount) * 100;
       const angle = (count / totalCount) * 360;
-      const cfg = STATUS_CONFIG[key] || {
-        label: key.replace('_', ' '),
-        color: '#64748b',
-        borderClass: 'border-slate-500',
-        bgClass: 'bg-slate-500',
-      };
+
+      // Status bar + Chart Colors
+      const cfg = STATUS_CONFIG[key as TaskStatus];
+      const color = cfg?.chart?.color ?? '#64748b'; // hex, used in the gradient
+      const bgClass = cfg?.statusbar ?? 'bg-slate-500'; // tailwind class, used for the legend dot + bar
+      const label =
+        key.charAt(0) + key.slice(1).toLowerCase().replace(/_/g, ' ');
 
       gradientParts.push(
-        `${cfg.color} ${currentAngle}deg ${currentAngle + angle}deg`,
+        `${color} ${currentAngle}deg ${currentAngle + angle}deg`,
       );
       currentAngle += angle;
 
       breakdown.push({
         statusKey: key,
-        label: cfg.label,
+        label,
         count,
         percentage: pct,
-        color: cfg.color,
-        bgClass: cfg.bgClass,
+        color,
+        bgClass,
       });
     });
 
@@ -408,58 +344,11 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
   const statusOptions: StatusOption[] = [
     { value: 'all', label: 'All Statuses' },
     ...STATUS_OPTIONS.map((status) => ({
-      value: status,
-      label: status.replace(/_/g, ' '),
+      value: status, // TO_DO
+      label: status.replace(/_/g, ' '), // TO DO
     })),
   ];
 
-  const selectStyles: StylesConfig<SelectOption, false> = {
-    control: (base) => ({
-      ...base,
-      border: 'none',
-      borderRadius: '8px',
-      minHeight: '40px',
-      boxShadow: 'none',
-      cursor: 'pointer',
-      backgroundColor: 'white',
-      fontSize: '14px',
-      fontWeight: 500,
-    }),
-
-    singleValue: (base) => ({
-      ...base,
-      color: '#0f172a',
-      fontWeight: 500,
-    }),
-
-    dropdownIndicator: (base) => ({
-      ...base,
-      padding: '4px',
-    }),
-
-    indicatorSeparator: () => ({
-      display: 'none',
-    }),
-
-    menu: (base) => ({
-      ...base,
-      borderRadius: '8px',
-      overflow: 'hidden',
-      zIndex: 50,
-    }),
-
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isSelected
-        ? '#F3F4F6'
-        : state.isFocused
-          ? '#F9FAFB'
-          : 'white',
-      color: '#1F2937',
-      cursor: 'pointer',
-      fontWeight: 500,
-    }),
-  };
   return (
     <div className="px-4 py-6 bg-background space-y-6">
       <PageHeader
@@ -498,18 +387,6 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
         {/* Dropdowns */}
         <div className="flex items-center gap-3 w-1/3">
           <div className="relative w-1/2">
-            {/* <select
-              value={selectedProjectId}
-              onChange={(e) => setSelectedProjectId(e.target.value)}
-              className="h-10 appearance-none rounded-md bg-white pl-4 pr-10 text-sm font-medium text-[#0f172a] shadow-sm outline-none w-full"
-            >
-              <option value="all">All Projects</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select> */}
             <Select<ProjectOption>
               value={
                 projectOptions.find(
@@ -523,24 +400,9 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
               isSearchable={false}
               styles={selectStyles}
             />
-            {/* <ArrowDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" /> */}
           </div>
 
           <div className="relative w-1/2">
-            {/* <select
-              value={status ?? 'all'}
-              onChange={(e) =>
-                setStatus(e.target.value === 'all' ? null : e.target.value)
-              }
-              className="h-10 appearance-none rounded-md bg-white pl-4 pr-10 text-sm font-medium text-[#0f172a] shadow-sm outline-none w-full"
-            >
-              <option value="all">All Statuses</option>
-              {STATUS_OPTIONS.map((statusOption) => (
-                <option key={statusOption} value={statusOption}>
-                  {statusOption.replaceAll('_', ' ')}
-                </option>
-              ))}
-            </select> */}
             <Select<StatusOption>
               value={
                 statusOptions.find(
@@ -556,7 +418,6 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
               isSearchable={false}
               styles={selectStyles}
             />
-            {/* <ArrowDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" /> */}
           </div>
         </div>
 
@@ -564,99 +425,40 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
         {isOpen && (
           <div
             ref={popoverRef}
-            className="absolute left-0 top-14 z-50 w-85 rounded-2xl bg-white p-5 shadow-2xl ring-1 ring-black/5"
+            className="absolute left-0 top-14 z-50 rounded-2xl bg-white p-5 shadow-2xl ring-1 ring-black/5"
           >
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#0f172a]">
-                {formatMonthYear(viewDate)}
-              </h3>
-              <div className="flex items-center gap-1 text-slate-600">
-                <button
-                  onClick={() =>
-                    setViewDate(
-                      new Date(
-                        viewDate.getFullYear(),
-                        viewDate.getMonth() - 1,
-                        1,
-                      ),
-                    )
-                  }
-                  className="p-1 hover:text-slate-900"
-                >
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15.75 19.5L8.25 12l7.5-7.5"
-                    />
-                  </svg>
-                </button>
-                <button
-                  onClick={() =>
-                    setViewDate(
-                      new Date(
-                        viewDate.getFullYear(),
-                        viewDate.getMonth() + 1,
-                        1,
-                      ),
-                    )
-                  }
-                  className="p-1 hover:text-slate-900"
-                >
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M8.25 4.5l7.5 7.5-7.5 7.5"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="mb-2 grid grid-cols-7 text-center text-xs font-semibold text-slate-400">
-              {DAYS_OF_WEEK.map((d) => (
-                <div key={d}>{d}</div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-7 gap-y-1 text-center text-sm">
-              {renderCalendarDays().map(({ date, isCurrentMonth }, idx) => {
-                const active = isSelected(date);
-                const isStart = tempStart && isSameDay(date, tempStart);
-                const isEnd = tempEnd && isSameDay(date, tempEnd);
-
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => handleDateClick(date)}
-                    className={`h-9 w-full font-medium transition-all ${
-                      !isCurrentMonth ? 'text-slate-300' : 'text-slate-700'
-                    } ${
-                      active
-                        ? 'bg-[#dbe6fe] text-[#1d4ed8]'
-                        : 'hover:bg-slate-100'
-                    } ${isStart ? 'rounded-l-lg font-bold' : ''} ${
-                      isEnd ? 'rounded-r-lg font-bold' : ''
-                    } ${!tempEnd && isStart ? 'rounded-lg' : ''}`}
-                  >
-                    {date.getDate()}
-                  </button>
-                );
-              })}
-            </div>
+            <DayPicker
+              mode="range"
+              selected={tempRange}
+              // onSelect={setTempRange}
+              onSelect={handleRangeSelect}
+              disabled={isDayOutOfRange}
+              defaultMonth={appliedStart}
+              classNames={{
+                months: 'flex flex-col',
+                month_caption: 'flex justify-center items-center h-9 mb-2',
+                caption_label: 'text-base font-bold text-[#0f172a]',
+                nav: 'flex items-center gap-1',
+                button_previous:
+                  'p-1 text-slate-600 hover:text-slate-900 absolute left-0',
+                button_next:
+                  'p-1 text-slate-600 hover:text-slate-900 absolute right-0',
+                weekdays:
+                  'grid grid-cols-7 text-xs font-semibold text-slate-400',
+                weekday: 'text-center py-1',
+                week: 'grid grid-cols-7',
+                day: 'h-9 w-full text-center text-sm font-medium text-slate-700',
+                day_button: 'h-9 w-9 rounded-lg hover:bg-slate-100',
+                range_start:
+                  'bg-[#dbe6fe] text-[#1d4ed8] rounded-l-lg font-bold',
+                range_end: 'bg-[#dbe6fe] text-[#1d4ed8] rounded-r-lg font-bold',
+                range_middle: 'bg-[#dbe6fe] text-[#1d4ed8]',
+                outside: 'text-slate-300',
+                // disabled: 'text-slate-200 cursor-not-allowed',
+                disabled:
+                  'text-slate-200 cursor-not-allowed pointer-events-none',
+              }}
+            />
 
             {pickerError && (
               <p className="mt-3 text-center text-xs font-semibold text-red-500">
@@ -664,7 +466,7 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
               </p>
             )}
 
-            <div className="mt-6 flex items-center justify-end gap-3 pt-2">
+            <div className="mt-4 flex items-center justify-end gap-3 pt-2">
               <button
                 onClick={() => setIsOpen(false)}
                 className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800"
@@ -779,10 +581,7 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
                     {statusEntries.map(([st, count]) => (
                       <div
                         key={st}
-                        className={`flex items-center justify-between rounded-md px-2.5 py-1.5 text-xs ${
-                          STATUS_PILL_STYLES[st] ||
-                          'bg-slate-100 text-slate-700'
-                        }`}
+                        className={`flex items-center justify-between rounded-md px-2.5 py-1.5 text-xs ${getTaskStatusBadgeStyle(st as TaskStatus)}`}
                       >
                         <span className="font-semibold uppercase tracking-wide">
                           {st.replace('_', ' ')}

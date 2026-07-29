@@ -1,8 +1,6 @@
 'use client';
-import * as icons from '../../../../public/icons/icons';
 import Button from '@/app/components/atoms/Button';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ForgotPasswordFormTypes } from '@/types/shared';
@@ -10,6 +8,9 @@ import InputField from '../atoms/input';
 import { forgotPasswordAction } from '@/app/actions/auth';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/app/hooks/useIsMobile';
+import Arrow from '@/../public/svgIcons/Arrow.svg';
+import Success from '@/../public/svgIcons/Success.svg';
+import Timer from '@/../public/svgIcons/Timer.svg';
 
 const ForgotPasswordForm = () => {
   const {
@@ -117,14 +118,14 @@ const ForgotPasswordForm = () => {
               href="/login"
               className="flex items-center gap-2 justify-center py-6"
             >
-              <Image src={icons.Arrow} alt="arrow" width={16} height={16} />
+              <Arrow />
               <p className="text-[#003D9B]">Back to log in</p>
             </Link>
 
             <div>
               {isSubmitted && (
                 <p className="flex justify-center py-4 my-4 bg-success text-[#005235] gap-2 rounded-md">
-                  <Image src={icons.Success} alt="Success" />
+                  <Success />
                   <span>Your request has been sent successfully</span>
                 </p>
               )}
@@ -140,8 +141,9 @@ const ForgotPasswordForm = () => {
               className="disabled:opacity-50 w-full mb-2 mt-4"
               type="button"
             >
-              <strong className="flex gap-2 justify-center bg-surface-highest rounded-sm py-4 text-[#737685]">
-                <Image src={icons.Timer} alt="timer" />
+              <strong className="flex gap-2 justify-center items-center bg-surface-highest rounded-sm py-4 text-[#737685]">
+                <Timer />
+
                 {countdown > 0
                   ? `Resend in ${formatCountdown(countdown)}`
                   : 'Resend'}
@@ -193,14 +195,14 @@ const ForgotPasswordForm = () => {
               href="/login"
               className="flex items-center gap-2 justify-center py-6"
             >
-              <Image src={icons.Arrow} alt="arrow" width={16} height={16} />
+              <Arrow />
               <p className="text-[#003D9B]">Back to log in</p>
             </Link>
 
             <div>
               {isSubmitted && (
                 <p className="flex justify-center py-4 my-4 bg-success text-[#005235] gap-2 rounded-md">
-                  <Image src={icons.Success} alt="Success" />
+                  <Success />
                   <span>Your request has been sent successfully</span>
                 </p>
               )}
@@ -216,8 +218,8 @@ const ForgotPasswordForm = () => {
               className="disabled:opacity-50 w-full mb-2 mt-4"
               type="button"
             >
-              <strong className="flex gap-2 justify-center bg-surface-highest rounded-sm py-4 text-[#737685]">
-                <Image src={icons.Timer} alt="timer" />
+              <strong className="flex gap-2 justify-center items-center bg-surface-highest rounded-sm py-4 text-[#737685]">
+                <Timer />
                 {countdown > 0
                   ? `Resend in ${formatCountdown(countdown)}`
                   : 'Resend'}

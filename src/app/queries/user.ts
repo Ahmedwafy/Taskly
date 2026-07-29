@@ -3,10 +3,12 @@ import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
 import { UserDataSchema } from '@/schemas/userData.schema';
 
+// ==============================================================
+// ::: GET User's Data :::
+// ==============================================================
 interface FetchUserDataParams {
   accessToken: string;
 }
-
 export async function fetchUserData({ accessToken }: FetchUserDataParams) {
   if (!accessToken) return null;
 
