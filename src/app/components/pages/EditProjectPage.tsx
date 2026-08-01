@@ -1,4 +1,3 @@
-// src → app → components → pages → EditProjectPage.tsx
 'use client';
 import Image from 'next/image';
 import CardHeader from '../molecules/CardHeader';
@@ -9,11 +8,11 @@ import { useForm } from 'react-hook-form';
 import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import * as icons from '@/../public/icons/icons';
-import { updateProjectAction } from '@/app/actions/projects';
 import PageHeader from '../molecules/PageHeader';
 import { UpdateProjectSchema } from '@/schemas/project.schema';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useUpdateProject } from '@/app/hooks/projects/useUpdateProject';
 
 interface EditProjectPageProps {
   projects: ProjectProps[];
@@ -39,53 +38,39 @@ const EditProjectPage = ({ projects, projectName }: EditProjectPageProps) => {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<EditProjectFormInputs>({
-    // Connect Zod with Form + Let Zod Handle The Validation
-    // .omit({ projectId: true }) ⇒ Coz projectId Comes From Params & Not From Form Inputs
     resolver: zodResolver(UpdateProjectSchema.omit({ projectId: true })),
     defaultValues: { name: '', description: '' },
   });
 
-  const onSubmit = async (data: EditProjectFormInputs) => {
+  const { mutate: updateProject, isPending } = useUpdateProject();
+
+  const onSubmit = (data: EditProjectFormInputs) => {
+    if (!projectId) {
+      toast.error('Invalid project id');
+      return;
+    }
+
     const dataToSend = {
+      projectId,
       name: data.name.trim(),
       description: data.description?.trim(),
     };
 
-    // if (!dataToSend.name) {
-    //   toast.error('Name is required');
-    //   return;
-    // }
-
-    try {
-      if (!projectId) {
-        toast.error('Invalid project id');
-        return;
-      }
-
-      const result = await updateProjectAction({
-        projectId,
-        name: dataToSend.name,
-        description: dataToSend.description,
-      });
-
-      if (result?.error) {
-        toast.error(result.error);
-        return;
-      }
-
-      toast.success('Project updated successfully');
-      router.replace('/projects');
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Something went wrong',
-      );
-      reset({
-        name: currentProject?.name,
-        description: currentProject?.description || '',
-      });
-    }
+    updateProject(dataToSend, {
+      onSuccess: () => {
+        toast.success('Project updated successfully');
+        router.replace('/projects');
+      },
+      onError: (error) => {
+        toast.error(error.message);
+        reset({
+          name: currentProject?.name,
+          description: currentProject?.description || '',
+        });
+      },
+    });
   };
 
   useEffect(() => {
@@ -106,21 +91,18 @@ const EditProjectPage = ({ projects, projectName }: EditProjectPageProps) => {
         href="/projects/add"
         projectName={projectName}
       />
-      {/* ○ ○ ○  Card  ○ ○ ○  */}
       <div className="mx-auto rounded-md h-auto mt-10">
         <div className="max-w-3xl mx-auto p-8 h-fit shadowrounded-t-xl shadow-sm bg-white">
-          {/* ○ ○ ○  Card Header ○ ○ ○   */}
           <CardHeader
             title="Edit Project"
             description="Define the scope and foundational details of your project."
           />
 
-          {/* ○ ○ ○  Edit Project Form ○ ○ ○  */}
           <ProjectForm
             handleSubmit={handleSubmit}
             onSubmit={onSubmit}
             register={register}
-            isSubmitting={isSubmitting}
+            isSubmitting={isPending}
             errors={errors}
             control={control}
             placeholder_Title="Title ..."
@@ -132,7 +114,6 @@ const EditProjectPage = ({ projects, projectName }: EditProjectPageProps) => {
           />
         </div>
 
-        {/* ○ ○ ○  Pro Tip ○ ○ ○  */}
         <div className="bg-surface-low py-6 px-6 text-[#4F5F7B] flex max-w-3xl mx-auto rounded-b-xl shadow-sm">
           <div className="my-auto mr-2">
             <Image src={icons.ProTip} alt="Pro Tip" width={14} height={14} />

@@ -1,43 +1,27 @@
+// src > app > components > organisms > MobileInterface
 'use client';
-
-import { ReactNode, useMemo, useState, useEffect } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import Mobile_Header from './Mobile_Header';
 import SideBar from './Side-Bar';
 import * as icons from '../../../../public/icons/icons';
-import { useRouter } from 'next/navigation';
-import { useAppDispatch } from '@/redux/reduxHooks';
-import { clearUser, setUser } from '@/features/auth/authSlice';
-import { toast } from 'sonner';
-import { signOutAction } from '@/app/actions/auth';
+import { useSignOut } from '@/app/hooks/auth/useSignOut';
 
 interface MobileInterfaceProps {
   userData: {
     name?: string;
     department?: string;
   };
-
   children: ReactNode;
 }
 
 const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
   const fullName = userData?.name ?? '';
-  const department = userData?.name ?? '';
-  const router = useRouter();
-  const dispatch = useAppDispatch();
+  const department = userData?.department ?? '';
+  const { mutate: signOut } = useSignOut();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Added client-side state synchronization by dispatching setUser(userData) in a useEffect hook.
-  useEffect(() => {
-    dispatch(setUser(userData));
-  }, [dispatch, userData]);
-
-  const handleLogout = async () => {
-    await signOutAction();
-
-    // Clear client-side global Redux state
-    dispatch(clearUser());
-
-    router.replace('/login');
+  const handleLogout = () => {
+    signOut();
   };
 
   const avatarText = useMemo(() => {
@@ -57,7 +41,6 @@ const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
         />
       </div>
 
-      {/* ○ ○ ○  Overlay ○ ○ ○  */}
       {isOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/40 lg:hidden"
@@ -65,7 +48,6 @@ const MobileInterface = ({ userData, children }: MobileInterfaceProps) => {
         />
       )}
 
-      {/* ○ ○ ○  Sidebar container (kept in DOM to allow slide animation) ○ ○ ○  */}
       <div
         className={`fixed inset-y-0 left-0 z-40 w-64 lg:hidden transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'

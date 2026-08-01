@@ -23,7 +23,7 @@ interface EpicDetailsPopUpModalProps {
   handleUpdateEpicField: (
     epicId: string,
     updatedFields: Partial<EpicDetails> & { assignee_id?: string | null },
-  ) => Promise<void>;
+  ) => void | Promise<void>;
 }
 
 // 2. Define the Option shape for react-select

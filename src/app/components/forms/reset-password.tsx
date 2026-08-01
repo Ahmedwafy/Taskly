@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import Button from '@/app/components/atoms/Button';
 import Link from 'next/link';
 import InputField from '../atoms/input';
-import { resetPasswordAction } from '@/app/actions/auth';
+import { useResetPassword } from '@/app/hooks/auth/useResetPassword';
 
 interface ResetPasswordFormData {
   password: string;
@@ -35,7 +35,7 @@ const ResetPasswordForm = () => {
     register,
     handleSubmit,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ResetPasswordFormData>({
     defaultValues: {
       password: '',
@@ -76,30 +76,32 @@ const ResetPasswordForm = () => {
     return true;
   };
 
+  const { mutate: resetPassword, isPending } = useResetPassword();
+
   const onSubmit = useCallback(
-    async (data: ResetPasswordFormData) => {
-      const result = await resetPasswordAction(data.password);
+    (data: ResetPasswordFormData) => {
+      resetPassword(data.password, {
+        onSuccess: () => {
+          setSuccessMessage(
+            'Your password has been updated successfully. You can now log in.',
+          );
 
-      if (result.error) {
-        console.error('Error resetting password:', result.error);
+          timeoutRef.current = setTimeout(() => {
+            router.push('/login');
+          }, 3000);
+        },
+        onError: (error) => {
+          console.error('Error resetting password:', error.message);
 
-        setError('password', {
-          type: 'server',
-          message:
-            result.error || 'Failed to reset password. Please try again.',
-        });
-        return;
-      }
-
-      setSuccessMessage(
-        'Your password has been updated successfully. You can now log in.',
-      );
-
-      timeoutRef.current = setTimeout(() => {
-        router.push('/login');
-      }, 3000);
+          setError('password', {
+            type: 'server',
+            message:
+              error.message || 'Failed to reset password. Please try again.',
+          });
+        },
+      });
     },
-    [router, setError],
+    [resetPassword, router, setError],
   );
 
   const passwordRegister = register('password', {
@@ -224,9 +226,9 @@ const ResetPasswordForm = () => {
 
           <Button
             type="submit"
-            name={isSubmitting ? 'Resetting Password...' : 'Update Password'}
-            disabled={isSubmitting || Object.keys(errors).length > 0}
-            isSubmitting={isSubmitting}
+            name={isPending ? 'Resetting Password...' : 'Update Password'}
+            disabled={isPending || Object.keys(errors).length > 0}
+            isSubmitting={isPending}
             className="w-full"
           />
 

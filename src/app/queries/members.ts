@@ -1,14 +1,11 @@
 // src → app → queries → members.ts
 import { supabaseKey, baseURL } from '@/lib/supabase';
 import { endPoints } from '@/lib/endpoints';
+import { FetchProjectMembersParams } from '@/types/shared';
 
 // ==============================================================
 // ::: GET Members List :::
 // ==============================================================
-interface FetchProjectMembersParams {
-  projectId: string;
-  accessToken: string;
-}
 
 export async function fetchProjectMembersList({
   projectId,

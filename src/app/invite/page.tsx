@@ -1,60 +1,44 @@
-// src > app > invite > page.tsx
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, Suspense } from 'react';
+import { Suspense } from 'react';
 import { toast } from 'sonner';
 import Button from '@/app/components/atoms/Button';
 import LOGO from '@/../public/svgIcons/LOGO.svg';
 import InvitationIcon from '@/../public/svgIcons/InvitationIcon.svg';
-import { acceptInvitationRequest } from '@/app/actions/members';
+import { useAcceptInvitation } from '@/app/hooks/members/useAcceptInvitation';
 
 function AcceptInviteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  // Extract the token from the URL: /invite?token=<invitation_token>
   const token = searchParams.get('token');
 
-  const [isLoading, setIsLoading] = useState(false);
+  const { mutate: acceptInvitation, isPending } = useAcceptInvitation();
 
-  const handleAccept = async () => {
+  const handleAccept = () => {
     if (!token) {
       toast.error('Invalid or missing invitation token.');
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      const result = await acceptInvitationRequest({ p_token: token });
-
-      // Handle ( invalid tokens / expired tokens / Forbidden 403 / Network/API Errors )
-      if (result.error) {
-        // Handle 401 Unauthorized
-        // - If NOT authenticated → redirect to login page and return back to invite page after login.
-        if (result.status === 401) {
-          toast.error('Please log in to accept this invitation.');
-          const returnUrl = `/invite?token=${encodeURIComponent(token)}`;
-          router.push(`/login?redirectTo=${encodeURIComponent(returnUrl)}`);
-          return;
-        }
-
-        toast.error(result.error);
-        return;
-      }
-
-      toast.success('Successfully joined the project!');
-      router.push('/projects');
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : 'Something went wrong. Please try again.',
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    acceptInvitation(
+      { p_token: token },
+      {
+        onSuccess: () => {
+          toast.success('Successfully joined the project!');
+          router.push('/projects');
+        },
+        onError: (error: any) => {
+          if (error.status === 401) {
+            toast.error('Please log in to accept this invitation.');
+            const returnUrl = `/invite?token=${encodeURIComponent(token)}`;
+            router.push(`/login?redirectTo=${encodeURIComponent(returnUrl)}`);
+            return;
+          }
+          toast.error(error.message);
+        },
+      },
+    );
   };
 
   return (
@@ -79,9 +63,9 @@ function AcceptInviteContent() {
       <Button
         className="h-13 shadow-lg rounded-sm mt-2"
         onClick={handleAccept}
-        disabled={isLoading || !token}
+        disabled={isPending || !token}
       >
-        {isLoading ? 'Accepting...' : 'Accept Invitation'}
+        {isPending ? 'Accepting...' : 'Accept Invitation'}
       </Button>
     </div>
   );
@@ -95,7 +79,6 @@ export default function AcceptInvitePage() {
         <h1 className="pop-up-title uppercase">Taskly</h1>
       </div>
 
-      {/* Suspense wrapper is mandatory in Next.js App Router for useSearchParams() - Coz Cant not define useSearchParams() Value in Build Time */}
       <Suspense
         fallback={<div className="text-gray-500">Loading invitation...</div>}
       >

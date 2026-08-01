@@ -16,7 +16,7 @@ type AddEpicFormInputs = Omit<z.input<typeof CreateEpicSchema>, 'project_id'>;
 
 interface AddNewProjectProps {
   handleSubmit: UseFormHandleSubmit<AddEpicFormInputs>;
-  onSubmit: (data: AddEpicFormInputs) => Promise<void>;
+  onSubmit: (data: AddEpicFormInputs) => void | Promise<void>;
   register: UseFormRegister<AddEpicFormInputs>;
   control: Control<AddEpicFormInputs>;
   errors: FieldErrors<AddEpicFormInputs>;

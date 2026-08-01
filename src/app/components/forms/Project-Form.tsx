@@ -16,7 +16,7 @@ interface ProjectDataTypes {
 
 interface AddNewProjectProps {
   handleSubmit: UseFormHandleSubmit<ProjectDataTypes>;
-  onSubmit: (data: ProjectDataTypes) => Promise<void>;
+  onSubmit: (data: ProjectDataTypes) => void | Promise<void>;
   register: UseFormRegister<ProjectDataTypes>;
   isSubmitting: boolean;
   errors: FieldErrors<ProjectDataTypes>;

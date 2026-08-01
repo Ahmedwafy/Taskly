@@ -6,14 +6,17 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import Input from '@/app/components/atoms/input';
-import { signUpAction } from '@/app/actions/auth';
+// import { signUpAction } from '@/app/actions/auth';
 import { useIsMobile } from '@/app/hooks/useIsMobile';
 import Link from 'next/link';
+import { useSignUp } from '@/app/hooks/auth/useSignUp';
 
 const SignUpForm = () => {
   const router = useRouter();
   const [passwordValue, setPasswordValue] = useState('');
   const isMobile = useIsMobile();
+
+  const { mutate: signUp, isPending, isError, error } = useSignUp();
 
   const {
     register,
@@ -65,24 +68,13 @@ const SignUpForm = () => {
   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(passwordValue);
 
   //  ○ ○ ○ Submit with Server Actions  ○ ○ ○
-  const onSubmit = async (data: SignUpFormData) => {
-    const dataToSend = {
+  const onSubmit = (data: SignUpFormData) => {
+    signUp({
       name: data.name.trim(),
       email: data.email.trim(),
       department: data.department.trim(),
       password: data.password,
-    };
-
-    const result = await signUpAction(dataToSend);
-
-    if (result.error) {
-      toast.error(result.error);
-      console.error('Error submitting sign-up form:', result.error);
-      return;
-    }
-
-    toast.success('Account created successfully');
-    router.push('/login');
+    });
   };
 
   if (isMobile === null) return null;
@@ -224,12 +216,17 @@ const SignUpForm = () => {
               </div>
             </div>
 
+            {isError && (
+              <p className="text-sm text-red-500 py-2">{error.message}</p>
+            )}
+
             <Button
               name="Create Account"
               type="submit"
               disabled={isSubmitting}
               className="text-white bg-linear-to-r from-(--primary) to-(--primary-container) py-3 rounded-md hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 flex justify-center items-center gap-2 transition-colors duration-300"
-              isSubmitting={isSubmitting}
+              // isSubmitting={isSubmitting}
+              isSubmitting={isPending}
             />
 
             <p className="text-[#4F5F7B] body-md text-center py-4">
@@ -313,10 +310,6 @@ const SignUpForm = () => {
               error={errors.password?.message?.toString()}
               {...passwordRegister}
               onChange={(e) => {
-                // if (passwordRegister.onChange) {
-                //   passwordRegister.onChange(e);
-                // }
-                // or
                 passwordRegister.onChange?.(e);
                 setPasswordValue(e.target.value);
               }}
@@ -333,50 +326,9 @@ const SignUpForm = () => {
               {...confirmPasswordRegister}
             />
 
-            {/* <div className="flex flex-col gap-2 bg-[#E8EDFF] p-4 rounded-md my-4">
-              <div>
-                <input
-                  type="checkbox"
-                  checked={hasLength}
-                  readOnly
-                  id="agree-length"
-                  className="mr-2"
-                />
-                <label
-                  htmlFor="agree-length"
-                  className="text-sm text-[#4F5F7B]"
-                >
-                  At least 8 characters
-                </label>
-              </div>
-              <div>
-                <input
-                  type="checkbox"
-                  checked={hasAllThree}
-                  readOnly
-                  id="agree-case"
-                  className="mr-2"
-                />
-                <label htmlFor="agree-case" className="text-sm text-[#4F5F7B]">
-                  One uppercase, lowercase, and digit
-                </label>
-              </div>
-              <div>
-                <input
-                  type="checkbox"
-                  checked={hasSpecialChar}
-                  readOnly
-                  id="agree-special"
-                  className="mr-2"
-                />
-                <label
-                  htmlFor="agree-special"
-                  className="text-sm text-[#4F5F7B]"
-                >
-                  One special character
-                </label>
-              </div>
-            </div> */}
+            {isError && (
+              <p className="text-sm text-red-500 py-2">{error.message}</p>
+            )}
 
             <Button
               name="Create Account"

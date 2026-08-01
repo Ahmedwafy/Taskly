@@ -1,4 +1,3 @@
-// src > app > (pages) > projects > [projectId] > @invite > (.)members > invite > page.tsx
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
@@ -9,13 +8,12 @@ import InviteMemberIcon from '@/../public/svgIcons/InviteMemberPOP.svg';
 import CloseIcon from '@/../public/svgIcons/CloseIcon.svg';
 import Button from '@/app/components/atoms/Button';
 import InputField from '@/app/components/atoms/input';
-
-import { inviteMemberRequest } from '@/app/actions/members';
 import {
   InviteFormSchema,
   InviteFormData,
 } from '@/schemas/inviteMember.schema';
 import { useIsMobile } from '@/app/hooks/useIsMobile';
+import { useInviteMember } from '@/app/hooks/members/useInviteMember';
 
 export default function InviteModal() {
   const router = useRouter();
@@ -26,39 +24,33 @@ export default function InviteModal() {
     ? params.projectId[0]
     : (params.projectId ?? '');
 
-  // Type generated from Zod
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<InviteFormData>({
     resolver: zodResolver(InviteFormSchema),
     defaultValues: { p_email: '' },
   });
 
-  const onSubmit = async (data: InviteFormData) => {
+  const { mutate: inviteMember, isPending } = useInviteMember();
+
+  const onSubmit = (data: InviteFormData) => {
     const dataToSend = {
       p_email: data.p_email,
       p_project_id: projectID,
       p_app_url: typeof window !== 'undefined' ? window.location.origin : '',
     };
 
-    try {
-      const result = await inviteMemberRequest(dataToSend);
-
-      if (result.error) {
-        toast.error(result.error);
-        return;
-      }
-      toast.success('Invitation sent successfully!');
-      router.back();
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : 'unauthorized, validation errors',
-      );
-    }
+    inviteMember(dataToSend, {
+      onSuccess: () => {
+        toast.success('Invitation sent successfully!');
+        router.back();
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    });
   };
 
   if (isMobile === null) return null;
@@ -103,7 +95,6 @@ export default function InviteModal() {
               </div>
 
               <div className="flex flex-col gap-6 mt-4">
-                {/* Registered directly as p_email so zero mapping is required */}
                 <div>
                   <InputField
                     id="email"
@@ -124,8 +115,8 @@ export default function InviteModal() {
                   />
                   <Button
                     type="submit"
-                    name={isSubmitting ? 'Sending...' : 'Send Invitation'}
-                    disabled={isSubmitting}
+                    name={isPending ? 'Sending...' : 'Send Invitation'}
+                    disabled={isPending}
                   />
                 </div>
               </div>
@@ -172,7 +163,6 @@ export default function InviteModal() {
               </div>
 
               <div className="flex flex-col gap-6 mt-4">
-                {/* Registered directly as p_email so zero mapping is required */}
                 <div>
                   <InputField
                     id="email"
@@ -193,8 +183,8 @@ export default function InviteModal() {
                   />
                   <Button
                     type="submit"
-                    name={isSubmitting ? 'Sending...' : 'Send Invitation'}
-                    disabled={isSubmitting}
+                    name={isPending ? 'Sending...' : 'Send Invitation'}
+                    disabled={isPending}
                   />
                 </div>
               </div>

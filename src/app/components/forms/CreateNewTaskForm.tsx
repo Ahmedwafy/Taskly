@@ -1,66 +1,48 @@
-// src > app > components > forms > CreateNewTaskForm.tsx
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useAppDispatch, useAppSelector } from '@/redux/reduxHooks';
-import { fetchProjectMembers } from '@/features/members/membersSlice';
 import InputField from '../atoms/input';
 import SelectField from '../atoms/SelectField';
 import Button from '../atoms/Button';
 import Link from 'next/link';
 import { STATUS_OPTIONS } from '@/lib/enums';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createTaskAction } from '@/app/actions/tasks';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { CreateTaskSchema } from '@/schemas/createNewTask.schema';
 import Plus from '@/../public/svgIcons/Plus.svg';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getProjectEpics } from '@/features/epics/projectEpicsSlice';
+import { useProjectMembers } from '@/app/hooks/members/useProjectMembers';
+import { useCreateTask } from '@/app/hooks/tasks/useCreateTask';
+import { useProjectEpicsSelect } from '@/app/hooks/epics/useProjectEpicsSelect';
 
 interface CreateNewTaskProps {
   projectId: string;
   accessToken: string;
-  // initialEpics: ProjectEpic[];
 }
 
-// Define the type for the form inputs based on the Zod schema instead of :
-// manually defining it. This ensures that the form inputs are always in sync with the schema.
-//
-// z.input, TypeScript and React Hook Form will accept empty strings "" or undefined when the user interacts with the form.
-// Add 'project_id' to remove it from the form inputs, since it's already provided via props and not user input.
 type TaskFormInputs = Omit<z.input<typeof CreateTaskSchema>, 'project_id'>;
 
-const CreateNewTaskForm = ({ projectId, accessToken }: CreateNewTaskProps) => {
-  // const CreateNewTaskForm = ({ projectId, initialEpics }: CreateNewTaskProps) => {
+const CreateNewTaskForm = ({ projectId }: CreateNewTaskProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dispatch = useAppDispatch();
-  // const [epicsList] = useState<ProjectEpic[]>(initialEpics);
-  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const epicIdFromUrl = searchParams.get('epicId') || '';
   const taskStatus = searchParams.get('status') || '';
 
-  // 1. Members state from Redux
-  const {
-    list: membersData,
-    loading: isMembersLoading,
-    isFetched,
-  } = useAppSelector((state) => state.members);
+  const { data: membersData = [], isLoading: isMembersLoading } =
+    useProjectMembers(projectId);
 
-  // 2. Epics state from Redux
-  const { projectEpics, loading: isEpicsLoading } = useAppSelector(
-    (state) => state.projectEpics,
-  );
+  const { data: epicsData, isLoading: isEpicsLoading } = useProjectEpicsSelect({
+    projectId,
+  });
+  const projectEpics = epicsData?.projectEpics ?? [];
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<TaskFormInputs>({
-    // Connect Zod with Form + Let Zod Handle The Validation
-    // .omit({ projectId: true }) ⇒ Coz projectId Comes From Params & Not From Form Inputs
     resolver: zodResolver(CreateTaskSchema.omit({ project_id: true })),
     defaultValues: {
       title: '',
@@ -72,60 +54,21 @@ const CreateNewTaskForm = ({ projectId, accessToken }: CreateNewTaskProps) => {
     },
   });
 
-  // Fetch Members & Epics on Mount
-  useEffect(() => {
-    if (!projectId) return;
+  const { mutate: createTask, isPending } = useCreateTask();
 
-    // Fetch Members
-    const isDifferentProject =
-      membersData.length > 0 && membersData[0].project_id !== projectId;
-
-    if ((!isFetched && !isMembersLoading) || isDifferentProject) {
-      dispatch(fetchProjectMembers(projectId));
-    }
-
-    // Fetch Epics via Redux
-    dispatch(
-      getProjectEpics({
-        projectId,
-        limit: 10, // First 10 epics for select dropdown
-        offset: 0,
-        // accessToken,
-      }),
+  const onSubmit = (data: TaskFormInputs) => {
+    createTask(
+      { ...data, project_id: projectId },
+      {
+        onSuccess: () => {
+          toast.success(`Task added successfully`);
+          router.push(`/projects/${projectId}/tasks`);
+        },
+        onError: (error) => {
+          toast.error(error.message || 'Failed to add task, try again');
+        },
+      },
     );
-  }, [
-    projectId,
-    accessToken,
-    dispatch,
-    isFetched,
-    isMembersLoading,
-    membersData,
-  ]);
-  // [projectId, dispatch, isFetched, isMembersLoading, membersData]
-
-  const onSubmit = async (data: TaskFormInputs) => {
-    try {
-      setSubmitError(null);
-
-      const result = await createTaskAction({
-        ...data,
-        project_id: projectId,
-      });
-
-      if (result?.error) {
-        toast.error(result.error);
-        setSubmitError(result.error);
-        return;
-      }
-
-      toast.success(`Task added successfully`);
-      router.push(`/projects/${projectId}/tasks`);
-    } catch (err: unknown) {
-      toast.error(`Failed to add task, try again`);
-      setSubmitError(
-        err instanceof Error ? err.message : 'An unexpected error occurred.',
-      );
-    }
   };
 
   const todayString = new Date().toISOString().split('T')[0];
@@ -136,12 +79,6 @@ const CreateNewTaskForm = ({ projectId, accessToken }: CreateNewTaskProps) => {
       noValidate
       className="flex flex-col gap-8 bg-white py-4 px-4 sm:p-8 shadow-sm rounded-xl"
     >
-      {submitError && (
-        <div className="p-4 bg-red-50 text-red-600 rounded-lg text-sm font-medium">
-          {submitError}
-        </div>
-      )}
-
       <InputField
         {...register('title', { required: 'Task title is required' })}
         label="TITLE"
@@ -221,13 +158,13 @@ const CreateNewTaskForm = ({ projectId, accessToken }: CreateNewTaskProps) => {
           href={`/projects/${projectId}/tasks`}
           className="w-full lg:w-1/4!"
         >
-          <Button name="Back" variant="ghost" disabled={isSubmitting} />
+          <Button name="Back" variant="ghost" disabled={isPending} />
         </Link>
         <Button
           name="Create Task"
           type="submit"
-          isSubmitting={isSubmitting}
-          disabled={isSubmitting}
+          isSubmitting={isPending}
+          disabled={isPending}
           className="w-full lg:w-1/4!"
         >
           <Plus />

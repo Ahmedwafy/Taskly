@@ -12,7 +12,6 @@ import {
   SignInFormData,
   ForgotPasswordFormTypes,
 } from '@/types/shared';
-import { success } from 'zod';
 
 // ==========================================
 // 1. SIGN UP

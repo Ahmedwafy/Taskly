@@ -1,15 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import PageHeader from '@/app/components/molecules/PageHeader';
 import Previous from '@/../public/svgIcons/Previous.svg';
 import Next from '@/../public/svgIcons/Next.svg';
 import { ProjectProps } from '@/types/shared';
 import { STATUS_OPTIONS, TaskStatus } from '@/lib/enums';
-import {
-  TasksCalendarStatsResponse,
-  TasksPerProjectItem,
-} from '@/types/statistics';
+
 import TotalTasksIcon from '@/../public/svgIcons/TotalTasksIcon.svg';
 import CompletedTasksIcon from '@/../public/svgIcons/CompletedTasksIcon.svg';
 import OverDueIcon from '@/../public/svgIcons/OverDueIcon.svg';
@@ -18,6 +15,16 @@ import { getTaskStatusBadgeStyle } from '@/lib/helpers/status';
 import { selectStyles, STATUS_CONFIG } from '@/lib/constants/status';
 import { DayPicker, DateRange } from 'react-day-picker';
 import 'react-day-picker/style.css'; // base styles — you'll override via classNames below
+import { useTasksCalendarStats } from '@/app/hooks/statistics/useTasksCalendarStats';
+import { useTasksPerProject } from '@/app/hooks/statistics/useTasksPerProject';
+import {
+  formatDateShort,
+  formatYear,
+  formatDateISO,
+  isSameDay,
+  getStartOfWeek,
+  getDaysInRange,
+} from '@/lib/helpers/date';
 
 type ProjectOption = {
   value: string;
@@ -27,40 +34,6 @@ type ProjectOption = {
 type StatusOption = {
   value: string;
   label: string;
-};
-
-const formatDateShort = (date: Date) =>
-  date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-const formatYear = (date: Date) => date.getFullYear();
-
-const formatDateISO = (date: Date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const isSameDay = (d1: Date, d2: Date) =>
-  d1.getFullYear() === d2.getFullYear() &&
-  d1.getMonth() === d2.getMonth() &&
-  d1.getDate() === d2.getDate();
-
-const getStartOfWeek = (date: Date) => {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.setDate(diff));
-};
-
-const getDaysInRange = (startDate: Date, endDate: Date): Date[] => {
-  const days: Date[] = [];
-  const current = new Date(startDate);
-  while (current <= endDate) {
-    days.push(new Date(current));
-    current.setDate(current.getDate() + 1);
-  }
-  return days;
 };
 
 // (used only to build the project-filter dropdown options). Everything else — dates, filters, fetched data — lives in local useState.
@@ -87,11 +60,26 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
     return end;
   });
 
-  // --- API State ---
-  const [stats, setStats] = useState<TasksCalendarStatsResponse | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [apiError, setApiError] = useState<string | null>(null);
-  const [projectStats, setProjectStats] = useState<TasksPerProjectItem[]>([]);
+  const dateParams = {
+    startDate: formatDateISO(appliedStart),
+    endDate: formatDateISO(appliedEnd),
+  };
+
+  const {
+    data: stats,
+    isLoading: isLoadingCalendar,
+    error: calendarError,
+  } = useTasksCalendarStats({
+    ...dateParams,
+    projectId: selectedProjectId === 'all' ? null : selectedProjectId,
+    status,
+  });
+
+  const { data: projectStats = [] } = useTasksPerProject(dateParams);
+
+  const isLoading = isLoadingCalendar;
+  const apiError =
+    calendarError instanceof Error ? calendarError.message : null;
 
   // --- Picker Popover State ---
   const [isOpen, setIsOpen] = useState(false);
@@ -102,69 +90,6 @@ export default function MyStatisticsPage({ projects }: MyStatisticsPageProps) {
   const [pickerError, setPickerError] = useState<string | null>(null);
 
   const popoverRef = useRef<HTMLDivElement>(null);
-
-  // --- Execution ---
-  // This is the single source of truth feeding both the calendar grid and both bottom cards.
-  const fetchStatistics = useCallback(async () => {
-    setIsLoading(true);
-    setApiError(null);
-
-    const payloadDate = {
-      startDate: formatDateISO(appliedStart),
-      endDate: formatDateISO(appliedEnd),
-    };
-
-    try {
-      const [calendarResult, projectResult] = await Promise.allSettled([
-        fetch('/api/statistics/calendar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...payloadDate,
-            projectId: selectedProjectId === 'all' ? null : selectedProjectId,
-            status: status,
-          }),
-        }),
-        fetch('/api/statistics/per-project', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payloadDate),
-        }),
-      ]);
-
-      if (calendarResult.status === 'fulfilled') {
-        const calendarRes = calendarResult.value;
-        const calendarData = await calendarRes.json();
-
-        if (calendarRes.ok) {
-          setStats(calendarData);
-        } else {
-          setApiError(calendarData.error || 'Failed to load calendar stats.');
-        }
-      } else {
-        setApiError('Network error while loading calendar stats.');
-      }
-
-      if (projectResult.status === 'fulfilled') {
-        const projectRes = projectResult.value;
-        const projectData = await projectRes.json();
-
-        if (projectRes.ok) {
-          setProjectStats(projectData);
-        } else {
-          setProjectStats([]);
-        }
-      } else {
-        setProjectStats([]);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [appliedStart, appliedEnd, selectedProjectId, status]);
-
-  useEffect(() => {
-    fetchStatistics();
-  }, [fetchStatistics]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

@@ -1,12 +1,9 @@
 'use client';
 
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState } from 'react';
 import SideBar from './Side-Bar';
 import Desktop_Header from './Desktop_Header';
-import { useRouter } from 'next/navigation';
-import { useAppDispatch } from '@/redux/reduxHooks';
-import { clearUser, setUser } from '@/features/auth/authSlice';
-import { signOutAction } from '@/app/actions/auth';
+import { useSignOut } from '@/app/hooks/auth/useSignOut';
 import { getInitials } from '@/lib/helpers/user';
 
 interface DesktopInterfaceProps {
@@ -19,32 +16,16 @@ interface DesktopInterfaceProps {
 
 const DesktopInterface = ({ userData, children }: DesktopInterfaceProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { mutate: signOut } = useSignOut();
 
-  const [, setLoading] = useState(false);
   const fullName = userData?.name ?? '';
   const department = userData?.department ?? '';
-  const router = useRouter();
-  const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    dispatch(setUser(userData));
-  }, [dispatch, userData]);
-
-  const handleLogout = async () => {
-    setLoading(true);
-
-    // 1. Call the Server Action
-    await signOutAction();
-
-    // 2. Clear your client-side global Redux state
-    dispatch(clearUser());
-
-    // 3. Clear loading and push the user to the login screen
-    setLoading(false);
-    router.replace('/login');
+  const handleLogout = () => {
+    signOut();
   };
 
-  const initialFullName = getInitials(fullName); // "John Doe" >>> "JD"
+  const initialFullName = getInitials(fullName);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden">

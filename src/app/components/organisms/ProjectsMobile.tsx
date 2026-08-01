@@ -1,12 +1,11 @@
-// src → app → (pages) → projects → ProjectsMobile.tsx
 'use client';
-import { useEffect, useState, useRef, useCallback } from 'react';
 import ProjectCard from '@/app/components/molecules/ProjectCard';
 import AddProjectCard from '@/app/components/molecules/AddProjectCard';
 import Link from 'next/link';
 import ProjectsPageSkeleton from '@/app/(pages)/projects/ProjectsPageSkeleton';
 import { ProjectProps } from '@/types/shared';
-import { loadMoreProjectsAction } from '@/app/actions/projects'; // Import your Action
+import { useProjectsInfinite } from '@/app/hooks/projects/useProjectsInfinite';
+import { useEffect, useRef } from 'react';
 
 interface Props {
   initialProjects: ProjectProps[];
@@ -19,60 +18,25 @@ export default function ProjectsMobile({
   initialTotalCount,
   limit,
 }: Props) {
-  const [projects, setProjects] = useState(initialProjects);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [offset, setOffset] = useState(limit);
-
-  const [hasMore, setHasMore] = useState(
-    initialProjects.length < initialTotalCount,
-  );
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isError,
+    error,
+  } = useProjectsInfinite({ initialProjects, initialTotalCount, limit });
 
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
-  const loadMore = useCallback(async () => {
-    if (loading || !hasMore) return;
+  const projects = data?.pages.flatMap((page) => page.projects) ?? [];
 
-    try {
-      setLoading(true);
-      setError('');
-
-      const currentOffset = offset;
-
-      const result = await loadMoreProjectsAction(limit, currentOffset);
-
-      if (result.error) {
-        setError(result.error);
-        return;
-      }
-
-      if (result.projects && result.projects.length > 0) {
-        setProjects((prev) => [...prev, ...result.projects]);
-        setOffset((prev) => prev + limit);
-      }
-
-      if (
-        currentOffset + limit >= initialTotalCount ||
-        !result.projects?.length
-      ) {
-        setHasMore(false);
-      }
-    } catch {
-      setError('Failed to load projects');
-    } finally {
-      setLoading(false);
-    }
-  }, [offset, limit, initialTotalCount, loading, hasMore]);
-
-  // Intersection Observer remains completely unchanged
   useEffect(() => {
-    if (!hasMore) return;
+    if (!hasNextPage) return;
 
     const observer = new IntersectionObserver((entries) => {
-      const target = entries[0];
-
-      if (target.isIntersecting) {
-        loadMore();
+      if (entries[0].isIntersecting) {
+        fetchNextPage();
       }
     });
 
@@ -81,7 +45,7 @@ export default function ProjectsMobile({
     }
 
     return () => observer.disconnect();
-  }, [hasMore, loadMore]);
+  }, [hasNextPage, fetchNextPage]);
 
   return (
     <div className="flex flex-col gap-y-8 py-4 px-2 justify-between w-full mt-15">
@@ -104,11 +68,13 @@ export default function ProjectsMobile({
 
       <AddProjectCard />
 
-      {error && <p className="w-full text-center text-red-500 py-4">{error}</p>}
+      {isError && (
+        <p className="w-full text-center text-red-500 py-4">{error.message}</p>
+      )}
 
-      {loading && <ProjectsPageSkeleton />}
+      {isFetchingNextPage && <ProjectsPageSkeleton />}
 
-      {hasMore && <div ref={loaderRef} className="h-10 w-full" />}
+      {hasNextPage && <div ref={loaderRef} className="h-10 w-full" />}
     </div>
   );
 }

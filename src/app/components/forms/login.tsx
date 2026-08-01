@@ -2,58 +2,39 @@
 
 import { useState } from 'react';
 import { SignInFormData } from '@/types/shared';
-import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { DevTool } from '@hookform/devtools';
-import { toast } from 'sonner';
-import { useAppDispatch } from '@/redux/reduxHooks';
-import { loginUser } from '@/features/auth/authSlice';
 import Link from 'next/link';
 import Button from '@/app/components/atoms/Button';
 import InputField from '../atoms/input';
 import { useIsMobile } from '@/app/hooks/useIsMobile';
 import { useSearchParams } from 'next/navigation';
+import { useSignIn } from '@/app/hooks/auth/useSignIn';
 
 const LogInForm = () => {
-  const router = useRouter();
-  const [authError, setAuthError] = useState<string>('');
   const [rememberMe, setRememberMe] = useState(false);
-  const dispatch = useAppDispatch();
   const isMobile = useIsMobile();
   const searchParams = useSearchParams();
 
   const redirectTo = searchParams.get('redirectTo'); // for accepting invitation if user 401 Unauthorized ( need to login )
 
+  const { mutate: signIn, isPending, isError, error } = useSignIn(redirectTo);
+
   const {
     control,
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<SignInFormData>({
     defaultValues: { email: '', password: '' },
   });
 
-  const onSubmit = async (data: SignInFormData) => {
-    setAuthError('');
-
-    try {
-      await dispatch(
-        loginUser({
-          email: data.email,
-          password: data.password,
-          rememberMe: rememberMe, // Attaches local state
-        }),
-      ).unwrap();
-
-      toast.success('Welcome back!');
-      router.push(redirectTo || '/projects');
-    } catch (error) {
-      const message =
-        typeof error === 'string' ? error : 'Something went wrong';
-
-      setAuthError(message);
-      toast.error(message);
-    }
+  const onSubmit = (data: SignInFormData) => {
+    signIn({
+      email: data.email,
+      password: data.password,
+      rememberMe,
+    });
   };
 
   const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -87,8 +68,6 @@ const LogInForm = () => {
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
-            {/* If will not use <Controller /> ... The input from inside MUST use forwardRef */}
-            {/* This name 'email' comes from >>> interface SignInFormData {...} */}
             <InputField
               {...register('email', {
                 required: 'Email is required',
@@ -103,27 +82,6 @@ const LogInForm = () => {
               error={errors.email?.message}
               className="mb-6"
             />
-            {/* Or */}
-            {/* <Controller
-          control={control}
-          name="email"
-          rules={{
-            required: 'Email is required.',
-            pattern: {
-              value: emailRegex,
-              message: 'Enter a valid email address.',
-            },
-          }}
-          render={({ field }) => (
-            <Input
-              {...field} // = {...register}
-              label="EMAIL"
-              type="email"
-              placeholder="Enter your email"
-              error={errors.email?.message}
-            />
-          )}
-        /> */}
 
             <InputField
               {...register('password', {
@@ -136,25 +94,9 @@ const LogInForm = () => {
               description="Must be at least 8 characters long."
               error={errors.password?.message}
             />
-            {/* Or */}
-            {/* <Controller
-          control={control}
-          name="password"
-          rules={{ validate: passwordValidator }}
-          render={({ field }) => (
-            <Input
-              {...field}
-              label="PASSWORD"
-              type="password"
-              placeholder="Enter your password"
-              description="Must be at least 8 characters long."
-              error={errors.password?.message}
-            />
-          )}
-        /> */}
 
-            {authError ? (
-              <p className="text-sm text-red-500 py-2">{authError}</p>
+            {isError ? (
+              <p className="text-sm text-red-500 py-2">{error.message}</p>
             ) : null}
 
             <div className="flex justify-between py-6">
@@ -179,9 +121,10 @@ const LogInForm = () => {
             </div>
 
             <Button
-              name={isSubmitting ? 'Logging in...' : 'Log In'}
+              name={isPending ? 'Logging in...' : 'Log In'}
               type="submit"
               variant="primary"
+              disabled={isPending}
             />
             <br />
             <hr className="text-gray-200" />
@@ -250,8 +193,8 @@ const LogInForm = () => {
               />
             </div>
 
-            {authError ? (
-              <p className="text-sm text-red-500 py-2">{authError}</p>
+            {isError ? (
+              <p className="text-sm text-red-500 py-2">{error.message}</p>
             ) : null}
 
             {/* === Remember Me === */}
@@ -272,9 +215,10 @@ const LogInForm = () => {
             </div>
 
             <Button
-              name={isSubmitting ? 'Logging in...' : 'Log In'}
+              name={isPending ? 'Logging in...' : 'Log In'}
               type="submit"
               variant="primary"
+              disabled={isPending}
             />
 
             <br />

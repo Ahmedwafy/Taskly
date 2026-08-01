@@ -1,4 +1,3 @@
-//  src > app > components > pages > ProjectsTasks.tsx
 'use client';
 import * as icons from '@/../public/icons/icons';
 import TasksListView from '../organisms/TasksListView';
@@ -9,7 +8,7 @@ import PageHeader from '../molecules/PageHeader';
 import TaskColumn from '../organisms/TaskColumn';
 import { ProjectProps, ProjectTask } from '@/types/shared';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import InputField from '../atoms/input';
 import { toast } from 'sonner';
 import DotsIcon from '@/../public/svgIcons/DotsIcon.svg';
@@ -25,11 +24,13 @@ import {
 import { useDebounce } from '@/app/hooks/useDebounce';
 import MobileTaskSkeleton from '../loadingSkeletons/MobileTasksSkeleton';
 import { useIsMobile } from '@/app/hooks/useIsMobile';
-import { useAppSelector } from '@/redux/reduxHooks';
 import { getTaskStatusMobileStyle } from '@/lib/helpers/status';
 import { getInitials } from '@/lib/helpers/user';
 import { formatDate } from '@/lib/helpers/date';
 import { TaskStatus } from '@/lib/enums';
+import { useProjectTasksList } from '@/app/hooks/tasks/useProjectTasksList';
+import { useProjectTasksMobile } from '@/app/hooks/tasks/useProjectTasksMobile';
+import { useUpdateTask } from '@/app/hooks/tasks/useUpdateTask';
 
 interface ProjectTasksProps {
   projectId: string;
@@ -48,7 +49,6 @@ const COLUMNS: { title: string; status: TaskStatus }[] = [
 ];
 
 const LIMIT_LIST = 10;
-const LIMIT_MOBILE = 10;
 
 const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
   const router = useRouter();
@@ -61,28 +61,13 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
   const [activeTask, setActiveTask] = useState<ProjectTask | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // === custom hooks ===
   const debouncedSearch = useDebounce(searchQuery);
   const isMobile = useIsMobile();
 
-  // === Redux: latest optimistic field updates (title/desc/status/assignee/epic/due_date) ===
-  const taskUpdates = useAppSelector((state) => state.projectTasks.updates);
-
-  // === List View State ===
-  const [listTasks, setListTasks] = useState<ProjectTask[]>([]);
-  const [listLoading, setListLoading] = useState<boolean>(true);
-  const [listError, setListError] = useState<string | null>(null);
   const [listPage, setListPage] = useState<number>(1);
-  const [listTotal, setListTotal] = useState<number>(0);
-
-  // === Mobile View Infinite Scroll State ===
-  const [mobileTasks, setMobileTasks] = useState<ProjectTask[]>([]);
-  const [mobileLoading, setMobileLoading] = useState<boolean>(false);
-  const [mobileError, setMobileError] = useState<string | null>(null);
-  const [mobileOffset, setMobileOffset] = useState<number>(0);
-  const [mobileHasMore, setMobileHasMore] = useState<boolean>(true);
   const mobileObserverTarget = useRef<HTMLDivElement | null>(null);
-  const fetchingMobileRef = useRef<string | null>(null);
+
+  const { mutate: updateTask } = useUpdateTask();
 
   const handleViewChange = (newValue: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -91,269 +76,123 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
   };
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
 
-  // ●────────────────────────────────────────● Start List View ●─────────────────────────────────────────────────●
-  const fetchListTasks = useCallback(
-    async (page: number, activeSignal: { current: boolean }) => {
-      try {
-        setListLoading(true);
-        setListError(null);
-
-        const offset = (page - 1) * LIMIT_LIST;
-        const response = await fetch(
-          `/api/projects/${projectId}/project-tasks?limit=${LIMIT_LIST}&offset=${offset}`,
-        );
-
-        if (!activeSignal.current) return;
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch tasks');
-        }
-
-        const { data, total } = await response.json();
-
-        setListTasks(data);
-        setListTotal(total);
-      } catch (err: unknown) {
-        if (activeSignal.current) {
-          setListError(
-            err instanceof Error ? err.message : 'An unknown error occurred',
-          );
-        }
-      } finally {
-        if (activeSignal.current) {
-          setListLoading(false);
-        }
-      }
-    },
-    [projectId],
+  // ●───────────────────────────● List View ●───────────────────────────●
+  const {
+    data: listData,
+    isLoading: listLoading,
+    error: listQueryError,
+  } = useProjectTasksList(
+    projectId,
+    listPage,
+    LIMIT_LIST,
+    isMobile === false && currentValue === 'LIST_VIEW',
   );
 
-  useEffect(() => {
-    const activeSignal = { current: true };
+  const listTasks = listData?.data ?? [];
+  const listTotal = listData?.total ?? 0;
+  const listError =
+    listQueryError instanceof Error ? listQueryError.message : null;
 
-    if (isMobile === false && currentValue === 'LIST_VIEW' && projectId) {
-      fetchListTasks(listPage, activeSignal);
-    }
-
-    return () => {
-      activeSignal.current = false;
-    };
-  }, [currentValue, projectId, listPage, fetchListTasks, isMobile]);
-
-  // Merge in latest Redux-cached field updates (from TaskDetailsPopUpModal PATCHes)
-  const mergedListTasks = useMemo(() => {
-    return listTasks.map((task) => ({
-      ...task,
-      ...(taskUpdates[task.id] || {}),
-    }));
-  }, [listTasks, taskUpdates]);
-
-  // filtering for Desktop List View
   const filteredListTasks = useMemo(() => {
-    if (!debouncedSearch.trim()) return mergedListTasks;
-    return mergedListTasks.filter(
+    if (!debouncedSearch.trim()) return listTasks;
+    return listTasks.filter(
       (task) =>
         task.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         task.task_id.toLowerCase().includes(debouncedSearch.toLowerCase()),
     );
-  }, [mergedListTasks, debouncedSearch]);
-  // ●────────────────────────────────────────● End List View ●───────────────────────────────────────────────────●
+  }, [listTasks, debouncedSearch]);
 
-  // ●────────────────────────────────────────● Start Mobile View ●───────────────────────────────────────────────●
-  const fetchMobileTasks = useCallback(
-    async (currentOffset: number, isInitial = false) => {
-      const fetchKey = `${projectId}-${currentOffset}`;
-      if (fetchingMobileRef.current === fetchKey) return;
+  // ●───────────────────────────● Mobile View ●───────────────────────────●
+  const {
+    data: mobileData,
+    isLoading: mobileLoading,
+    error: mobileQueryError,
+    fetchNextPage: fetchNextMobilePage,
+    hasNextPage: mobileHasMore,
+    isFetchingNextPage: isFetchingMobileNextPage,
+  } = useProjectTasksMobile(projectId, isMobile === true);
 
-      try {
-        fetchingMobileRef.current = fetchKey;
-        setMobileLoading(true);
-        setMobileError(null);
-
-        const response = await fetch(
-          `/api/projects/${projectId}/project-tasks?limit=${LIMIT_MOBILE}&offset=${currentOffset}`,
-        );
-
-        if (!response.ok) throw new Error('Failed to fetch tasks');
-
-        const { data, total } = await response.json();
-
-        setListTotal(total);
-
-        setMobileTasks((prev) => {
-          const updatedList = isInitial ? data : [...prev, ...data];
-          const hasMoreAvailable =
-            updatedList.length < total && data.length === LIMIT_MOBILE;
-          setMobileHasMore(hasMoreAvailable);
-          return updatedList;
-        });
-      } catch (err: unknown) {
-        setMobileError(
-          err instanceof Error ? err.message : 'An error occurred',
-        );
-      } finally {
-        setMobileLoading(false);
-        if (fetchingMobileRef.current === fetchKey) {
-          fetchingMobileRef.current = null;
-        }
-      }
-    },
-    [projectId],
+  const mobileTasks = useMemo(
+    () => mobileData?.pages.flatMap((p) => p.data) ?? [],
+    [mobileData],
   );
+  const mobileError =
+    mobileQueryError instanceof Error ? mobileQueryError.message : null;
+
+  const filteredMobileTasks = useMemo(() => {
+    if (!debouncedSearch.trim()) return mobileTasks;
+    return mobileTasks.filter(
+      (task) =>
+        task.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        task.task_id.toLowerCase().includes(debouncedSearch.toLowerCase()),
+    );
+  }, [mobileTasks, debouncedSearch]);
 
   useEffect(() => {
-    if (isMobile !== true || !projectId) return;
-
-    const activeSignal = { current: true };
-    const init = async () => {
-      await Promise.resolve();
-      if (!activeSignal.current) return;
-
-      setMobileTasks([]);
-      setMobileOffset(0);
-      setMobileHasMore(true);
-      fetchMobileTasks(0, true);
-    };
-
-    init();
-
-    return () => {
-      activeSignal.current = false;
-      if (fetchingMobileRef.current) {
-        fetchingMobileRef.current = null;
-      }
-    };
-  }, [projectId, isMobile, fetchMobileTasks]);
-
-  useEffect(() => {
-    if (isMobile !== true) return;
+    if (isMobile !== true || !mobileHasMore) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        const targetEntry = entries[0];
-        if (
-          targetEntry.isIntersecting &&
-          mobileHasMore &&
-          !mobileLoading &&
-          mobileTasks.length > 0
-        ) {
-          if (mobileTasks.length >= listTotal) {
-            setMobileHasMore(false);
-            return;
-          }
-
-          const nextOffset = mobileOffset + LIMIT_MOBILE;
-          setMobileOffset(nextOffset);
-          fetchMobileTasks(nextOffset);
+        if (entries[0].isIntersecting && !isFetchingMobileNextPage) {
+          fetchNextMobilePage();
         }
       },
       { threshold: 0.1 },
     );
 
     const currentTarget = mobileObserverTarget.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
-    }
-
+    if (currentTarget) observer.observe(currentTarget);
     return () => {
       if (currentTarget) observer.unobserve(currentTarget);
     };
-  }, [
-    mobileHasMore,
-    mobileLoading,
-    mobileOffset,
-    fetchMobileTasks,
-    mobileTasks.length,
-    listTotal,
-    isMobile,
-  ]);
+  }, [isMobile, mobileHasMore, isFetchingMobileNextPage, fetchNextMobilePage]);
 
-  // Merge in latest Redux-cached field updates (from TaskDetailsPopUpModal PATCHes)
-  const mergedMobileTasks = useMemo(() => {
-    return mobileTasks.map((task) => ({
-      ...task,
-      ...(taskUpdates[task.id] || {}),
-    }));
-  }, [mobileTasks, taskUpdates]);
-
-  const filteredMobileTasks = useMemo(() => {
-    if (!debouncedSearch.trim()) return mergedMobileTasks;
-    return mergedMobileTasks.filter(
-      (task) =>
-        task.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        task.task_id.toLowerCase().includes(debouncedSearch.toLowerCase()),
-    );
-  }, [mergedMobileTasks, debouncedSearch]);
-  // ●────────────────────────────────────────● End Mobile View ●───────────────────────────────────────────────●
-
-  // ●────────────────────────────────────────● Start Drag & Drop ●───────────────────────────────────────────────●
+  // ●───────────────────────────● Drag & Drop ●───────────────────────────●
   const handleDragStart = (event: DragStartEvent) => {
     const taskData = event.active.data.current?.task as ProjectTask | undefined;
-    if (taskData) {
-      setActiveTask(taskData);
-    }
+    if (taskData) setActiveTask(taskData);
   };
 
-  const handleDragEnd = async (event: DragEndEvent) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     setActiveTask(null);
     const { active, over } = event;
     if (!over) return;
 
     const taskId = active.id as string;
     const newStatus = over.id as string;
-
     const activeTaskData = active.data.current?.task as ProjectTask | undefined;
     if (!activeTaskData) return;
 
     const originalStatus = activeTaskData.status;
     if (originalStatus === newStatus) return;
 
-    const dndEvent = new CustomEvent('dnd-task-status-updated', {
-      detail: {
+    updateTask(
+      {
+        projectId,
         taskId,
-        fromStatus: originalStatus,
-        toStatus: newStatus,
-        taskData: activeTaskData,
-      },
-    });
-    window.dispatchEvent(dndEvent);
-
-    try {
-      const res = await fetch(
-        `/api/projects/${projectId}/project-tasks/${activeTaskData.id}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: newStatus }),
-        },
-      );
-
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'API Request Failed');
-
-      toast.success(`Task status updated to ${newStatus.replace(/_/g, ' ')}`);
-    } catch (error) {
-      const rollbackEvent = new CustomEvent('dnd-task-status-updated', {
-        detail: {
-          taskId,
-          fromStatus: newStatus,
-          toStatus: originalStatus,
+        dbPayload: { status: newStatus },
+        optimisticPatch: { status: newStatus as ProjectTask['status'] },
+        boardMove: {
+          fromStatus: originalStatus,
+          toStatus: newStatus,
           taskData: activeTaskData,
         },
-      });
-      window.dispatchEvent(rollbackEvent);
-
-      toast.error('Failed to change status. Reverting change.');
-    }
+      },
+      {
+        onSuccess: () => {
+          toast.success(
+            `Task status updated to ${newStatus.replace(/_/g, ' ')}`,
+          );
+        },
+        onError: () => {
+          toast.error('Failed to change status. Reverting change.');
+        },
+      },
+    );
   };
-  // ●────────────────────────────────────────● End Drag & Drop ●───────────────────────────────────────────────●
 
   if (isMobile === null) return null;
 
@@ -400,7 +239,6 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
                 </div>
               </div>
 
-              {/* Floating Clone */}
               <DragOverlay dropAnimation={null}>
                 {activeTask ? (
                   <div className="w-[288px] opacity-95 shadow-2xl pointer-events-none transform rotate-2">
@@ -476,8 +314,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
                 onClick={() =>
                   router.push(`/projects/${projectId}/tasks/details/${task.id}`)
                 }
-                className="flex flex-col gap-6 p-4 bg-white rounded-lg shadow-sm cursor-pointer 
-                active:scale-95 transition-transform"
+                className="flex flex-col gap-6 p-4 bg-white rounded-lg shadow-sm cursor-pointer active:scale-95 transition-transform"
               >
                 <div className="flex justify-between">
                   <div>
@@ -488,7 +325,6 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
                       {task.title}
                     </h2>
                   </div>
-
                   <div
                     className={`${getTaskStatusMobileStyle(task.status)} h-fit p-1 rounded-md text-[11px] font-bold`}
                   >
@@ -500,7 +336,7 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
                   <div className="flex items-center gap-2">
                     <span className="bg-[#DAE2FF] rounded-xl p-1 flex items-center">
                       {task.assignee.name && (
-                        <span className="font-bold text-[11px] ">
+                        <span className="font-bold text-[11px]">
                           {getInitials(task.assignee.name)}
                         </span>
                       )}
@@ -519,7 +355,9 @@ const ProjectTasks = ({ projectId, projectData }: ProjectTasksProps) => {
               </div>
             ))}
 
-            {mobileLoading && <MobileTaskSkeleton />}
+            {(mobileLoading || isFetchingMobileNextPage) && (
+              <MobileTaskSkeleton />
+            )}
 
             {mobileError && (
               <p className="text-center text-sm py-4 animate-pulse">Error</p>

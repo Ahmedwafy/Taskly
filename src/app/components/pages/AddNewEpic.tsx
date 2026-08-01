@@ -1,46 +1,27 @@
-// src → app → components → pages → AddNewEpic.tsx
 'use client';
 
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { useParams, useRouter } from 'next/navigation';
 import AddNewEpicForm from '../forms/AddNewEpicForm';
-import { createEpicAction } from '@/app/actions/epics';
-import { useEffect } from 'react';
-import { useAppSelector, useAppDispatch } from '@/redux/reduxHooks';
-import { fetchProjectMembers } from '@/features/members/membersSlice';
 import { z } from 'zod';
 import { CreateEpicSchema } from '@/schemas/epic.schema';
+import { useCreateEpic } from '@/app/hooks/epics/useCreateEpic';
+import { useProjectMembers } from '@/app/hooks/members/useProjectMembers';
 
 type AddEpicFormInputs = Omit<z.input<typeof CreateEpicSchema>, 'project_id'>;
 
 const AddNewEpic = () => {
-  const dispatch = useAppDispatch();
   const { projectId } = useParams();
   const router = useRouter();
 
-  const {
-    list: members,
-    isFetched,
-    loading,
-  } = useAppSelector((state) => state.members);
-
-  useEffect(() => {
-    if (!projectId) return;
-
-    const isDifferentProject =
-      members.length > 0 && members[0].project_id !== projectId;
-
-    if ((!isFetched && !loading) || isDifferentProject) {
-      dispatch(fetchProjectMembers(projectId as string));
-    }
-  }, [projectId, isFetched, loading, members, dispatch]);
+  const { data: members = [] } = useProjectMembers(projectId as string);
 
   const {
     control,
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<AddEpicFormInputs>({
     defaultValues: {
       title: '',
@@ -50,26 +31,22 @@ const AddNewEpic = () => {
     },
   });
 
-  const onSubmit = async (data: AddEpicFormInputs) => {
-    try {
-      const result = await createEpicAction({
-        ...data,
-        project_id: projectId as string,
-      });
+  const { mutate: createEpic, isPending } = useCreateEpic();
 
-      if (result?.error) {
-        toast.error(result.error);
-        return;
-      }
-
-      toast.success('Epic created successfully');
-      router.push(`/projects/${projectId}/epics`);
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Something went wrong',
-      );
-      console.error('Failed to create project', error);
-    }
+  const onSubmit = (data: AddEpicFormInputs) => {
+    createEpic(
+      { ...data, project_id: projectId as string },
+      {
+        onSuccess: () => {
+          toast.success('Epic created successfully');
+          router.push(`/projects/${projectId}/epics`);
+        },
+        onError: (error) => {
+          toast.error(error.message);
+          console.error('Failed to create project', error.message);
+        },
+      },
+    );
   };
 
   return (
@@ -87,7 +64,7 @@ const AddNewEpic = () => {
           handleSubmit={handleSubmit}
           onSubmit={onSubmit}
           register={register}
-          isSubmitting={isSubmitting}
+          isSubmitting={isPending}
           errors={errors}
           control={control}
           placeholder_Title="e.g. Structural Foundation Phase"

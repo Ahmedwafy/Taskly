@@ -89,13 +89,7 @@ export interface ProjectMember {
   };
 }
 //====================================================
-// export interface FetchProjectEpicsParams {
-//   projectId: string;
-//   limit: number;
-//   offset: number;
-//   searchTerm?: string;
-//   accessToken: string;
-// }
+
 export interface GetProjectEpicsParams {
   projectId: string;
   limit: number;
@@ -137,4 +131,9 @@ export interface ProjectTask {
   assignee: Assignee;
   epic: Epic;
   created_by: Created_By;
+}
+// ==========================================
+export interface FetchProjectMembersParams {
+  projectId: string;
+  accessToken: string;
 }

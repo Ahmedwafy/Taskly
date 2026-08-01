@@ -2,11 +2,8 @@
 'use client';
 import { useIsMobile } from '@/app/hooks/useIsMobile';
 import { useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '@/redux/reduxHooks';
-// import { formatDate, getInitials, getStatusColors } from '@/lib/helpers';
 import TaskDetailSkeleton from '../loadingSkeletons/TaskDetailsPopUpLoadingSkeleton';
-import { fetchProjectMembers } from '@/features/members/membersSlice';
-import { getProjectEpics } from '@/features/epics/projectEpicsSlice';
+import { useProjectMembers } from '@/app/hooks/members/useProjectMembers';
 import Select, {
   components,
   SingleValueProps,
@@ -19,10 +16,12 @@ import DoneTaskIcon from '@/../public/svgIcons/doneTaskOnMobile.svg';
 import Close from '@/../public/svgIcons/CloseIcon.svg';
 import { toast } from 'sonner';
 import { ProjectTask } from '@/types/shared';
-import { setProjectTaskUpdate } from '@/features/projectTasks/ProjectTasksSlice';
 import { getStatusColorsStyle } from '@/lib/helpers/status';
 import { getInitials } from '@/lib/helpers/user';
 import { formatDate } from '@/lib/helpers/date';
+import { useTaskDetails } from '@/app/hooks/tasks/useTaskDetails';
+import { useUpdateTask } from '@/app/hooks/tasks/useUpdateTask';
+import { useProjectEpicsSelect } from '@/app/hooks/epics/useProjectEpicsSelect';
 
 // ----------------------------------------------------------------------
 // Types & Custom Components for React Select
@@ -87,146 +86,91 @@ const TaskDetailsPopUpModal = ({
   onClose,
   onTaskUpdated,
 }: TaskDetailsPopUpModalProps) => {
-  const [task, setTask] = useState<ProjectTask | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  // Field loading flags to prevent double-edits • during pending requests •
-  const [updatingFields, setUpdatingFields] = useState<Record<string, boolean>>(
-    {},
-  );
+  // • • GET Task Details • •
+  const {
+    data: task,
+    isLoading: loading,
+    error: fetchError,
+  } = useTaskDetails(projectId, taskId);
 
-  // Local Form Buffers for input • onBlur handling •
+  // • • Update Task  • •
+  const { mutate: updateTask, isPending: isSaving } = useUpdateTask();
+
   const [titleInput, setTitleInput] = useState('');
   const [descInput, setDescInput] = useState('');
-  // Redux Selectors • get list of members •
-  const {
-    list: membersData,
-    loading: isMembersLoading,
-    isFetched,
-  } = useAppSelector((state) => state.members);
 
-  const { projectEpics } = useAppSelector((state) => state.projectEpics);
+  // Sync local input buffers whenever the fetched task changes
+  useEffect(() => {
+    if (task) {
+      setTitleInput(task.title || '');
+      setDescInput(task.description || '');
+    }
+  }, [task]);
+  const error = fetchError instanceof Error ? fetchError.message : null;
+  //  • get list of members •
+  const { data: membersData = [] } = useProjectMembers(projectId);
 
-  const dispatch = useAppDispatch();
   const isMobile = useIsMobile();
 
-  // • • GET Task Details • •
-  useEffect(() => {
-    const fetchTaskDetails = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await fetch(
-          `/api/projects/${projectId}/project-tasks/${taskId}`,
-        );
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Failed to fetch');
+  const handlePatchTask = (
+    fieldKey: string,
+    dbPayload: Record<string, unknown>,
+    optimisticPatch: Partial<ProjectTask>,
+    toastMessage: string,
+  ) => {
+    if (!task) return;
 
-        setTask(data);
-        setTitleInput(data.title || '');
-        setDescInput(data.description || '');
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to load task details',
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTaskDetails();
-  }, [taskId, projectId]);
-
-  // • • GET Members & Epics • •
-  useEffect(() => {
-    if (!isFetched && !isMembersLoading) {
-      dispatch(fetchProjectMembers(projectId));
-    }
-
-    dispatch(
-      getProjectEpics({
-        projectId,
-        limit: 10, // First 10 epics for select dropdown
-        offset: 0,
-      }),
+    updateTask(
+      { projectId, taskId, dbPayload, optimisticPatch },
+      {
+        onSuccess: (updatedTask) => {
+          if (onTaskUpdated) onTaskUpdated({ ...task, ...optimisticPatch });
+          toast.success(toastMessage);
+        },
+        onError: () => {
+          setTitleInput(task.title || '');
+          setDescInput(task.description || '');
+          toast.error('Failed to update task. Please try again.');
+        },
+      },
     );
-  }, [dispatch, projectId, isFetched, isMembersLoading]);
+  };
+  // • • GET Members & Epics • •
+  const { data: epicsData } = useProjectEpicsSelect({ projectId });
+  const projectEpics = epicsData?.projectEpics ?? [];
 
   if (!task) return null;
   const statusColors = getStatusColorsStyle(task.status);
 
   // • • Centralized Optimistic PATCH Handler • •
 
-  // Make handlePatchTask return whether it succeeded
-  const handlePatchTask = async (
-    fieldKey: string,
-    dbPayload: Record<string, unknown>,
-    optimisticPatch: Partial<ProjectTask>,
-    toastMessage: string,
-  ): Promise<boolean> => {
-    if (!task) return false;
-
-    const previousTaskState = { ...task };
-
-    const updated = { ...task, ...optimisticPatch };
-    setTask(updated);
-    if (onTaskUpdated) onTaskUpdated(updated);
-
-    setUpdatingFields((prev) => ({ ...prev, [fieldKey]: true }));
-
-    try {
-      const response = await fetch(
-        `/api/projects/${projectId}/project-tasks/${taskId}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dbPayload),
-        },
-      );
-
-      const resData = await response.json();
-      if (!response.ok)
-        throw new Error(resData.error || 'Failed to update task');
-
-      dispatch(setProjectTaskUpdate({ id: task.id, ...optimisticPatch }));
-      toast.success(toastMessage);
-      return true;
-    } catch (err: unknown) {
-      setTask(previousTaskState);
-      if (onTaskUpdated) onTaskUpdated(previousTaskState);
-      setTitleInput(previousTaskState.title || '');
-      setDescInput(previousTaskState.description || '');
-      toast.error('Failed to update task. Please try again.');
-      return false;
-    } finally {
-      setUpdatingFields((prev) => ({ ...prev, [fieldKey]: false }));
-    }
-  };
-
   // Status change now moves the card between Board columns too
-  const handleStatusChange = async (newStatus: TaskStatus) => {
+  const handleStatusChange = (newStatus: TaskStatus) => {
     if (!task || newStatus === task.status) return;
     const originalStatus = task.status;
 
-    const success = await handlePatchTask(
-      'status',
-      { status: newStatus },
-      { status: newStatus },
-      'status sccessfuly updated',
+    updateTask(
+      {
+        projectId,
+        taskId,
+        dbPayload: { status: newStatus },
+        optimisticPatch: { status: newStatus },
+        boardMove: {
+          fromStatus: originalStatus,
+          toStatus: newStatus,
+          taskData: task,
+        },
+      },
+      {
+        onSuccess: () => {
+          if (onTaskUpdated) onTaskUpdated({ ...task, status: newStatus });
+          toast.success('status successfully updated');
+        },
+        onError: () => {
+          toast.error('Failed to update task. Please try again.');
+        },
+      },
     );
-
-    if (success) {
-      window.dispatchEvent(
-        new CustomEvent('dnd-task-status-updated', {
-          detail: {
-            taskId: task.id,
-            fromStatus: originalStatus,
-            toStatus: newStatus,
-            taskData: { ...task, status: newStatus },
-          },
-        }),
-      );
-    }
   };
 
   // --- Handlers for Specific Fields ---
@@ -387,7 +331,7 @@ const TaskDetailsPopUpModal = ({
                             value: task.epic?.id || 'none',
                             label: task.epic?.epic_id || 'No Epic',
                           }}
-                          isDisabled={updatingFields['epic_id']}
+                          isDisabled={isSaving}
                           options={[
                             { value: 'none', label: 'No Epic' },
                             ...projectEpics.map((epic) => ({
@@ -436,7 +380,7 @@ const TaskDetailsPopUpModal = ({
                       type="text"
                       value={titleInput}
                       onChange={(e) => setTitleInput(e.target.value)}
-                      disabled={updatingFields['title']} // disabled if { titl: true }
+                      disabled={isSaving}
                       onBlur={handleTitleBlur}
                       className="w-full text-2xl font-bold text-gray-800 bg-transparent rounded border border-transparent hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:outline-none px-2 py-1 transition-all"
                       placeholder="Task title..."
@@ -451,7 +395,7 @@ const TaskDetailsPopUpModal = ({
                     <textarea
                       rows={4}
                       value={descInput}
-                      disabled={updatingFields['description']}
+                      disabled={isSaving}
                       onChange={(e) => setDescInput(e.target.value)}
                       onBlur={handleDescriptionBlur}
                       placeholder="No description provided"
@@ -490,7 +434,7 @@ const TaskDetailsPopUpModal = ({
                       value: task.status,
                       label: task.status.replace(/_/g, ' '),
                     }}
-                    isDisabled={updatingFields['status']}
+                    isDisabled={isSaving}
                     options={STATUS_OPTIONS.map((status) => ({
                       value: status,
                       label: status.replace(/_/g, ' '),
@@ -560,7 +504,7 @@ const TaskDetailsPopUpModal = ({
                         ? getInitials(task.assignee.name)
                         : '',
                     }}
-                    isDisabled={updatingFields['assignee_id']}
+                    isDisabled={isSaving}
                     options={[
                       {
                         value: 'unassigned',
@@ -648,7 +592,7 @@ const TaskDetailsPopUpModal = ({
                   <input
                     type="date"
                     min={todayDateString}
-                    disabled={updatingFields['due_date']}
+                    disabled={isSaving}
                     value={
                       task.due_date
                         ? new Date(task.due_date).toISOString().split('T')[0]
@@ -718,7 +662,7 @@ const TaskDetailsPopUpModal = ({
                   type="text"
                   value={titleInput}
                   onChange={(e) => setTitleInput(e.target.value)}
-                  disabled={updatingFields['title']}
+                  disabled={isSaving}
                   onBlur={handleTitleBlur}
                   placeholder="Task title..."
                   className="w-full text-xl sm:text-2xl font-bold text-[#0B192C] bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none transition-all"
@@ -738,7 +682,7 @@ const TaskDetailsPopUpModal = ({
                         value: task.status,
                         label: task.status.replace(/_/g, ' '),
                       }}
-                      isDisabled={updatingFields['status']}
+                      isDisabled={isSaving}
                       options={STATUS_OPTIONS.map((status) => ({
                         value: status,
                         label: status.replace(/_/g, ' '),
@@ -802,7 +746,7 @@ const TaskDetailsPopUpModal = ({
                         value: task.epic?.id || 'none',
                         label: task.epic?.epic_id || 'No Epic',
                       }}
-                      isDisabled={updatingFields['epic_id']}
+                      isDisabled={isSaving}
                       options={[
                         { value: 'none', label: 'No Epic' },
                         ...projectEpics.map((epic) => ({
@@ -902,7 +846,7 @@ const TaskDetailsPopUpModal = ({
                     <input
                       type="date"
                       min={todayDateString}
-                      disabled={updatingFields['due_date']}
+                      disabled={isSaving}
                       value={
                         task.due_date
                           ? new Date(task.due_date).toISOString().split('T')[0]
@@ -966,7 +910,7 @@ const TaskDetailsPopUpModal = ({
                 <textarea
                   rows={5}
                   value={descInput}
-                  disabled={updatingFields['description']}
+                  disabled={isSaving}
                   onChange={(e) => setDescInput(e.target.value)}
                   onBlur={handleDescriptionBlur}
                   placeholder="No description provided..."
