@@ -1,7 +1,6 @@
 // src > app > component > organisms > TaskDetailsPopUpModal.tsx
 'use client';
 import { useIsMobile } from '@/app/hooks/useIsMobile';
-import { useEffect, useState } from 'react';
 import TaskDetailSkeleton from '../loadingSkeletons/TaskDetailsPopUpLoadingSkeleton';
 import { useProjectMembers } from '@/app/hooks/members/useProjectMembers';
 import Select, {
@@ -22,6 +21,8 @@ import { formatDate } from '@/lib/helpers/date';
 import { useTaskDetails } from '@/app/hooks/tasks/useTaskDetails';
 import { useUpdateTask } from '@/app/hooks/tasks/useUpdateTask';
 import { useProjectEpicsSelect } from '@/app/hooks/epics/useProjectEpicsSelect';
+import EditableTitleInput from '../atoms/EditableTitleInput';
+import EditableDescriptionTextarea from '../atoms/EditableDescriptionTextarea';
 
 // ----------------------------------------------------------------------
 // Types & Custom Components for React Select
@@ -86,31 +87,27 @@ const TaskDetailsPopUpModal = ({
   onClose,
   onTaskUpdated,
 }: TaskDetailsPopUpModalProps) => {
-  // • • GET Task Details • •
+  const isMobile = useIsMobile();
+
+  // ●─────────────────────────────────────● Start Fetch Section ●────────────────────────────────────●
+  // GET Task Details
   const {
     data: task,
     isLoading: loading,
     error: fetchError,
   } = useTaskDetails(projectId, taskId);
 
-  // • • Update Task  • •
-  const { mutate: updateTask, isPending: isSaving } = useUpdateTask();
-
-  const [titleInput, setTitleInput] = useState('');
-  const [descInput, setDescInput] = useState('');
-
-  // Sync local input buffers whenever the fetched task changes
-  useEffect(() => {
-    if (task) {
-      setTitleInput(task.title || '');
-      setDescInput(task.description || '');
-    }
-  }, [task]);
   const error = fetchError instanceof Error ? fetchError.message : null;
-  //  • get list of members •
+
+  // Fetch Members for Assignee Dropdown
   const { data: membersData = [] } = useProjectMembers(projectId);
 
-  const isMobile = useIsMobile();
+  // GET Epics
+  const { data: epicsData } = useProjectEpicsSelect({ projectId });
+  const projectEpics = epicsData?.projectEpics ?? [];
+
+  // Update Task Details (PATCH)
+  const { mutate: updateTask, isPending: isSaving } = useUpdateTask();
 
   const handlePatchTask = (
     fieldKey: string,
@@ -123,26 +120,23 @@ const TaskDetailsPopUpModal = ({
     updateTask(
       { projectId, taskId, dbPayload, optimisticPatch },
       {
+        // onSuccess => This just notifies the parent and shows a toast — it does not need to touch the cache, because the optimistic write already reflects the new state,
+        // and it was correct.
         onSuccess: (updatedTask) => {
           if (onTaskUpdated) onTaskUpdated({ ...task, ...optimisticPatch });
           toast.success(toastMessage);
         },
         onError: () => {
-          setTitleInput(task.title || '');
-          setDescInput(task.description || '');
           toast.error('Failed to update task. Please try again.');
         },
       },
     );
   };
-  // • • GET Members & Epics • •
-  const { data: epicsData } = useProjectEpicsSelect({ projectId });
-  const projectEpics = epicsData?.projectEpics ?? [];
+  // ●────────────────────────────────● End Fetch Section ●───────────────────────────────────────────●
 
   if (!task) return null;
-  const statusColors = getStatusColorsStyle(task.status);
 
-  // • • Centralized Optimistic PATCH Handler • •
+  const statusColors = getStatusColorsStyle(task.status);
 
   // Status change now moves the card between Board columns too
   const handleStatusChange = (newStatus: TaskStatus) => {
@@ -173,40 +167,28 @@ const TaskDetailsPopUpModal = ({
     );
   };
 
-  // --- Handlers for Specific Fields ---
-  const handleTitleBlur = () => {
+  const handleTitleBlur = (trimmed: string) => {
     if (!task) return;
-    const trimmed = titleInput.trim();
-
-    // If empty/invalid, revert back
-    if (!trimmed) {
-      setTitleInput(task.title);
-      return;
-    }
-
-    // Skip API call if unchanged
-    if (trimmed === task.title) return;
+    if (trimmed === task.title) return; // no change, skip API call
 
     handlePatchTask(
       'title',
       { title: trimmed },
       { title: trimmed },
-      'title sccessfuly updated',
+      'title successfully updated',
     );
   };
 
-  const handleDescriptionBlur = () => {
+  const handleDescriptionBlur = (trimmed: string) => {
     if (!task) return;
-    const trimmed = descInput.trim();
     const finalValue = trimmed === '' ? null : trimmed;
-
     if (finalValue === task.description) return;
 
     handlePatchTask(
       'description',
       { description: finalValue },
       { description: finalValue ?? '' },
-      'description sccessfuly updated',
+      'description successfully updated',
     );
   };
 
@@ -376,14 +358,12 @@ const TaskDetailsPopUpModal = ({
 
                   {/* Editable Title */}
                   <div className="border-b border-[#E8EDFF] pt-4 pb-4 px-6">
-                    <input
-                      type="text"
-                      value={titleInput}
-                      onChange={(e) => setTitleInput(e.target.value)}
-                      disabled={isSaving}
-                      onBlur={handleTitleBlur}
+                    <EditableTitleInput
+                      key={`${task.id}-${task.title}`}
+                      initialValue={task.title || ''}
+                      isSaving={isSaving}
+                      onBlurCommit={handleTitleBlur}
                       className="w-full text-2xl font-bold text-gray-800 bg-transparent rounded border border-transparent hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:outline-none px-2 py-1 transition-all"
-                      placeholder="Task title..."
                     />
                   </div>
 
@@ -392,13 +372,12 @@ const TaskDetailsPopUpModal = ({
                     <span className="uppercase text-xs font-semibold text-gray-500 tracking-wider">
                       description
                     </span>
-                    <textarea
+                    <EditableDescriptionTextarea
+                      key={`${task.id}-${task.description ?? ''}`}
+                      initialValue={task.description || ''}
+                      isSaving={isSaving}
+                      onBlurCommit={handleDescriptionBlur}
                       rows={4}
-                      value={descInput}
-                      disabled={isSaving}
-                      onChange={(e) => setDescInput(e.target.value)}
-                      onBlur={handleDescriptionBlur}
-                      placeholder="No description provided"
                       className="w-full h-full p-2 text-sm text-gray-700 border rounded-lg border-gray-300 focus:border-blue-300 focus:bg-white focus:outline-none transition-all resize-none"
                     />
                   </div>
@@ -658,13 +637,11 @@ const TaskDetailsPopUpModal = ({
 
               {/* Task Title */}
               <div>
-                <input
-                  type="text"
-                  value={titleInput}
-                  onChange={(e) => setTitleInput(e.target.value)}
-                  disabled={isSaving}
-                  onBlur={handleTitleBlur}
-                  placeholder="Task title..."
+                <EditableTitleInput
+                  key={`${task.id}-${task.title}`}
+                  initialValue={task.title || ''}
+                  isSaving={isSaving}
+                  onBlurCommit={handleTitleBlur}
                   className="w-full text-xl sm:text-2xl font-bold text-[#0B192C] bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none transition-all"
                 />
               </div>
@@ -907,13 +884,12 @@ const TaskDetailsPopUpModal = ({
                 <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                   Description
                 </span>
-                <textarea
+                <EditableDescriptionTextarea
+                  key={`${task.id}-${task.description ?? ''}`}
+                  initialValue={task.description || ''}
+                  isSaving={isSaving}
+                  onBlurCommit={handleDescriptionBlur}
                   rows={5}
-                  value={descInput}
-                  disabled={isSaving}
-                  onChange={(e) => setDescInput(e.target.value)}
-                  onBlur={handleDescriptionBlur}
-                  placeholder="No description provided..."
                   className="w-full p-4 text-xs sm:text-sm text-gray-700 bg-white border-none rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none shadow-xs transition-all resize-none leading-relaxed"
                 />
               </div>

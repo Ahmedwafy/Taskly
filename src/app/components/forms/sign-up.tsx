@@ -84,7 +84,7 @@ const SignUpForm = () => {
       {/* ●──────────────────────────● Desktop View ●──────────────────────────● */}
       {!isMobile && (
         <div className="flex flex-col gap-4 justify-center items-center mx-auto w-xl h-full px-4 py-8 mt-10 rounded-lg shadow-md bg-background">
-          <div className="flex flex-col justify-center gap-2 text-center w-full relative left-10">
+          <div className="flex flex-col justify-center gap-2 text-center w-full">
             <h2 className="headline-lg">Create your workspace</h2>
             <p className="body-md">
               Join the editorial approach to task management.

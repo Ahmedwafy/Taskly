@@ -20,7 +20,7 @@ async function fetchTaskDetails(
 
 export function useTaskDetails(projectId: string, taskId: string) {
   return useQuery({
-    queryKey: ['taskDetails', projectId, taskId],
+    queryKey: ['taskDetails', projectId, taskId], // fetches one task details and caches it under this key
     queryFn: () => fetchTaskDetails(projectId, taskId),
     enabled: !!projectId && !!taskId,
   });

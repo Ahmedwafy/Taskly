@@ -42,3 +42,7 @@ next-env.d.ts
 
 # file [ reference ]
 Regex.js
+
+# personal dump script/output
+dump-project.ps1
+project_dump/

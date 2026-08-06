@@ -133,9 +133,12 @@ const LogInForm = () => {
               <span className="text-neutral-200">
                 Don&apos;t have an account?
               </span>
-              <a href="/sign-up" className="text-(--primary) hover:underline">
+              <Link
+                href="/sign-up"
+                className="text-(--primary) hover:underline"
+              >
                 <span className="font-semibold">Sign Up</span>
-              </a>
+              </Link>
             </div>
           </form>
 
@@ -228,9 +231,12 @@ const LogInForm = () => {
               <span className="text-neutral-200">
                 Don&apos;t have an account?
               </span>
-              <a href="/sign-up" className="text-(--primary) hover:underline">
+              <Link
+                href="/sign-up"
+                className="text-(--primary) hover:underline"
+              >
                 <span className="font-semibold">Sign Up</span>
-              </a>
+              </Link>
             </div>
           </form>
 

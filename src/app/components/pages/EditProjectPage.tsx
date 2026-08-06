@@ -83,7 +83,7 @@ const EditProjectPage = ({ projects, projectName }: EditProjectPageProps) => {
   }, [currentProject, reset]);
 
   return (
-    <div className="">
+    <div className="pb-10">
       <PageHeader
         title="Edit Projects"
         icon={icons.Plus}
