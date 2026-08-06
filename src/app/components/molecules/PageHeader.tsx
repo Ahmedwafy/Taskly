@@ -154,9 +154,9 @@ const PageHeader = ({
             />
           </div>
 
-          <button className="bg-[#D7E2FF] rounded-md w-12 h-12 flex items-center justify-center mb-2">
+          {/* <button className="bg-[#D7E2FF] rounded-md w-12 h-12 flex items-center justify-center mb-2">
             <SearchIcon className="h-5 w-5" />
-          </button>
+          </button> */}
         </div>
       </header>
     );

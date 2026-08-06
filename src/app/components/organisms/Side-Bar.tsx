@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { StaticImageData } from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import LOGO from '@/../public/svgIcons/LOGO.svg';
 import CollapseIcon from '@/../public/svgIcons/Collapse.svg';
 import LogoutIcon from '@/../public/svgIcons/Logout.svg';
@@ -13,6 +12,7 @@ import EpicsIcon from '@/../public/svgIcons/Epics.svg';
 import TasksIcon from '@/../public/svgIcons/Tasks.svg';
 import MembersIcon from '@/../public/svgIcons/Members.svg';
 import DetailsIcon from '@/../public/svgIcons/Details.svg';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 interface SideBarProps {
   isCollapsed?: boolean;
@@ -37,7 +37,24 @@ const SideBar = ({
       : internalCollapsed;
 
   const pathname = usePathname(); // Ex: '/projects/123/epics'
+  const searchParams = useSearchParams();
 
+  const isItemActive = (href: string) => {
+    const [hrefPath, hrefQuery] = href.split('?');
+
+    // exact match for simple paths
+    if (!hrefQuery) {
+      return pathname === hrefPath;
+    }
+
+    // for links with a query string (e.g. Project Tasks board view)
+    const hrefParams = new URLSearchParams(hrefQuery);
+    const viewParam = hrefParams.get('view');
+    return (
+      pathname === hrefPath &&
+      (viewParam ? searchParams.get('view') === viewParam : true)
+    );
+  };
   const isProjectDetailsPage = /^\/projects\/[^/]+/.test(pathname);
   // but :
   // When navigating directly to /my-statistics, pathname.split('/')[2] will be undefined.
@@ -86,7 +103,14 @@ const SideBar = ({
             href: `/projects/${projectId}/edit`,
           },
         ]
-      : []),
+      : [
+          {
+            label: 'My Statistics',
+            Icon: StatisticsIcon,
+            alt: 'My Statistics',
+            href: `/my-statistics`,
+          },
+        ]),
   ];
 
   const handleCollapse = () => {
@@ -135,13 +159,19 @@ const SideBar = ({
         <div className="flex flex-col gap-1 pl-6 py-6">
           {navItems.map((item) => {
             const Icon = item.Icon;
+            const active = isItemActive(item.href);
 
             return (
               <Link
                 key={item.label}
                 href={item.href}
                 onClick={() => onItemClick?.()}
-                className="group list-unit flex items-center gap-3 overflow-hidden rounded-sm py-4 transition-all duration-500 ease-in-out min-w-[90%] mx-auto hover:bg-white hover:shadow-sm hover:text-neutral-100 cursor-pointer hover:pl-4 whitespace-nowrap"
+                className={`group list-unit flex items-center gap-3 overflow-hidden rounded-sm py-4 transition-all duration-500 ease-in-out min-w-[90%] mx-auto cursor-pointer hover:pl-4 whitespace-nowrap
+        ${
+          active
+            ? 'bg-white shadow-sm text-neutral-100 pl-4'
+            : 'hover:bg-white hover:shadow-sm hover:text-neutral-100'
+        }`}
               >
                 <div className="shrink-0 flex items-center justify-center">
                   <Icon className="w-5 h-5" />
