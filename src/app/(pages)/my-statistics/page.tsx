@@ -15,7 +15,7 @@ export default async function My_Statistics() {
   const projects = await fetchAllProjects({ accessToken });
 
   return (
-    <div className="bg-background h-full">
+    <div className="bg-background h-full max-w-400 mx-auto">
       <MyStatisticsPage projects={projects} />
     </div>
   );

@@ -67,7 +67,7 @@ export default async function ProjectEpicsPage({
   }
 
   return (
-    <div className="mt-10 sm:mt-0 p-5 sm:p-10">
+    <div className="mt-10 sm:mt-0 p-5 sm:p-10 max-w-400 mx-auto">
       <ProjectEpics
         projectData={projectData}
         projectEpics={projectEpics}

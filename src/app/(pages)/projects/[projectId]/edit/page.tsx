@@ -34,7 +34,7 @@ export default async function EditProject({ params }: EditProjectPageProps) {
     currentProject.status === 'fulfilled' ? currentProject.value : null;
 
   return (
-    <div className="mt-10 sm:mt-0 p-0 sm:p-10 h-full">
+    <div className="mt-10 sm:mt-0 p-0 sm:p-10 h-full max-w-400 mx-auto">
       <EditProjectPage
         projects={ProjectsData}
         projectName={currentProjectData.name}

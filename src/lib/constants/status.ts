@@ -62,6 +62,51 @@ export const BLUE_STATUS: StatusConfig = {
   },
 };
 
+export const QA_STATUS: StatusConfig = {
+  badge: 'bg-[#EADCFF] text-[#4A148C] font-bold text-[11px]',
+  dot: 'bg-[#6A1B9A]',
+  statusbar: 'bg-[#6A1B9A]',
+  task: 'bg-[#EADCFF] text-[#4A148C]',
+  mobile: 'bg-[#EADCFF] text-[#4A148C]',
+  colors: {
+    bg: '#EADCFF',
+    text: '#4A148C',
+  },
+  chart: {
+    color: '#6A1B9A',
+  },
+};
+
+export const REOPENED_STATUS: StatusConfig = {
+  badge: 'bg-[#FFE3B3] text-[#7A4100] font-bold text-[11px]',
+  dot: 'bg-[#B45300]',
+  statusbar: 'bg-[#FFE3B3]',
+  task: 'bg-[#FFE3B3] text-[#7A4100]',
+  mobile: 'bg-[#FFE3B3] text-[#7A4100]',
+  colors: {
+    bg: '#FFE3B3',
+    text: '#7A4100',
+  },
+  chart: {
+    color: '#FFE3B3',
+  },
+};
+
+export const READY_FOR_PRODUCTION_STATUS: StatusConfig = {
+  badge: 'bg-[#B2F5EA] text-[#004D40] font-bold text-[11px]',
+  dot: 'bg-[#00695C]',
+  statusbar: 'bg-[#00695C]',
+  task: 'bg-[#B2F5EA] text-[#004D40]',
+  mobile: 'bg-[#B2F5EA] text-[#004D40]',
+  colors: {
+    bg: '#B2F5EA',
+    text: '#004D40',
+  },
+  chart: {
+    color: '#00695C',
+  },
+};
+
 export const STATUS_CONFIG: Record<TaskStatus, StatusConfig> = {
   TO_DO: DEFAULT_STATUS,
 
@@ -98,10 +143,10 @@ export const STATUS_CONFIG: Record<TaskStatus, StatusConfig> = {
   DONE: DONE_STATUS,
   COMPLETED: DONE_STATUS,
 
-  READY_FOR_QA: BLUE_STATUS,
+  READY_FOR_QA: QA_STATUS,
   IN_REVIEW: BLUE_STATUS,
-  REOPENED: BLUE_STATUS,
-  READY_FOR_PRODUCTION: BLUE_STATUS,
+  REOPENED: REOPENED_STATUS,
+  READY_FOR_PRODUCTION: READY_FOR_PRODUCTION_STATUS,
 } as const;
 
 export type SelectOption = {

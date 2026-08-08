@@ -31,7 +31,7 @@ export default async function ProjectMembers({
   }
 
   return (
-    <div className="mt-10 sm:mt-0 p-5 sm:p-10 h-full bg-background">
+    <div className="mt-10 sm:mt-0 p-5 sm:p-10 h-full bg-background max-w-400 mx-auto">
       <ProjectMembersPage projectName={project.name} />
     </div>
   );
